@@ -1,5 +1,6 @@
 /* ============================================================
-   CONTROLE DE MATERIAIS - APLICAÇÃO PRINCIPAL
+   CONTROLE DE MATERIAIS - APLICAÇÃO PRINCIPAL v2.0
+   ACESSO PÚBLICO PARA CONSULTA + LOGIN PARA EDIÇÃO
    ============================================================ */
 
 // ============================================================
@@ -21,16 +22,52 @@ let locaisData = [];
 let subLocaisData = [];
 let estoqueData = [];
 let movimentacoesData = [];
+let currentPage = 'dashboard';
+
+// Níveis de acesso e suas permissões
+const PERMISSOES = {
+    admin:     ['cadastrar','editar','excluir','visualizar','exportar','receber','retirar'],
+    gerente:   ['cadastrar','editar','visualizar','exportar','receber','retirar'],
+    operador:  ['cadastrar','visualizar','receber','retirar'],
+    consulta:  ['visualizar']
+};
 
 // ============================================================
 // INICIALIZAÇÃO
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    initAuth();
+    initApp();
+});
+
+async function initApp() {
+    updateCurrentDate();
     initNavigation();
     initEventListeners();
-    updateCurrentDate();
-});
+    initAuthModal();
+
+    // Verificar sessão existente (silenciosamente)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        await loadUserProfile(session.user);
+    } else {
+        setPublicMode();
+    }
+
+    // Carregar dados públicos (sempre disponíveis)
+    showPage('dashboard');
+
+    // Listener de mudanças de auth
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            loadUserProfile(session.user);
+        } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            userProfile = null;
+            setPublicMode();
+            showPage(currentPage);
+        }
+    });
+}
 
 function updateCurrentDate() {
     const el = document.getElementById('current-date');
@@ -41,27 +78,146 @@ function updateCurrentDate() {
 }
 
 // ============================================================
-// AUTENTICAÇÃO
+// MODO PÚBLICO (SEM LOGIN)
 // ============================================================
-function initAuth() {
-    // Verificar sessão existente
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-            loadUserProfile(session.user);
-        } else {
-            showScreen('login-screen');
-        }
+function setPublicMode() {
+    currentUser = null;
+    userProfile = null;
+
+    // Sidebar
+    document.getElementById('user-info-public').classList.remove('hidden');
+    document.getElementById('user-info-logged').classList.add('hidden');
+    document.getElementById('login-sidebar-btn').classList.remove('hidden');
+    document.getElementById('logout-sidebar-btn').classList.add('hidden');
+
+    // Badge
+    const badge = document.getElementById('access-badge');
+    badge.textContent = 'Modo Consulta';
+    badge.className = 'badge badge-info';
+
+    // Esconder controles de admin
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+
+    // Esconder botões de ação
+    document.querySelectorAll('.add-btn').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.col-acoes').forEach(el => el.classList.add('hidden'));
+
+    // Esconder formulário de movimentação
+    const cardMov = document.getElementById('card-registrar-mov');
+    if (cardMov) cardMov.classList.add('hidden');
+
+    // Recarregar tabela atual para remover colunas de ação
+    refreshCurrentPage();
+}
+
+// ============================================================
+// MODO AUTENTICADO (COM LOGIN)
+// ============================================================
+async function loadUserProfile(user) {
+    currentUser = user;
+
+    const { data: profile, error } = await supabase
+        .from('perfis')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (error) {
+        console.error('Erro ao carregar perfil:', error);
+        showToast('Erro ao carregar perfil. Modo consulta ativado.', 'error');
+        setPublicMode();
+        return;
+    }
+
+    userProfile = profile;
+
+    // Sidebar
+    document.getElementById('user-info-public').classList.add('hidden');
+    document.getElementById('user-info-logged').classList.remove('hidden');
+    document.getElementById('login-sidebar-btn').classList.add('hidden');
+    document.getElementById('logout-sidebar-btn').classList.remove('hidden');
+
+    document.getElementById('user-name').textContent = profile.nome || profile.email;
+    document.getElementById('user-role').textContent = profile.nivel_acesso;
+
+    // Badge
+    const badge = document.getElementById('access-badge');
+    const nivel = profile.nivel_acesso;
+    badge.textContent = 'Logado: ' + nivel.charAt(0).toUpperCase() + nivel.slice(1);
+    badge.className = 'badge badge-success';
+
+    // Mostrar controles baseado no nível
+    updateUIBasedOnPermissions();
+
+    // Recarregar página atual
+    refreshCurrentPage();
+
+    showToast('Bem-vindo, ' + (profile.nome || profile.email) + '!');
+}
+
+function updateUIBasedOnPermissions() {
+    if (!userProfile) return;
+
+    const nivel = userProfile.nivel_acesso;
+    const funcs = PERMISSOES[nivel] || [];
+
+    // Admin: mostrar menu usuários
+    if (nivel === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+    }
+
+    // Cadastrar: mostrar botões "Novo"
+    if (funcs.includes('cadastrar')) {
+        document.querySelectorAll('.add-btn').forEach(el => el.classList.remove('hidden'));
+    }
+
+    // Editar/Excluir: mostrar colunas de ação
+    if (funcs.includes('editar') || funcs.includes('excluir')) {
+        document.querySelectorAll('.col-acoes').forEach(el => el.classList.remove('hidden'));
+    }
+
+    // Receber/Retirar: mostrar formulário de movimentação
+    if (funcs.includes('receber') || funcs.includes('retirar')) {
+        const cardMov = document.getElementById('card-registrar-mov');
+        if (cardMov) cardMov.classList.remove('hidden');
+    }
+}
+
+function refreshCurrentPage() {
+    switch(currentPage) {
+        case 'dashboard': loadDashboardData(); break;
+        case 'materiais': loadMateriais(); break;
+        case 'locais': loadLocais(); break;
+        case 'estoque': loadEstoque(); break;
+        case 'movimentacoes': loadMovimentacoesPage(); break;
+        case 'relatorios': break;
+        case 'usuarios': loadUsuarios(); break;
+    }
+}
+
+// ============================================================
+// AUTENTICAÇÃO - MODAL
+// ============================================================
+function initAuthModal() {
+    // Abrir modal
+    document.getElementById('login-sidebar-btn').addEventListener('click', () => {
+        document.getElementById('auth-modal').classList.add('show');
     });
 
-    // Listener de mudanças de auth
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-            loadUserProfile(session.user);
-        } else if (event === 'SIGNED_OUT') {
-            currentUser = null;
-            userProfile = null;
-            showScreen('login-screen');
-        }
+    // Fechar modal
+    document.getElementById('auth-modal-close').addEventListener('click', closeAuthModal);
+    document.getElementById('auth-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('auth-modal')) closeAuthModal();
+    });
+
+    // Tabs
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('auth-tab-' + tab.dataset.tab).classList.add('active');
+        });
     });
 
     // Login form
@@ -78,6 +234,9 @@ function initAuth() {
         if (error) {
             errorEl.textContent = error.message;
             errorEl.classList.add('show');
+        } else {
+            closeAuthModal();
+            document.getElementById('login-form').reset();
         }
     });
 
@@ -107,57 +266,22 @@ function initAuth() {
         } else {
             successEl.textContent = 'Cadastro realizado! Verifique seu e-mail para confirmar.';
             successEl.classList.add('show');
-            setTimeout(() => showScreen('login-screen'), 3000);
+            document.getElementById('register-form').reset();
         }
     });
 
-    // Toggle screens
-    document.getElementById('show-register').addEventListener('click', (e) => {
-        e.preventDefault();
-        showScreen('register-screen');
-    });
-
-    document.getElementById('show-login').addEventListener('click', (e) => {
-        e.preventDefault();
-        showScreen('login-screen');
-    });
-
     // Logout
-    document.getElementById('logout-btn').addEventListener('click', async () => {
+    document.getElementById('logout-sidebar-btn').addEventListener('click', async () => {
         await supabase.auth.signOut();
+        showToast('Você saiu do sistema. Modo consulta ativado.');
     });
 }
 
-async function loadUserProfile(user) {
-    currentUser = user;
-
-    const { data: profile, error } = await supabase
-        .from('perfis')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-    if (error) {
-        console.error('Erro ao carregar perfil:', error);
-        showToast('Erro ao carregar perfil do usuário', 'error');
-        return;
-    }
-
-    userProfile = profile;
-
-    // Atualizar UI
-    document.getElementById('user-name').textContent = profile.nome || profile.email;
-    document.getElementById('user-role').textContent = profile.nivel_acesso;
-
-    // Mostrar/ocultar menu admin
-    const adminItems = document.querySelectorAll('.admin-only');
-    adminItems.forEach(el => {
-        el.style.display = profile.nivel_acesso === 'admin' ? 'flex' : 'none';
-    });
-
-    showScreen('dashboard-screen');
-    showPage('dashboard');
-    loadDashboardData();
+function closeAuthModal() {
+    document.getElementById('auth-modal').classList.remove('show');
+    document.getElementById('login-error').classList.remove('show');
+    document.getElementById('register-error').classList.remove('show');
+    document.getElementById('register-success').classList.remove('show');
 }
 
 // ============================================================
@@ -170,8 +294,6 @@ function initNavigation() {
             const page = item.dataset.page;
             if (page) {
                 showPage(page);
-
-                // Atualizar active
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 item.classList.add('active');
             }
@@ -179,39 +301,20 @@ function initNavigation() {
     });
 }
 
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-}
-
 function showPage(pageId) {
+    currentPage = pageId;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + pageId).classList.add('active');
     document.getElementById('page-title').textContent = getPageTitle(pageId);
 
-    // Carregar dados específicos da página
     switch(pageId) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'materiais':
-            loadMateriais();
-            break;
-        case 'locais':
-            loadLocais();
-            break;
-        case 'estoque':
-            loadEstoque();
-            break;
-        case 'movimentacoes':
-            loadMovimentacoesPage();
-            break;
-        case 'relatorios':
-            // Nada a carregar
-            break;
-        case 'usuarios':
-            loadUsuarios();
-            break;
+        case 'dashboard': loadDashboardData(); break;
+        case 'materiais': loadMateriais(); break;
+        case 'locais': loadLocais(); break;
+        case 'estoque': loadEstoque(); break;
+        case 'movimentacoes': loadMovimentacoesPage(); break;
+        case 'relatorios': break;
+        case 'usuarios': loadUsuarios(); break;
     }
 }
 
@@ -229,10 +332,31 @@ function getPageTitle(pageId) {
 }
 
 // ============================================================
+// VERIFICAÇÃO DE PERMISSÃO
+// ============================================================
+function temPermissao(acao) {
+    if (!userProfile) return false;
+    const funcs = PERMISSOES[userProfile.nivel_acesso] || [];
+    return funcs.includes(acao);
+}
+
+function requerLogin(acao) {
+    if (!currentUser) {
+        showToast('Faça login para ' + acao, 'error');
+        document.getElementById('auth-modal').classList.add('show');
+        return false;
+    }
+    if (!temPermissao(acao)) {
+        showToast('Você não tem permissão para ' + acao, 'error');
+        return false;
+    }
+    return true;
+}
+
+// ============================================================
 // DASHBOARD
 // ============================================================
 async function loadDashboardData() {
-    // Estatísticas
     const { count: totalMateriais } = await supabase.from('material').select('*', { count: 'exact', head: true });
 
     const { data: controle } = await supabase.from('controle_materiais').select('status');
@@ -245,7 +369,6 @@ async function loadDashboardData() {
     document.getElementById('stat-abaixo-minimo').textContent = abaixoMinimo;
     document.getElementById('stat-acima-maximo').textContent = acimaMaximo;
 
-    // Alertas de compra
     const { data: alertas } = await supabase
         .from('controle_materiais')
         .select(`
@@ -279,7 +402,6 @@ async function loadDashboardData() {
         alertasBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum material abaixo do limite</td></tr>';
     }
 
-    // Últimas movimentações
     const { data: movs } = await supabase
         .from('movimentacao')
         .select(`
@@ -326,21 +448,11 @@ async function loadMateriais(filters = {}) {
         `)
         .order('id', { ascending: false });
 
-    if (filters.om) {
-        query = query.ilike('om', `%${filters.om}%`);
-    }
-    if (filters.descricao) {
-        query = query.ilike('descricao', `%${filters.descricao}%`);
-    }
-    if (filters.dataEntrada) {
-        query = query.gte('data_entrada', filters.dataEntrada);
-    }
-    if (filters.dataSaida) {
-        query = query.gte('data_saida', filters.dataSaida);
-    }
-    if (filters.local) {
-        query = query.eq('id_local', filters.local);
-    }
+    if (filters.om) query = query.ilike('om', `%${filters.om}%`);
+    if (filters.descricao) query = query.ilike('descricao', `%${filters.descricao}%`);
+    if (filters.dataEntrada) query = query.gte('data_entrada', filters.dataEntrada);
+    if (filters.dataSaida) query = query.gte('data_saida', filters.dataSaida);
+    if (filters.local) query = query.eq('id_local', filters.local);
 
     const { data, error } = await query;
 
@@ -351,14 +463,13 @@ async function loadMateriais(filters = {}) {
 
     materiaisData = data || [];
     renderMateriaisTable(materiaisData);
-
-    // Atualizar select de locais no filtro
     loadLocaisSelect();
 }
 
 function renderMateriaisTable(data) {
     const tbody = document.querySelector('#table-materiais tbody');
     tbody.innerHTML = '';
+    const podeEditar = temPermissao('editar') || temPermissao('excluir');
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhum material encontrado</td></tr>';
@@ -367,6 +478,16 @@ function renderMateriaisTable(data) {
 
     data.forEach(m => {
         const row = document.createElement('tr');
+        let acoes = '';
+        if (podeEditar) {
+            acoes = `
+                <td class="actions">
+                    ${temPermissao('editar') ? `<button class="btn btn-primary btn-sm" onclick="editMaterial(${m.id})"><i class="fas fa-edit"></i></button>` : ''}
+                    ${temPermissao('excluir') ? `<button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})"><i class="fas fa-trash"></i></button>` : ''}
+                </td>
+            `;
+        }
+
         row.innerHTML = `
             <td>${m.id}</td>
             <td>${m.om}</td>
@@ -377,10 +498,7 @@ function renderMateriaisTable(data) {
             <td>${formatDate(m.data_entrada)}</td>
             <td>${formatDate(m.data_saida)}</td>
             <td>${m.recebedor || '-'}</td>
-            <td class="actions">
-                <button class="btn btn-primary btn-sm" onclick="editMaterial(${m.id})"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})"><i class="fas fa-trash"></i></button>
-            </td>
+            ${podeEditar ? acoes : ''}
         `;
         tbody.appendChild(row);
     });
@@ -398,7 +516,6 @@ async function loadLocaisSelect() {
         });
     }
 
-    // Popular select de materiais para movimentação
     if (movSelect) {
         movSelect.innerHTML = '<option value="">Selecione...</option>';
         materiaisData.forEach(m => {
@@ -411,9 +528,9 @@ async function loadLocaisSelect() {
 // LOCAIS E SUB-LOCAIS
 // ============================================================
 async function loadLocais() {
-    // Sub-locais
     const { data: subLocais } = await supabase.from('sub_local').select('*').order('id');
     subLocaisData = subLocais || [];
+    const podeEditar = temPermissao('editar') || temPermissao('excluir');
 
     const subBody = document.querySelector('#table-sublocais tbody');
     subBody.innerHTML = '';
@@ -423,25 +540,27 @@ async function loadLocais() {
     } else {
         subLocaisData.forEach(s => {
             const row = document.createElement('tr');
+            let acoes = '';
+            if (podeEditar) {
+                acoes = `
+                    <td class="actions">
+                        ${temPermissao('editar') ? `<button class="btn btn-primary btn-sm" onclick="editSubLocal(${s.id})"><i class="fas fa-edit"></i></button>` : ''}
+                        ${temPermissao('excluir') ? `<button class="btn btn-danger btn-sm" onclick="deleteSubLocal(${s.id})"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                `;
+            }
             row.innerHTML = `
                 <td>${s.id}</td>
                 <td>${s.descricao}</td>
-                <td class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="editSubLocal(${s.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteSubLocal(${s.id})"><i class="fas fa-trash"></i></button>
-                </td>
+                ${podeEditar ? acoes : ''}
             `;
             subBody.appendChild(row);
         });
     }
 
-    // Locais
     const { data: locais } = await supabase
         .from('local_armazenamento')
-        .select(`
-            *,
-            sub_local:sub_local_id (descricao)
-        `)
+        .select(`*, sub_local:sub_local_id (descricao)`)
         .order('id');
 
     locaisData = locais || [];
@@ -454,14 +573,20 @@ async function loadLocais() {
     } else {
         locaisData.forEach(l => {
             const row = document.createElement('tr');
+            let acoes = '';
+            if (podeEditar) {
+                acoes = `
+                    <td class="actions">
+                        ${temPermissao('editar') ? `<button class="btn btn-primary btn-sm" onclick="editLocal(${l.id})"><i class="fas fa-edit"></i></button>` : ''}
+                        ${temPermissao('excluir') ? `<button class="btn btn-danger btn-sm" onclick="deleteLocal(${l.id})"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                `;
+            }
             row.innerHTML = `
                 <td>${l.id}</td>
                 <td>${l.descricao}</td>
                 <td>${l.sub_local?.descricao || '-'}</td>
-                <td class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="editLocal(${l.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteLocal(${l.id})"><i class="fas fa-trash"></i></button>
-                </td>
+                ${podeEditar ? acoes : ''}
             `;
             locBody.appendChild(row);
         });
@@ -481,9 +606,7 @@ async function loadEstoque(statusFilter = '') {
         `)
         .order('id');
 
-    if (statusFilter) {
-        query = query.eq('status', statusFilter);
-    }
+    if (statusFilter) query = query.eq('status', statusFilter);
 
     const { data, error } = await query;
 
@@ -499,6 +622,7 @@ async function loadEstoque(statusFilter = '') {
 function renderEstoqueTable(data) {
     const tbody = document.querySelector('#table-estoque tbody');
     tbody.innerHTML = '';
+    const podeEditar = temPermissao('editar');
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhum registro encontrado</td></tr>';
@@ -511,6 +635,11 @@ function renderEstoqueTable(data) {
         else if (e.status === 'Dentro do Intervalo') badgeClass = 'badge-success';
         else if (e.status === 'Acima do máximo') badgeClass = 'badge-warning';
 
+        let acoes = '';
+        if (podeEditar) {
+            acoes = `<td class="actions"><button class="btn btn-primary btn-sm" onclick="editEstoque(${e.id})"><i class="fas fa-edit"></i></button></td>`;
+        }
+
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${e.material?.descricao || 'N/A'}</td>
@@ -522,9 +651,7 @@ function renderEstoqueTable(data) {
             <td>${e.saida}</td>
             <td><strong>${e.estoque_atual}</strong></td>
             <td><span class="badge ${badgeClass}">${e.status}</span></td>
-            <td class="actions">
-                <button class="btn btn-primary btn-sm" onclick="editEstoque(${e.id})"><i class="fas fa-edit"></i></button>
-            </td>
+            ${podeEditar ? acoes : ''}
         `;
         tbody.appendChild(row);
     });
@@ -534,19 +661,14 @@ function renderEstoqueTable(data) {
 // MOVIMENTAÇÕES
 // ============================================================
 async function loadMovimentacoesPage() {
-    // Carregar materiais no select
     await loadMateriais();
 
-    // Definir data atual
-    document.getElementById('mov-data').valueAsDate = new Date();
+    const dataInput = document.getElementById('mov-data');
+    if (dataInput) dataInput.valueAsDate = new Date();
 
-    // Carregar histórico
     const { data } = await supabase
         .from('movimentacao')
-        .select(`
-            *,
-            material:material_id (descricao)
-        `)
+        .select(`*, material:material_id (descricao)`)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -617,14 +739,12 @@ async function loadUsuarios() {
 }
 
 // ============================================================
-// MODAIS E FORMULÁRIOS
+// EVENT LISTENERS
 // ============================================================
 function initEventListeners() {
-    // Modal
     document.querySelector('.modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
 
-    // Materiais - filtros
     document.getElementById('btn-filter-material').addEventListener('click', () => {
         const filters = {
             om: document.getElementById('filter-om').value,
@@ -645,20 +765,27 @@ function initEventListeners() {
         loadMateriais();
     });
 
-    // Estoque - filtros
     document.getElementById('btn-filter-estoque').addEventListener('click', () => {
         const status = document.getElementById('filter-estoque-status').value;
         loadEstoque(status);
     });
 
-    // Add buttons
-    document.getElementById('btn-add-material').addEventListener('click', () => openMaterialModal());
-    document.getElementById('btn-add-sublocal').addEventListener('click', () => openSubLocalModal());
-    document.getElementById('btn-add-local').addEventListener('click', () => openLocalModal());
+    document.getElementById('btn-add-material').addEventListener('click', () => {
+        if (!requerLogin('cadastrar')) return;
+        openMaterialModal();
+    });
+    document.getElementById('btn-add-sublocal').addEventListener('click', () => {
+        if (!requerLogin('cadastrar')) return;
+        openSubLocalModal();
+    });
+    document.getElementById('btn-add-local').addEventListener('click', () => {
+        if (!requerLogin('cadastrar')) return;
+        openLocalModal();
+    });
 
-    // Movimentação
     document.getElementById('form-movimentacao').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!requerLogin('receber')) return;
 
         const materialId = document.getElementById('mov-material').value;
         const tipo = document.getElementById('mov-tipo').value;
@@ -692,13 +819,12 @@ function initEventListeners() {
         loadDashboardData();
     });
 
-    // Exportações
     document.getElementById('btn-export-estoque').addEventListener('click', exportEstoque);
     document.getElementById('btn-export-compra').addEventListener('click', exportNecessidadeCompra);
 }
 
 // ============================================================
-// MODAL MATERIAL
+// MODAIS CRUD
 // ============================================================
 async function openMaterialModal(material = null) {
     const isEdit = !!material;
@@ -800,11 +926,13 @@ async function openMaterialModal(material = null) {
 }
 
 async function editMaterial(id) {
+    if (!requerLogin('editar')) return;
     const { data } = await supabase.from('material').select('*').eq('id', id).single();
     if (data) openMaterialModal(data);
 }
 
 async function deleteMaterial(id) {
+    if (!requerLogin('excluir')) return;
     if (!confirm('Tem certeza que deseja excluir este material?')) return;
 
     const { error } = await supabase.from('material').delete().eq('id', id);
@@ -816,9 +944,6 @@ async function deleteMaterial(id) {
     }
 }
 
-// ============================================================
-// MODAL SUB-LOCAL
-// ============================================================
 function openSubLocalModal(subLocal = null) {
     const html = `
         <form id="form-sublocal">
@@ -853,11 +978,13 @@ function openSubLocalModal(subLocal = null) {
 }
 
 async function editSubLocal(id) {
+    if (!requerLogin('editar')) return;
     const { data } = await supabase.from('sub_local').select('*').eq('id', id).single();
     if (data) openSubLocalModal(data);
 }
 
 async function deleteSubLocal(id) {
+    if (!requerLogin('excluir')) return;
     if (!confirm('Tem certeza que deseja excluir este sub-local?')) return;
 
     const { error } = await supabase.from('sub_local').delete().eq('id', id);
@@ -869,9 +996,6 @@ async function deleteSubLocal(id) {
     }
 }
 
-// ============================================================
-// MODAL LOCAL
-// ============================================================
 async function openLocalModal(local = null) {
     const subLocais = await supabase.from('sub_local').select('*').order('descricao');
 
@@ -922,11 +1046,13 @@ async function openLocalModal(local = null) {
 }
 
 async function editLocal(id) {
+    if (!requerLogin('editar')) return;
     const { data } = await supabase.from('local_armazenamento').select('*').eq('id', id).single();
     if (data) openLocalModal(data);
 }
 
 async function deleteLocal(id) {
+    if (!requerLogin('excluir')) return;
     if (!confirm('Tem certeza que deseja excluir este local?')) return;
 
     const { error } = await supabase.from('local_armazenamento').delete().eq('id', id);
@@ -938,10 +1064,8 @@ async function deleteLocal(id) {
     }
 }
 
-// ============================================================
-// MODAL ESTOQUE
-// ============================================================
 async function editEstoque(id) {
+    if (!requerLogin('editar')) return;
     const { data } = await supabase.from('controle_materiais').select('*').eq('id', id).single();
     if (!data) return;
 
@@ -984,10 +1108,8 @@ async function editEstoque(id) {
     });
 }
 
-// ============================================================
-// MODAL USUÁRIO
-// ============================================================
 async function editUsuario(id) {
+    if (!requerLogin('editar')) return;
     const { data } = await supabase.from('perfis').select('*').eq('id', id).single();
     if (!data) return;
 
