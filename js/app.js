@@ -12,8 +12,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let supabaseClient = null;
 try {
-    supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('[OK] Supabase client criado');
+    if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('[OK] Supabase client criado');
+    } else {
+        console.error('[ERRO] Supabase SDK não carregado');
+    }
 } catch (e) {
     console.error('[ERRO] Falha ao criar Supabase client:', e);
 }
