@@ -7,7 +7,7 @@
 // CONFIGURAÇÃO SUPABASE - SUBSTITUA AQUI!
 // ============================================================
 const SUPABASE_URL = 'https://jjhspljcyuupjharujvt.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqaHNwbGpjeXV1cGpoYXJ1anZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNDY5MDIsImV4cCI6MjEwMTYyMjkwMn0.Xvu6nHKH_0U7PhNZICNuRmRAz6FZCFBYfMya38GftlU';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXN1ZGV0cm1hcXNtc2NmbHl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTU1MjAsImV4cCI6MjEwMTYzMTUyMH0.cjQ2ZwgpHFICbvmUl49Xxzcer83xT6Ad_44gFusIr_w';
 
 
 let supabaseClient = null;
