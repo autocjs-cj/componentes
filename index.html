@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPCI - Controle de Materiais</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --sidebar-width: 260px;
+        }
+
+        * { font-family: 'Inter', sans-serif; }
+
+        body {
+            background: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed { width: 70px; }
+        .sidebar.collapsed .nav-text { display: none; }
+        .sidebar.collapsed .logo-text { display: none; }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .logo-text h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .logo-text small {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .nav-menu { padding: 15px 10px; }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 5px;
+            color: #cbd5e1;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .sidebar.collapsed ~ .main-content { margin-left: 70px; }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .user-badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: none;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* Content Card */
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .content-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .content-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-success-custom {
+            background: var(--success);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .btn-warning-custom {
+            background: var(--warning);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .btn-danger-custom {
+            background: var(--danger);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* Tables */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .custom-table thead th {
+            background: #f8fafc;
+            padding: 14px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .custom-table tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .custom-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Status Badges */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-abaixo { background: #fef2f2; color: #dc2626; }
+        .badge-dentro { background: #f0fdf4; color: #16a34a; }
+        .badge-acima { background: #fffbeb; color: #d97706; }
+        .badge-alerta { background: #fef3c7; color: #92400e; }
+
+        /* Forms */
+        .form-control-custom {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .form-control-custom:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+            outline: none;
+        }
+
+        .form-label-custom {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+        }
+        .modal-header {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 20px 25px;
+        }
+        .modal-body { padding: 25px; }
+        .modal-footer {
+            border-top: 1px solid #f1f5f9;
+            padding: 15px 25px;
+        }
+
+        /* Alerts */
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spinner-custom {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Section hide/show */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Filter bar */
+        .filter-bar {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        /* Toggle sidebar */
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar .nav-text, .sidebar .logo-text { display: none; }
+            .main-content { margin-left: 70px; }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Movimentação cards */
+        .mov-card {
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 10px;
+        }
+        .mov-card.entrada { border-left-color: var(--success); }
+        .mov-card.saida { border-left-color: var(--danger); }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+        <div class="spinner-custom"></div>
+        <p class="mt-3 text-muted">Carregando...</p>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+            <div class="logo-text">
+                <h4>SPCI</h4>
+                <small>Controle de Materiais</small>
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <a class="nav-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-chart-pie"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a class="nav-item" onclick="showSection('subLocais')">
+                <i class="fas fa-warehouse"></i>
+                <span class="nav-text">Sub-locais</span>
+            </a>
+            <a class="nav-item" onclick="showSection('locais')">
+                <i class="fas fa-map-marker-alt"></i>
+                <span class="nav-text">Locais</span>
+            </a>
+            <a class="nav-item" onclick="showSection('materiais')">
+                <i class="fas fa-cubes"></i>
+                <span class="nav-text">Materiais</span>
+            </a>
+            <a class="nav-item" onclick="showSection('estoque')">
+                <i class="fas fa-box"></i>
+                <span class="nav-text">Controle de Estoque</span>
+            </a>
+            <a class="nav-item" onclick="showSection('movimentacao')">
+                <i class="fas fa-exchange-alt"></i>
+                <span class="nav-text">Movimentação</span>
+            </a>
+            <a class="nav-item" onclick="showSection('relatorios')">
+                <i class="fas fa-file-excel"></i>
+                <span class="nav-text">Relatórios</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="toggle-sidebar" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-success" id="connectionStatus">
+                    <i class="fas fa-circle me-1" style="font-size:8px;"></i>Online
+                </span>
+                <div class="user-badge">
+                    <i class="fas fa-user me-2"></i>Administrador
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== DASHBOARD ==================== -->
+        <section id="dashboard" class="section active">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <h3 class="stat-value" id="dashTotalMateriais">0</h3>
+                        <p class="stat-label">Total de Materiais</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 class="stat-value" id="dashDentroIntervalo">0</h3>
+                        <p class="stat-label">Dentro do Intervalo</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="stat-value" id="dashAbaixoMinimo">0</h3>
+                        <p class="stat-label">Abaixo do Mínimo</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <h3 class="stat-value" id="dashAcimaMaximo">0</h3>
+                        <p class="stat-label">Acima do Máximo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h5 class="content-card-title"><i class="fas fa-exclamation-circle me-2 text-danger"></i>Alertas de Estoque</h5>
+                        </div>
+                        <div id="dashAlertas" style="max-height: 300px; overflow-y: auto;">
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <p>Nenhum alerta no momento</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h5 class="content-card-title"><i class="fas fa-clock me-2 text-primary"></i>Últimas Movimentações</h5>
+                        </div>
+                        <div id="dashMovimentacoes" style="max-height: 300px; overflow-y: auto;">
+                            <div class="empty-state">
+                                <i class="fas fa-history"></i>
+                                <p>Nenhuma movimentação registrada</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SUB-LOCAIS ==================== -->
+        <section id="subLocais" class="section">
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">Cadastro de Sub-locais</h5>
+                    <button class="btn-primary-custom" onclick="openModal('subLocalModal')">
+                        <i class="fas fa-plus me-2"></i>Novo Sub-local
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descrição</th>
+                                <th width="120">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subLocalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== LOCAIS ==================== -->
+        <section id="locais" class="section">
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">Cadastro de Locais de Armazenamento</h5>
+                    <button class="btn-primary-custom" onclick="openModal('localModal')">
+                        <i class="fas fa-plus me-2"></i>Novo Local
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descrição</th>
+                                <th>Sub-local</th>
+                                <th width="120">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="localTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== MATERIAIS ==================== -->
+        <section id="materiais" class="section">
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">Cadastro de Materiais</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn-success-custom" onclick="exportarMateriaisExcel()">
+                            <i class="fas fa-file-excel me-2"></i>Exportar Excel
+                        </button>
+                        <button class="btn-primary-custom" onclick="openModal('materialModal')">
+                            <i class="fas fa-plus me-2"></i>Novo Material
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filter-bar">
+                    <div style="flex:1; min-width:200px;">
+                        <label class="form-label-custom">OM</label>
+                        <input type="text" class="form-control-custom" id="filtroOM" placeholder="Filtrar por OM...">
+                    </div>
+                    <div style="flex:2; min-width:200px;">
+                        <label class="form-label-custom">Descrição</label>
+                        <input type="text" class="form-control-custom" id="filtroDescricao" placeholder="Filtrar por descrição...">
+                    </div>
+                    <div style="flex:1; min-width:150px;">
+                        <label class="form-label-custom">Data Entrada</label>
+                        <input type="date" class="form-control-custom" id="filtroDataEntrada">
+                    </div>
+                    <div style="flex:1; min-width:150px;">
+                        <label class="form-label-custom">Data Saída</label>
+                        <input type="date" class="form-control-custom" id="filtroDataSaida">
+                    </div>
+                    <div>
+                        <button class="btn-primary-custom" onclick="aplicarFiltrosMateriais()">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn-icon" style="background:#f1f5f9;" onclick="limparFiltrosMateriais()" title="Limpar filtros">
+                            <i class="fas fa-eraser text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Local</th>
+                                <th>OM</th>
+                                <th>Descrição</th>
+                                <th>Pedido/Reserva</th>
+                                <th>Código SAP</th>
+                                <th>Qtd</th>
+                                <th>Data Entrada</th>
+                                <th>Data Saída</th>
+                                <th>Local Aplicação</th>
+                                <th>Recebedor</th>
+                                <th width="120">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CONTROLE DE ESTOQUE ==================== -->
+        <section id="estoque" class="section">
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">Controle de Estoque</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn-warning-custom" onclick="exportarNecessidadeCompra()">
+                            <i class="fas fa-file-excel me-2"></i>Necessidade de Compra
+                        </button>
+                        <button class="btn-primary-custom" onclick="openModal('estoqueModal')">
+                            <i class="fas fa-plus me-2"></i>Novo Controle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Local</th>
+                                <th>Estoque Mín.</th>
+                                <th>Estoque Máx.</th>
+                                <th>Limite Solic.</th>
+                                <th>Entrada</th>
+                                <th>Saída</th>
+                                <th>Estoque Atual</th>
+                                <th>Status</th>
+                                <th>Data Entrada</th>
+                                <th>Data Saída</th>
+                                <th width="120">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="estoqueTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== MOVIMENTAÇÃO ==================== -->
+        <section id="movimentacao" class="section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h5 class="content-card-title text-success"><i class="fas fa-arrow-down me-2"></i>Entrada de Material</h5>
+                        </div>
+                        <form id="formEntrada" onsubmit="registrarEntrada(event)">
+                            <div class="mb-3">
+                                <label class="form-label-custom">Material</label>
+                                <select class="form-control-custom" id="movEntradaMaterial" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Quantidade</label>
+                                <input type="number" class="form-control-custom" id="movEntradaQtd" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Data de Entrada</label>
+                                <input type="date" class="form-control-custom" id="movEntradaData" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Recebedor</label>
+                                <input type="text" class="form-control-custom" id="movEntradaRecebedor" required>
+                            </div>
+                            <button type="submit" class="btn-success-custom w-100">
+                                <i class="fas fa-check me-2"></i>Registrar Entrada
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h5 class="content-card-title text-danger"><i class="fas fa-arrow-up me-2"></i>Saída de Material</h5>
+                        </div>
+                        <form id="formSaida" onsubmit="registrarSaida(event)">
+                            <div class="mb-3">
+                                <label class="form-label-custom">Material</label>
+                                <select class="form-control-custom" id="movSaidaMaterial" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Quantidade</label>
+                                <input type="number" class="form-control-custom" id="movSaidaQtd" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Data de Saída</label>
+                                <input type="date" class="form-control-custom" id="movSaidaData" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Local de Aplicação</label>
+                                <input type="text" class="form-control-custom" id="movSaidaLocalAplicacao" required>
+                            </div>
+                            <button type="submit" class="btn-danger-custom w-100">
+                                <i class="fas fa-check me-2"></i>Registrar Saída
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card mt-4">
+                <div class="content-card-header">
+                    <h5 class="content-card-title">Histórico de Movimentações</h5>
+                </div>
+                <div id="historicoMovimentacoes"></div>
+            </div>
+        </section>
+
+        <!-- ==================== RELATÓRIOS ==================== -->
+        <section id="relatorios" class="section">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="content-card text-center">
+                        <div class="stat-icon mx-auto" style="background: #dbeafe; color: #2563eb;">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <h5 class="mb-3">Materiais em Estoque</h5>
+                        <p class="text-muted small mb-3">Exporte todos os materiais atualmente em estoque</p>
+                        <button class="btn-success-custom w-100" onclick="exportarMateriaisExcel()">
+                            <i class="fas fa-download me-2"></i>Exportar Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="content-card text-center">
+                        <div class="stat-icon mx-auto" style="background: #fef3c7; color: #d97706;">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h5 class="mb-3">Necessidade de Compra</h5>
+                        <p class="text-muted small mb-3">Materiais abaixo do limite de solicitação</p>
+                        <button class="btn-warning-custom w-100" onclick="exportarNecessidadeCompra()">
+                            <i class="fas fa-download me-2"></i>Exportar Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="content-card text-center">
+                        <div class="stat-icon mx-auto" style="background: #fee2e2; color: #dc2626;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h5 class="mb-3">Alertas de Estoque</h5>
+                        <p class="text-muted small mb-3">Materiais com status crítico</p>
+                        <button class="btn-danger-custom w-100" onclick="exportarAlertasExcel()">
+                            <i class="fas fa-download me-2"></i>Exportar Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== MODAIS ==================== -->
+
+    <!-- Modal Sub-local -->
+    <div class="modal fade" id="subLocalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Cadastrar Sub-local</h5>
+                    <button type="button" class="btn-close" onclick="closeModal('subLocalModal')"></button>
+                </div>
+                <form onsubmit="salvarSubLocal(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="subLocalId">
+                        <div class="mb-3">
+                            <label class="form-label-custom">Descrição</label>
+                            <input type="text" class="form-control-custom" id="subLocalDescricao" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" onclick="closeModal('subLocalModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary-custom">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Local -->
+    <div class="modal fade" id="localModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Cadastrar Local</h5>
+                    <button type="button" class="btn-close" onclick="closeModal('localModal')"></button>
+                </div>
+                <form onsubmit="salvarLocal(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="localId">
+                        <div class="mb-3">
+                            <label class="form-label-custom">Descrição</label>
+                            <input type="text" class="form-control-custom" id="localDescricao" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">Sub-local</label>
+                            <select class="form-control-custom" id="localSubLocal" required>
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" onclick="closeModal('localModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary-custom">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Material -->
+    <div class="modal fade" id="materialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Cadastrar Material</h5>
+                    <button type="button" class="btn-close" onclick="closeModal('materialModal')"></button>
+                </div>
+                <form onsubmit="salvarMaterial(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="materialId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Local de Armazenamento</label>
+                                <select class="form-control-custom" id="materialLocal" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">OM (12 dígitos)</label>
+                                <input type="text" class="form-control-custom" id="materialOM" maxlength="12" pattern="\d{1,12}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Descrição</label>
+                                <input type="text" class="form-control-custom" id="materialDescricao" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Pedido/Reserva</label>
+                                <input type="text" class="form-control-custom" id="materialPedidoReserva">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Código SAP</label>
+                                <input type="text" class="form-control-custom" id="materialCodigoSAP">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Quantidade</label>
+                                <input type="number" class="form-control-custom" id="materialQuantidade" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Data de Entrada</label>
+                                <input type="date" class="form-control-custom" id="materialDataEntrada">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Data de Saída</label>
+                                <input type="date" class="form-control-custom" id="materialDataSaida">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Local de Aplicação</label>
+                                <input type="text" class="form-control-custom" id="materialLocalAplicacao">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Recebedor</label>
+                                <input type="text" class="form-control-custom" id="materialRecebedor">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" onclick="closeModal('materialModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary-custom">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Estoque -->
+    <div class="modal fade" id="estoqueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Controle de Estoque</h5>
+                    <button type="button" class="btn-close" onclick="closeModal('estoqueModal')"></button>
+                </div>
+                <form onsubmit="salvarEstoque(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="estoqueId">
+                        <div class="mb-3">
+                            <label class="form-label-custom">Local de Armazenamento</label>
+                            <select class="form-control-custom" id="estoqueLocal" required>
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Estoque Mínimo</label>
+                                <input type="number" class="form-control-custom" id="estoqueMinimo" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Estoque Máximo</label>
+                                <input type="number" class="form-control-custom" id="estoqueMaximo" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">Limite de Solicitação</label>
+                            <input type="number" class="form-control-custom" id="estoqueLimite" step="0.01" min="0" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Entrada</label>
+                                <input type="number" class="form-control-custom" id="estoqueEntrada" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Saída</label>
+                                <input type="number" class="form-control-custom" id="estoqueSaida" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Data de Entrada</label>
+                                <input type="date" class="form-control-custom" id="estoqueDataEntrada">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-custom">Data de Saída</label>
+                                <input type="date" class="form-control-custom" id="estoqueDataSaida">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" onclick="closeModal('estoqueModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary-custom">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <script>
+
+// ============================================================
+// CONFIGURAÇÃO DO SUPABASE
+// ============================================================
+const SUPABASE_URL = 'https://dnlxrelguvereehhbugo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXN1ZGV0cm1hcXNtc2NmbHl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTU1MjAsImV4cCI6MjEwMTYzMTUyMH0.cjQ2ZwgpHFICbvmUl49Xxzcer83xT6Ad_44gFusIr_w';
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// VARIÁVEIS GLOBAIS
+// ============================================================
+let dadosSubLocais = [];
+let dadosLocais = [];
+let dadosMateriais = [];
+let dadosEstoque = [];
+let materiaisFiltrados = [];
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+function formatarData(data) {
+    if (!data) return '-';
+    const d = new Date(data);
+    return d.toLocaleDateString('pt-BR');
+}
+
+function formatarDataInput(data) {
+    if (!data) return '';
+    const d = new Date(data);
+    return d.toISOString().split('T')[0];
+}
+
+function formatarNumero(num) {
+    if (num === null || num === undefined) return '0,00';
+    return parseFloat(num).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function showLoading(show = true) {
+    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+function showAlert(message, type = 'success') {
+    const container = document.getElementById('alertContainer');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-floating`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+        ${message}
+    `;
+    container.appendChild(alertDiv);
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 4000);
+}
+
+function openModal(modalId) {
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+
+function closeModal(modalId) {
+    const modalEl = document.getElementById(modalId);
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    modalEl.querySelector('form')?.reset();
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    const titles = {
+        'dashboard': 'Dashboard',
+        'subLocais': 'Sub-locais de Armazenamento',
+        'locais': 'Locais de Armazenamento',
+        'materiais': 'Materiais',
+        'estoque': 'Controle de Estoque',
+        'movimentacao': 'Movimentação',
+        'relatorios': 'Relatórios'
+    };
+    document.getElementById('pageTitle').textContent = titles[sectionId] || 'SPCI';
+
+    // Carregar dados específicos da seção
+    if (sectionId === 'dashboard') carregarDashboard();
+    if (sectionId === 'subLocais') carregarSubLocais();
+    if (sectionId === 'locais') carregarLocais();
+    if (sectionId === 'materiais') carregarMateriais();
+    if (sectionId === 'estoque') carregarEstoque();
+    if (sectionId === 'movimentacao') carregarMovimentacao();
+}
+
+// ============================================================
+// SUB-LOCAIS
+// ============================================================
+async function carregarSubLocais() {
+    showLoading(true);
+    try {
+        const { data, error } = await supabase
+            .from('sub_local')
+            .select('*')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+        dadosSubLocais = data || [];
+        renderizarSubLocais();
+        atualizarSelectSubLocais();
+    } catch (err) {
+        showAlert('Erro ao carregar sub-locais: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderizarSubLocais() {
+    const tbody = document.getElementById('subLocalTableBody');
+    if (!dadosSubLocais.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Nenhum sub-local cadastrado</td></tr>';
+        return;
+    }
+    tbody.innerHTML = dadosSubLocais.map(s => `
+        <tr>
+            <td>${s.id}</td>
+            <td>${s.descricao}</td>
+            <td>
+                <button class="btn-icon" style="background:#dbeafe; color:#2563eb;" onclick="editarSubLocal(${s.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon" style="background:#fee2e2; color:#dc2626;" onclick="excluirSubLocal(${s.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function atualizarSelectSubLocais() {
+    const selects = document.querySelectorAll('#localSubLocal');
+    selects.forEach(select => {
+        const val = select.value;
+        select.innerHTML = '<option value="">Selecione...</option>' + 
+            dadosSubLocais.map(s => `<option value="${s.id}">${s.descricao}</option>`).join('');
+        if (val) select.value = val;
+    });
+}
+
+async function salvarSubLocal(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const id = document.getElementById('subLocalId').value;
+    const descricao = document.getElementById('subLocalDescricao').value.trim();
+
+    try {
+        if (id) {
+            const { error } = await supabase.from('sub_local').update({ descricao }).eq('id', id);
+            if (error) throw error;
+            showAlert('Sub-local atualizado com sucesso!');
+        } else {
+            const { error } = await supabase.from('sub_local').insert([{ descricao }]);
+            if (error) throw error;
+            showAlert('Sub-local cadastrado com sucesso!');
+        }
+        closeModal('subLocalModal');
+        carregarSubLocais();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function editarSubLocal(id) {
+    const sub = dadosSubLocais.find(s => s.id === id);
+    if (!sub) return;
+    document.getElementById('subLocalId').value = sub.id;
+    document.getElementById('subLocalDescricao').value = sub.descricao;
+    openModal('subLocalModal');
+}
+
+async function excluirSubLocal(id) {
+    if (!confirm('Deseja realmente excluir este sub-local?')) return;
+    showLoading(true);
+    try {
+        const { error } = await supabase.from('sub_local').delete().eq('id', id);
+        if (error) throw error;
+        showAlert('Sub-local excluído com sucesso!');
+        carregarSubLocais();
+    } catch (err) {
+        showAlert('Erro ao excluir: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================================================
+// LOCAIS
+// ============================================================
+async function carregarLocais() {
+    showLoading(true);
+    try {
+        const { data, error } = await supabase
+            .from('local_armazenamento')
+            .select('*, sub_local:sub_local(descricao)')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+        dadosLocais = data || [];
+        renderizarLocais();
+        atualizarSelectLocais();
+    } catch (err) {
+        showAlert('Erro ao carregar locais: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderizarLocais() {
+    const tbody = document.getElementById('localTableBody');
+    if (!dadosLocais.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum local cadastrado</td></tr>';
+        return;
+    }
+    tbody.innerHTML = dadosLocais.map(l => `
+        <tr>
+            <td>${l.id}</td>
+            <td>${l.descricao}</td>
+            <td>${l.sub_local?.descricao || '-'}</td>
+            <td>
+                <button class="btn-icon" style="background:#dbeafe; color:#2563eb;" onclick="editarLocal(${l.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon" style="background:#fee2e2; color:#dc2626;" onclick="excluirLocal(${l.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function atualizarSelectLocais() {
+    const selects = document.querySelectorAll('#materialLocal, #estoqueLocal, #movEntradaMaterial, #movSaidaMaterial');
+    selects.forEach(select => {
+        const isMaterial = select.id === 'movEntradaMaterial' || select.id === 'movSaidaMaterial';
+        const val = select.value;
+        if (isMaterial) {
+            select.innerHTML = '<option value="">Selecione...</option>' + 
+                dadosMateriais.map(m => `<option value="${m.id}">${m.descricao} (${m.codigo_sap || 'sem SAP'})</option>`).join('');
+        } else {
+            select.innerHTML = '<option value="">Selecione...</option>' + 
+                dadosLocais.map(l => `<option value="${l.id}">${l.descricao}</option>`).join('');
+        }
+        if (val) select.value = val;
+    });
+}
+
+async function salvarLocal(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const id = document.getElementById('localId').value;
+    const descricao = document.getElementById('localDescricao').value.trim();
+    const id_sub_local = document.getElementById('localSubLocal').value;
+
+    try {
+        const payload = { descricao, id_sub_local: parseInt(id_sub_local) };
+        if (id) {
+            const { error } = await supabase.from('local_armazenamento').update(payload).eq('id', id);
+            if (error) throw error;
+            showAlert('Local atualizado com sucesso!');
+        } else {
+            const { error } = await supabase.from('local_armazenamento').insert([payload]);
+            if (error) throw error;
+            showAlert('Local cadastrado com sucesso!');
+        }
+        closeModal('localModal');
+        carregarLocais();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function editarLocal(id) {
+    const local = dadosLocais.find(l => l.id === id);
+    if (!local) return;
+    document.getElementById('localId').value = local.id;
+    document.getElementById('localDescricao').value = local.descricao;
+    document.getElementById('localSubLocal').value = local.id_sub_local;
+    openModal('localModal');
+}
+
+async function excluirLocal(id) {
+    if (!confirm('Deseja realmente excluir este local?')) return;
+    showLoading(true);
+    try {
+        const { error } = await supabase.from('local_armazenamento').delete().eq('id', id);
+        if (error) throw error;
+        showAlert('Local excluído com sucesso!');
+        carregarLocais();
+    } catch (err) {
+        showAlert('Erro ao excluir: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================================================
+// MATERIAIS
+// ============================================================
+async function carregarMateriais() {
+    showLoading(true);
+    try {
+        const { data, error } = await supabase
+            .from('material')
+            .select('*, local_armazenamento:local_armazenamento(descricao)')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+        dadosMateriais = data || [];
+        materiaisFiltrados = [...dadosMateriais];
+        renderizarMateriais();
+        atualizarSelectLocais();
+    } catch (err) {
+        showAlert('Erro ao carregar materiais: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderizarMateriais() {
+    const tbody = document.getElementById('materialTableBody');
+    const dados = materiaisFiltrados.length > 0 ? materiaisFiltrados : dadosMateriais;
+
+    if (!dados.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">Nenhum material cadastrado</td></tr>';
+        return;
+    }
+    tbody.innerHTML = dados.map(m => `
+        <tr>
+            <td>${m.id}</td>
+            <td>${m.local_armazenamento?.descricao || '-'}</td>
+            <td>${m.om || '-'}</td>
+            <td>${m.descricao}</td>
+            <td>${m.pedido_reserva || '-'}</td>
+            <td>${m.codigo_sap || '-'}</td>
+            <td>${formatarNumero(m.quantidade)}</td>
+            <td>${formatarData(m.data_entrada)}</td>
+            <td>${formatarData(m.data_saida)}</td>
+            <td>${m.local_aplicacao || '-'}</td>
+            <td>${m.recebedor || '-'}</td>
+            <td>
+                <button class="btn-icon" style="background:#dbeafe; color:#2563eb;" onclick="editarMaterial(${m.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon" style="background:#fee2e2; color:#dc2626;" onclick="excluirMaterial(${m.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function salvarMaterial(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const id = document.getElementById('materialId').value;
+    const payload = {
+        id_local: parseInt(document.getElementById('materialLocal').value) || null,
+        om: document.getElementById('materialOM').value ? parseInt(document.getElementById('materialOM').value) : null,
+        descricao: document.getElementById('materialDescricao').value.trim(),
+        pedido_reserva: document.getElementById('materialPedidoReserva').value.trim() || null,
+        codigo_sap: document.getElementById('materialCodigoSAP').value.trim() || null,
+        quantidade: parseFloat(document.getElementById('materialQuantidade').value) || 0,
+        data_entrada: document.getElementById('materialDataEntrada').value || null,
+        data_saida: document.getElementById('materialDataSaida').value || null,
+        local_aplicacao: document.getElementById('materialLocalAplicacao').value.trim() || null,
+        recebedor: document.getElementById('materialRecebedor').value.trim() || null
+    };
+
+    try {
+        if (id) {
+            const { error } = await supabase.from('material').update(payload).eq('id', id);
+            if (error) throw error;
+            showAlert('Material atualizado com sucesso!');
+        } else {
+            const { error } = await supabase.from('material').insert([payload]);
+            if (error) throw error;
+            showAlert('Material cadastrado com sucesso!');
+        }
+        closeModal('materialModal');
+        carregarMateriais();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function editarMaterial(id) {
+    const m = dadosMateriais.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('materialId').value = m.id;
+    document.getElementById('materialLocal').value = m.id_local || '';
+    document.getElementById('materialOM').value = m.om || '';
+    document.getElementById('materialDescricao').value = m.descricao;
+    document.getElementById('materialPedidoReserva').value = m.pedido_reserva || '';
+    document.getElementById('materialCodigoSAP').value = m.codigo_sap || '';
+    document.getElementById('materialQuantidade').value = m.quantidade || '';
+    document.getElementById('materialDataEntrada').value = formatarDataInput(m.data_entrada);
+    document.getElementById('materialDataSaida').value = formatarDataInput(m.data_saida);
+    document.getElementById('materialLocalAplicacao').value = m.local_aplicacao || '';
+    document.getElementById('materialRecebedor').value = m.recebedor || '';
+    openModal('materialModal');
+}
+
+async function excluirMaterial(id) {
+    if (!confirm('Deseja realmente excluir este material?')) return;
+    showLoading(true);
+    try {
+        const { error } = await supabase.from('material').delete().eq('id', id);
+        if (error) throw error;
+        showAlert('Material excluído com sucesso!');
+        carregarMateriais();
+    } catch (err) {
+        showAlert('Erro ao excluir: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function aplicarFiltrosMateriais() {
+    const om = document.getElementById('filtroOM').value.trim();
+    const descricao = document.getElementById('filtroDescricao').value.trim().toLowerCase();
+    const dataEntrada = document.getElementById('filtroDataEntrada').value;
+    const dataSaida = document.getElementById('filtroDataSaida').value;
+
+    materiaisFiltrados = dadosMateriais.filter(m => {
+        if (om && (!m.om || !m.om.toString().includes(om))) return false;
+        if (descricao && (!m.descricao || !m.descricao.toLowerCase().includes(descricao))) return false;
+        if (dataEntrada && m.data_entrada !== dataEntrada) return false;
+        if (dataSaida && m.data_saida !== dataSaida) return false;
+        return true;
+    });
+
+    renderizarMateriais();
+    showAlert(`Filtro aplicado: ${materiaisFiltrados.length} resultado(s)`);
+}
+
+function limparFiltrosMateriais() {
+    document.getElementById('filtroOM').value = '';
+    document.getElementById('filtroDescricao').value = '';
+    document.getElementById('filtroDataEntrada').value = '';
+    document.getElementById('filtroDataSaida').value = '';
+    materiaisFiltrados = [];
+    renderizarMateriais();
+}
+
+// ============================================================
+// CONTROLE DE ESTOQUE
+// ============================================================
+async function carregarEstoque() {
+    showLoading(true);
+    try {
+        const { data, error } = await supabase
+            .from('controle_materiais')
+            .select('*, local_armazenamento:local_armazenamento(descricao)')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+        dadosEstoque = data || [];
+        renderizarEstoque();
+    } catch (err) {
+        showAlert('Erro ao carregar estoque: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderizarEstoque() {
+    const tbody = document.getElementById('estoqueTableBody');
+    if (!dadosEstoque.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">Nenhum controle de estoque cadastrado</td></tr>';
+        return;
+    }
+    tbody.innerHTML = dadosEstoque.map(e => {
+        const statusClass = e.status === 'Abaixo do mínimo' ? 'badge-abaixo' : 
+                           e.status === 'Acima do máximo' ? 'badge-acima' : 'badge-dentro';
+        const alertaCompra = parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao) ? 
+            '<i class="fas fa-shopping-cart text-warning ms-1" title="Necessidade de compra"></i>' : '';
+        return `
+        <tr>
+            <td>${e.id}</td>
+            <td>${e.local_armazenamento?.descricao || '-'}</td>
+            <td>${formatarNumero(e.estoque_minimo)}</td>
+            <td>${formatarNumero(e.estoque_maximo)}</td>
+            <td>${formatarNumero(e.limite_solicitacao)} ${alertaCompra}</td>
+            <td>${formatarNumero(e.entrada)}</td>
+            <td>${formatarNumero(e.saida)}</td>
+            <td class="fw-bold">${formatarNumero(e.estoque_atual)}</td>
+            <td><span class="badge-status ${statusClass}">${e.status}</span></td>
+            <td>${formatarData(e.data_entrada)}</td>
+            <td>${formatarData(e.data_saida)}</td>
+            <td>
+                <button class="btn-icon" style="background:#dbeafe; color:#2563eb;" onclick="editarEstoque(${e.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon" style="background:#fee2e2; color:#dc2626;" onclick="excluirEstoque(${e.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `}).join('');
+}
+
+async function salvarEstoque(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const id = document.getElementById('estoqueId').value;
+    const payload = {
+        id_local: parseInt(document.getElementById('estoqueLocal').value) || null,
+        estoque_minimo: parseFloat(document.getElementById('estoqueMinimo').value) || 0,
+        estoque_maximo: parseFloat(document.getElementById('estoqueMaximo').value) || 0,
+        limite_solicitacao: parseFloat(document.getElementById('estoqueLimite').value) || 0,
+        entrada: parseFloat(document.getElementById('estoqueEntrada').value) || 0,
+        saida: parseFloat(document.getElementById('estoqueSaida').value) || 0,
+        data_entrada: document.getElementById('estoqueDataEntrada').value || null,
+        data_saida: document.getElementById('estoqueDataSaida').value || null
+    };
+
+    try {
+        if (id) {
+            const { error } = await supabase.from('controle_materiais').update(payload).eq('id', id);
+            if (error) throw error;
+            showAlert('Controle atualizado com sucesso!');
+        } else {
+            const { error } = await supabase.from('controle_materiais').insert([payload]);
+            if (error) throw error;
+            showAlert('Controle cadastrado com sucesso!');
+        }
+        closeModal('estoqueModal');
+        carregarEstoque();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function editarEstoque(id) {
+    const e = dadosEstoque.find(x => x.id === id);
+    if (!e) return;
+    document.getElementById('estoqueId').value = e.id;
+    document.getElementById('estoqueLocal').value = e.id_local || '';
+    document.getElementById('estoqueMinimo').value = e.estoque_minimo || '';
+    document.getElementById('estoqueMaximo').value = e.estoque_maximo || '';
+    document.getElementById('estoqueLimite').value = e.limite_solicitacao || '';
+    document.getElementById('estoqueEntrada').value = e.entrada || '';
+    document.getElementById('estoqueSaida').value = e.saida || '';
+    document.getElementById('estoqueDataEntrada').value = formatarDataInput(e.data_entrada);
+    document.getElementById('estoqueDataSaida').value = formatarDataInput(e.data_saida);
+    openModal('estoqueModal');
+}
+
+async function excluirEstoque(id) {
+    if (!confirm('Deseja realmente excluir este controle?')) return;
+    showLoading(true);
+    try {
+        const { error } = await supabase.from('controle_materiais').delete().eq('id', id);
+        if (error) throw error;
+        showAlert('Controle excluído com sucesso!');
+        carregarEstoque();
+    } catch (err) {
+        showAlert('Erro ao excluir: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================================================
+// MOVIMENTAÇÃO
+// ============================================================
+async function carregarMovimentacao() {
+    await carregarMateriais();
+    await carregarEstoque();
+    await carregarHistoricoMovimentacoes();
+
+    // Preencher selects de movimentação
+    const selectEntrada = document.getElementById('movEntradaMaterial');
+    const selectSaida = document.getElementById('movSaidaMaterial');
+    const options = '<option value="">Selecione...</option>' + 
+        dadosMateriais.map(m => `<option value="${m.id}">${m.descricao} (${m.codigo_sap || 'sem SAP'})</option>`).join('');
+    selectEntrada.innerHTML = options;
+    selectSaida.innerHTML = options;
+}
+
+async function registrarEntrada(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const materialId = document.getElementById('movEntradaMaterial').value;
+    const qtd = parseFloat(document.getElementById('movEntradaQtd').value);
+    const data = document.getElementById('movEntradaData').value;
+    const recebedor = document.getElementById('movEntradaRecebedor').value.trim();
+
+    try {
+        // Atualizar material
+        const material = dadosMateriais.find(m => m.id == materialId);
+        if (!material) throw new Error('Material não encontrado');
+
+        const novaQtd = (parseFloat(material.quantidade) || 0) + qtd;
+        const { error: errMat } = await supabase.from('material')
+            .update({ quantidade: novaQtd, data_entrada: data, recebedor })
+            .eq('id', materialId);
+        if (errMat) throw errMat;
+
+        // Atualizar ou criar controle de estoque
+        const controle = dadosEstoque.find(e => e.id_local === material.id_local);
+        if (controle) {
+            const novaEntrada = (parseFloat(controle.entrada) || 0) + qtd;
+            const { error: errEst } = await supabase.from('controle_materiais')
+                .update({ entrada: novaEntrada, data_entrada: data })
+                .eq('id', controle.id);
+            if (errEst) throw errEst;
+        }
+
+        showAlert('Entrada registrada com sucesso!');
+        document.getElementById('formEntrada').reset();
+        carregarMovimentacao();
+        carregarDashboard();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function registrarSaida(event) {
+    event.preventDefault();
+    showLoading(true);
+
+    const materialId = document.getElementById('movSaidaMaterial').value;
+    const qtd = parseFloat(document.getElementById('movSaidaQtd').value);
+    const data = document.getElementById('movSaidaData').value;
+    const localAplicacao = document.getElementById('movSaidaLocalAplicacao').value.trim();
+
+    try {
+        const material = dadosMateriais.find(m => m.id == materialId);
+        if (!material) throw new Error('Material não encontrado');
+        if ((parseFloat(material.quantidade) || 0) < qtd) {
+            throw new Error('Quantidade insuficiente em estoque');
+        }
+
+        const novaQtd = (parseFloat(material.quantidade) || 0) - qtd;
+        const { error: errMat } = await supabase.from('material')
+            .update({ quantidade: novaQtd, data_saida: data, local_aplicacao: localAplicacao })
+            .eq('id', materialId);
+        if (errMat) throw errMat;
+
+        // Atualizar controle de estoque
+        const controle = dadosEstoque.find(e => e.id_local === material.id_local);
+        if (controle) {
+            const novaSaida = (parseFloat(controle.saida) || 0) + qtd;
+            const { error: errEst } = await supabase.from('controle_materiais')
+                .update({ saida: novaSaida, data_saida: data })
+                .eq('id', controle.id);
+            if (errEst) throw errEst;
+        }
+
+        showAlert('Saída registrada com sucesso!');
+        document.getElementById('formSaida').reset();
+        carregarMovimentacao();
+        carregarDashboard();
+    } catch (err) {
+        showAlert('Erro: ' + err.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function carregarHistoricoMovimentacoes() {
+    // Histórico baseado nos materiais com data de entrada/saída
+    const movimentacoes = [];
+    dadosMateriais.forEach(m => {
+        if (m.data_entrada) {
+            movimentacoes.push({
+                tipo: 'entrada',
+                material: m.descricao,
+                quantidade: m.quantidade,
+                data: m.data_entrada,
+                detalhe: m.recebedor || '-'
+            });
+        }
+        if (m.data_saida) {
+            movimentacoes.push({
+                tipo: 'saida',
+                material: m.descricao,
+                quantidade: m.quantidade,
+                data: m.data_saida,
+                detalhe: m.local_aplicacao || '-'
+            });
+        }
+    });
+
+    movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+    const container = document.getElementById('historicoMovimentacoes');
+    if (!movimentacoes.length) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
+        return;
+    }
+
+    container.innerHTML = movimentacoes.slice(0, 20).map(m => `
+        <div class="mov-card ${m.tipo}">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge ${m.tipo === 'entrada' ? 'bg-success' : 'bg-danger'} me-2">
+                        <i class="fas fa-arrow-${m.tipo === 'entrada' ? 'down' : 'up'}"></i> ${m.tipo === 'entrada' ? 'ENTRADA' : 'SAÍDA'}
+                    </span>
+                    <strong>${m.material}</strong>
+                </div>
+                <small class="text-muted">${formatarData(m.data)}</small>
+            </div>
+            <div class="mt-2 small text-muted">
+                Qtd: ${formatarNumero(m.quantidade)} | ${m.tipo === 'entrada' ? 'Recebedor' : 'Local Aplicação'}: ${m.detalhe}
+            </div>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function carregarDashboard() {
+    showLoading(true);
+    try {
+        // Carregar todos os dados
+        await Promise.all([
+            carregarMateriaisSilencioso(),
+            carregarEstoqueSilencioso()
+        ]);
+
+        // Estatísticas
+        document.getElementById('dashTotalMateriais').textContent = dadosMateriais.length;
+        document.getElementById('dashDentroIntervalo').textContent = dadosEstoque.filter(e => e.status === 'Dentro do Intervalo').length;
+        document.getElementById('dashAbaixoMinimo').textContent = dadosEstoque.filter(e => e.status === 'Abaixo do mínimo').length;
+        document.getElementById('dashAcimaMaximo').textContent = dadosEstoque.filter(e => e.status === 'Acima do máximo').length;
+
+        // Alertas
+        const alertas = dadosEstoque.filter(e => e.status === 'Abaixo do mínimo' || 
+            parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao));
+
+        const alertasContainer = document.getElementById('dashAlertas');
+        if (!alertas.length) {
+            alertasContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum alerta no momento</p></div>';
+        } else {
+            alertasContainer.innerHTML = alertas.map(a => {
+                const local = dadosLocais.find(l => l.id === a.id_local);
+                return `
+                <div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#fef2f2; border-left:4px solid #dc2626;">
+                    <i class="fas fa-exclamation-triangle text-danger me-3" style="font-size:20px;"></i>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-danger">${local?.descricao || 'Local #' + a.id_local}</div>
+                        <div class="small text-muted">Estoque: ${formatarNumero(a.estoque_atual)} / Mínimo: ${formatarNumero(a.estoque_minimo)}</div>
+                    </div>
+                    <span class="badge-status badge-abaixo">${a.status}</span>
+                </div>
+            `}).join('');
+        }
+
+        // Movimentações recentes
+        await carregarHistoricoMovimentacoesDash();
+
+    } catch (err) {
+        console.error('Erro dashboard:', err);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function carregarMateriaisSilencioso() {
+    const { data } = await supabase.from('material').select('*, local_armazenamento:local_armazenamento(descricao)');
+    dadosMateriais = data || [];
+}
+
+async function carregarEstoqueSilencioso() {
+    const { data } = await supabase.from('controle_materiais').select('*, local_armazenamento:local_armazenamento(descricao)');
+    dadosEstoque = data || [];
+}
+
+async function carregarHistoricoMovimentacoesDash() {
+    const movimentacoes = [];
+    dadosMateriais.forEach(m => {
+        if (m.data_entrada) {
+            movimentacoes.push({ tipo: 'entrada', material: m.descricao, data: m.data_entrada, detalhe: m.recebedor });
+        }
+        if (m.data_saida) {
+            movimentacoes.push({ tipo: 'saida', material: m.descricao, data: m.data_saida, detalhe: m.local_aplicacao });
+        }
+    });
+    movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+    const container = document.getElementById('dashMovimentacoes');
+    if (!movimentacoes.length) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
+        return;
+    }
+    container.innerHTML = movimentacoes.slice(0, 10).map(m => `
+        <div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#f8fafc;">
+            <div class="me-3" style="width:32px; height:32px; border-radius:8px; background:${m.tipo === 'entrada' ? '#dcfce7' : '#fee2e2'}; color:${m.tipo === 'entrada' ? '#16a34a' : '#dc2626'}; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-arrow-${m.tipo === 'entrada' ? 'down' : 'up'}"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-bold">${m.material}</div>
+                <div class="small text-muted">${m.detalhe || '-'}</div>
+            </div>
+            <small class="text-muted">${formatarData(m.data)}</small>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+// EXPORTAÇÃO EXCEL
+// ============================================================
+function exportarMateriaisExcel() {
+    const dados = materiaisFiltrados.length > 0 ? materiaisFiltrados : dadosMateriais;
+    if (!dados.length) {
+        showAlert('Nenhum material para exportar', 'warning');
+        return;
+    }
+
+    const exportData = dados.map(m => ({
+        'ID': m.id,
+        'Local': m.local_armazenamento?.descricao || '-',
+        'OM': m.om || '-',
+        'Descrição': m.descricao,
+        'Pedido/Reserva': m.pedido_reserva || '-',
+        'Código SAP': m.codigo_sap || '-',
+        'Quantidade': m.quantidade,
+        'Data Entrada': formatarData(m.data_entrada),
+        'Data Saída': formatarData(m.data_saida),
+        'Local Aplicação': m.local_aplicacao || '-',
+        'Recebedor': m.recebedor || '-'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Materiais');
+    XLSX.writeFile(wb, `Materiais_Estoque_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showAlert('Excel exportado com sucesso!');
+}
+
+function exportarNecessidadeCompra() {
+    const necessidade = dadosEstoque.filter(e => 
+        parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao)
+    );
+
+    if (!necessidade.length) {
+        showAlert('Nenhum material necessita de compra no momento', 'info');
+        return;
+    }
+
+    const exportData = necessidade.map(e => {
+        const local = dadosLocais.find(l => l.id === e.id_local);
+        return {
+            'ID': e.id,
+            'Local': local?.descricao || '-',
+            'Estoque Atual': e.estoque_atual,
+            'Limite Solicitação': e.limite_solicitacao,
+            'Estoque Mínimo': e.estoque_minimo,
+            'Estoque Máximo': e.estoque_maximo,
+            'Status': e.status,
+            'Necessidade': Math.max(0, parseFloat(e.estoque_maximo) - parseFloat(e.estoque_atual))
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Necessidade_Compra');
+    XLSX.writeFile(wb, `Necessidade_Compra_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showAlert('Relatório de necessidade de compra exportado!');
+}
+
+function exportarAlertasExcel() {
+    const alertas = dadosEstoque.filter(e => e.status !== 'Dentro do Intervalo');
+    if (!alertas.length) {
+        showAlert('Nenhum alerta para exportar', 'info');
+        return;
+    }
+
+    const exportData = alertas.map(e => {
+        const local = dadosLocais.find(l => l.id === e.id_local);
+        return {
+            'ID': e.id,
+            'Local': local?.descricao || '-',
+            'Estoque Atual': e.estoque_atual,
+            'Estoque Mínimo': e.estoque_minimo,
+            'Estoque Máximo': e.estoque_maximo,
+            'Status': e.status,
+            'Data Entrada': formatarData(e.data_entrada),
+            'Data Saída': formatarData(e.data_saida)
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Alertas');
+    XLSX.writeFile(wb, `Alertas_Estoque_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showAlert('Alertas exportados com sucesso!');
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    // Verificar conexão
+    try {
+        const { error } = await supabase.from('sub_local').select('id').limit(1);
+        if (error) {
+            document.getElementById('connectionStatus').className = 'badge bg-danger';
+            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline';
+            showAlert('Erro de conexão com o Supabase: ' + error.message, 'danger');
+        } else {
+            showAlert('Conectado ao Supabase com sucesso!');
+        }
+    } catch (err) {
+        document.getElementById('connectionStatus').className = 'badge bg-danger';
+        document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline';
+    }
+
+    // Carregar dados iniciais
+    await carregarSubLocais();
+    await carregarLocais();
+    await carregarMateriais();
+    await carregarEstoque();
+    await carregarDashboard();
+
+    // Setar data atual nos campos de movimentação
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('movEntradaData').value = hoje;
+    document.getElementById('movSaidaData').value = hoje;
+});
+    </script>
+</body>
+</html>
