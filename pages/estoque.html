@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Controle de Materiais</title>
+    <title>Controle de Estoque - Controle de Materiais</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
@@ -54,68 +54,48 @@
 
         <main class="main-content">
             <div class="page-header">
-                <h2>📊 Dashboard</h2>
-                <p>Visão geral do sistema de controle de materiais</p>
+                <h2>📦 Controle de Estoque</h2>
+                <p>Acompanhamento completo da posição de estoque</p>
             </div>
 
             <div class="card-grid">
                 <div class="stat-card">
-                    <div class="stat-icon blue">📦</div>
+                    <div class="stat-icon green">✅</div>
                     <div class="stat-info">
-                        <h4 id="total-materiais">0</h4>
-                        <p>Total de Materiais</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green">🏭</div>
-                    <div class="stat-info">
-                        <h4 id="total-locais">0</h4>
-                        <p>Locais Cadastrados</p>
+                        <h4 id="estoque-normal">0</h4>
+                        <p>Estoque Normal</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon orange">⚠️</div>
                     <div class="stat-info">
-                        <h4 id="total-criticos">0</h4>
-                        <p>Estoque Crítico</p>
+                        <h4 id="estoque-baixo">0</h4>
+                        <p>Estoque Baixo</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon red">🛒</div>
+                    <div class="stat-icon red">🚨</div>
                     <div class="stat-info">
-                        <h4 id="total-compras">0</h4>
-                        <p>Compras Necessárias</p>
+                        <h4 id="estoque-critico">0</h4>
+                        <p>Estoque Crítico</p>
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h3>📈 Últimas Movimentações</h3>
-                    <a href="movimentacoes.html" class="btn btn-sm btn-outline">Ver todas</a>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Material</th>
-                                <th>Qtd</th>
-                                <th>Responsável</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-movimentacoes">
-                            <tr><td colspan="5" class="text-center">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3>⚠️ Materiais com Estoque Baixo</h3>
-                    <a href="compras.html" class="btn btn-sm btn-outline">Ver todos</a>
+                    <h3>📋 Posição de Estoque</h3>
+                    <div class="btn-group">
+                        <select id="filtro-status" style="width: 180px;">
+                            <option value="">Todos os status</option>
+                            <option value="NORMAL">Estoque Normal</option>
+                            <option value="BAIXO">Estoque Baixo</option>
+                            <option value="CRITICO">Estoque Crítico</option>
+                        </select>
+                        <input type="text" id="buscar-estoque" placeholder="🔍 Buscar..." style="width: 200px;">
+                        <button class="btn btn-outline" onclick="filtrarEstoque()">🔍 Filtrar</button>
+                        <button class="btn btn-success" onclick="exportarEstoque()">📊 Exportar Excel</button>
+                    </div>
                 </div>
                 <div class="table-container">
                     <table>
@@ -123,19 +103,23 @@
                             <tr>
                                 <th>Código</th>
                                 <th>Material</th>
-                                <th>Atual</th>
+                                <th>Local</th>
+                                <th>Sub-local</th>
+                                <th>Qtd Atual</th>
                                 <th>Mínimo</th>
+                                <th>Máximo</th>
+                                <th>Limite Compra</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-criticos">
-                            <tr><td colspan="5" class="text-center">Carregando...</td></tr>
+                        <tbody id="tabela-estoque">
+                            <tr><td colspan="9" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
-    <script src="js/pages/dashboard.js"></script>
+    <script src="js/pages/estoque.js"></script>
 </body>
 </html>

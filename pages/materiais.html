@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiais - Controle de Materiais</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/utils.js"></script>
+
+</head>
+<body>
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>📦 Controle de Materiais</h1>
+                <p>Sistema de Gestão de Estoque</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="locais.html" class="nav-link">
+                        <span class="nav-icon">🏭</span> Locais & Sub-locais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="materiais.html" class="nav-link">
+                        <span class="nav-icon">📋</span> Materiais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="movimentacoes.html" class="nav-link">
+                        <span class="nav-icon">🔄</span> Movimentações
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="estoque.html" class="nav-link">
+                        <span class="nav-icon">📦</span> Controle de Estoque
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="compras.html" class="nav-link">
+                        <span class="nav-icon">🛒</span> Compras Necessárias
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h2>📋 Cadastro de Materiais</h2>
+                <p>Gerencie os materiais e seu posicionamento no estoque</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📝 Formulário de Material</h3>
+                </div>
+                <form id="form-material">
+                    <input type="hidden" id="material-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Código <span class="required">*</span></label>
+                            <input type="text" id="material-codigo" required placeholder="Ex: MAT-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Nome <span class="required">*</span></label>
+                            <input type="text" id="material-nome" required placeholder="Nome do material">
+                        </div>
+                        <div class="form-group">
+                            <label>Unidade de Medida</label>
+                            <select id="material-unidade">
+                                <option value="UN">Unidade (UN)</option>
+                                <option value="KG">Quilograma (KG)</option>
+                                <option value="LT">Litro (LT)</option>
+                                <option value="MT">Metro (MT)</option>
+                                <option value="CX">Caixa (CX)</option>
+                                <option value="PC">Pacote (PC)</option>
+                                <option value="RL">Rolo (RL)</option>
+                                <option value="PAR">Par (PAR)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Local de Armazenamento</label>
+                            <select id="material-local">
+                                <option value="">Selecione um local...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sub-local (Prateleira/Gaveta)</label>
+                            <select id="material-sublocal">
+                                <option value="">Selecione um sub-local...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Estoque Mínimo</label>
+                            <input type="number" id="material-estoque-min" min="0" value="0" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Estoque Máximo</label>
+                            <input type="number" id="material-estoque-max" min="0" value="999999" placeholder="999999">
+                        </div>
+                        <div class="form-group">
+                            <label>Limite para Compra</label>
+                            <input type="number" id="material-limite-compra" min="0" value="0" placeholder="0">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Descrição</label>
+                            <textarea id="material-descricao" placeholder="Descrição detalhada do material..."></textarea>
+                        </div>
+                    </div>
+                    <div class="btn-group mt-2">
+                        <button type="submit" class="btn btn-primary">💾 Salvar Material</button>
+                        <button type="button" class="btn btn-secondary" onclick="limparFormulario('form-material')">🔄 Limpar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📦 Materiais Cadastrados</h3>
+                    <div class="btn-group">
+                        <input type="text" id="buscar-material" placeholder="🔍 Buscar material..." style="width: 250px;">
+                        <button class="btn btn-success" onclick="exportarMateriais()">📊 Exportar Excel</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Local</th>
+                                <th>Sub-local</th>
+                                <th>Qtd Atual</th>
+                                <th>Mín</th>
+                                <th>Máx</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-materiais">
+                            <tr><td colspan="9" class="text-center">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/pages/materiais.js"></script>
+</body>
+</html>
