@@ -9,9 +9,9 @@
 const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
 const SUPABASE_ANON_KEY = 'SUA-ANON-KEY-AQUI';
 
-let supabase = null;
+let supabaseClient = null;
 try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('[OK] Supabase client criado');
 } catch (e) {
     console.error('[ERRO] Falha ao criar Supabase client:', e);
@@ -53,9 +53,9 @@ async function initApp() {
 
         // Verificar sessão existente
         let session = null;
-        if (supabase) {
+        if (supabaseClient) {
             try {
-                const { data } = await supabase.auth.getSession();
+                const { data } = await supabaseClient.auth.getSession();
                 session = data?.session;
                 console.log('[OK] Sessão verificada:', session ? 'Logado' : 'Não logado');
             } catch (e) {
@@ -73,8 +73,8 @@ async function initApp() {
         showPage('dashboard');
 
         // Listener de mudanças de auth
-        if (supabase) {
-            supabase.auth.onAuthStateChange((event, session) => {
+        if (supabaseClient) {
+            supabaseClient.auth.onAuthStateChange((event, session) => {
                 console.log('[OK] Auth state changed:', event);
                 if (event === 'SIGNED_IN' && session) {
                     loadUserProfile(session.user);
@@ -142,13 +142,13 @@ async function loadUserProfile(user) {
     console.log('[OK] Carregando perfil do usuário...');
     currentUser = user;
 
-    if (!supabase) {
+    if (!supabaseClient) {
         setPublicMode();
         return;
     }
 
     try {
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await supabaseClient
             .from('perfis')
             .select('*')
             .eq('id', user.id)
@@ -287,12 +287,12 @@ function initAuthModal() {
 
             if (errorEl) errorEl.classList.remove('show');
 
-            if (!supabase) {
+            if (!supabaseClient) {
                 if (errorEl) { errorEl.textContent = 'Supabase não configurado. Verifique as credenciais.'; errorEl.classList.add('show'); }
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
             if (error) {
                 if (errorEl) { errorEl.textContent = error.message; errorEl.classList.add('show'); }
@@ -317,12 +317,12 @@ function initAuthModal() {
             if (errorEl) errorEl.classList.remove('show');
             if (successEl) successEl.classList.remove('show');
 
-            if (!supabase) {
+            if (!supabaseClient) {
                 if (errorEl) { errorEl.textContent = 'Supabase não configurado.'; errorEl.classList.add('show'); }
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
                 options: {
@@ -346,7 +346,7 @@ function initAuthModal() {
     const logoutBtn = document.getElementById('logout-sidebar-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            if (supabase) await supabase.auth.signOut();
+            if (supabaseClient) await supabaseClient.auth.signOut();
             showToast('Você saiu do sistema. Modo consulta ativado.');
         });
     }
@@ -444,11 +444,11 @@ function requerLogin(acao) {
 // DASHBOARD
 // ============================================================
 async function loadDashboardData() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { count: totalMateriais } = await supabase.from('material').select('*', { count: 'exact', head: true });
-        const { data: controle } = await supabase.from('controle_materiais').select('status');
+        const { count: totalMateriais } = await supabaseClient.from('material').select('*', { count: 'exact', head: true });
+        const { data: controle } = await supabaseClient.from('controle_materiais').select('status');
 
         const estoqueOk = controle?.filter(c => c.status === 'Dentro do Intervalo').length || 0;
         const abaixoMinimo = controle?.filter(c => c.status === 'Abaixo do mínimo').length || 0;
@@ -465,7 +465,7 @@ async function loadDashboardData() {
         if (statMax) statMax.textContent = acimaMaximo;
 
         // Alertas
-        const { data: alertas } = await supabase
+        const { data: alertas } = await supabaseClient
             .from('controle_materiais')
             .select(`
                 id, estoque_atual, limite_solicitacao, status,
@@ -497,7 +497,7 @@ async function loadDashboardData() {
         }
 
         // Movimentações
-        const { data: movs } = await supabase
+        const { data: movs } = await supabaseClient
             .from('movimentacao')
             .select(`
                 id, tipo, quantidade, data_movimentacao, responsavel,
@@ -535,10 +535,10 @@ async function loadDashboardData() {
 // MATERIAIS
 // ============================================================
 async function loadMateriais(filters = {}) {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        let query = supabase
+        let query = supabaseClient
             .from('material')
             .select(`*, local:local_armazenamento_id (descricao)`)
             .order('id', { ascending: false });
@@ -605,10 +605,10 @@ function renderMateriaisTable(data) {
 }
 
 async function loadLocaisSelect() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data } = await supabase.from('local_armazenamento').select('*').order('descricao');
+        const { data } = await supabaseClient.from('local_armazenamento').select('*').order('descricao');
         const select = document.getElementById('filter-local');
         const movSelect = document.getElementById('mov-material');
 
@@ -634,10 +634,10 @@ async function loadLocaisSelect() {
 // LOCAIS
 // ============================================================
 async function loadLocais() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data: subLocais } = await supabase.from('sub_local').select('*').order('id');
+        const { data: subLocais } = await supabaseClient.from('sub_local').select('*').order('id');
         subLocaisData = subLocais || [];
         const podeEditar = temPermissao('editar') || temPermissao('excluir');
 
@@ -664,7 +664,7 @@ async function loadLocais() {
             }
         }
 
-        const { data: locais } = await supabase
+        const { data: locais } = await supabaseClient
             .from('local_armazenamento')
             .select(`*, sub_local:sub_local_id (descricao)`)
             .order('id');
@@ -702,10 +702,10 @@ async function loadLocais() {
 // ESTOQUE
 // ============================================================
 async function loadEstoque(statusFilter = '') {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        let query = supabase
+        let query = supabaseClient
             .from('controle_materiais')
             .select(`
                 *,
@@ -774,7 +774,7 @@ function renderEstoqueTable(data) {
 // MOVIMENTAÇÕES
 // ============================================================
 async function loadMovimentacoesPage() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
         await loadMateriais();
@@ -782,7 +782,7 @@ async function loadMovimentacoesPage() {
         const dataInput = document.getElementById('mov-data');
         if (dataInput) dataInput.valueAsDate = new Date();
 
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('movimentacao')
             .select(`*, material:material_id (descricao)`)
             .order('created_at', { ascending: false })
@@ -821,14 +821,14 @@ async function loadMovimentacoesPage() {
 // USUÁRIOS
 // ============================================================
 async function loadUsuarios() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
     if (userProfile?.nivel_acesso !== 'admin') {
         showToast('Acesso negado', 'error');
         return;
     }
 
     try {
-        const { data, error } = await supabase.from('perfis').select('*').order('nome');
+        const { data, error } = await supabaseClient.from('perfis').select('*').order('nome');
 
         if (error) {
             showToast('Erro ao carregar usuários', 'error');
@@ -970,9 +970,9 @@ function initEventListeners() {
                 return;
             }
 
-            if (!supabase) return;
+            if (!supabaseClient) return;
 
-            const { error } = await supabase.rpc('registrar_movimentacao', {
+            const { error } = await supabaseClient.rpc('registrar_movimentacao', {
                 p_id_material: parseInt(materialId),
                 p_tipo: tipo,
                 p_quantidade: quantidade,
@@ -1006,11 +1006,11 @@ function initEventListeners() {
 // MODAIS CRUD
 // ============================================================
 async function openMaterialModal(material = null) {
-    if (!supabase) return;
+    if (!supabaseClient) return;
     const isEdit = !!material;
 
     try {
-        const { data: locais } = await supabase.from('local_armazenamento').select('*').order('descricao');
+        const { data: locais } = await supabaseClient.from('local_armazenamento').select('*').order('descricao');
 
         const localOptions = (locais || []).map(l => 
             `<option value="${l.id}" ${material?.id_local === l.id ? 'selected' : ''}>${l.descricao}</option>`
@@ -1091,9 +1091,9 @@ async function openMaterialModal(material = null) {
 
             let result;
             if (id) {
-                result = await supabase.from('material').update(data).eq('id', id);
+                result = await supabaseClient.from('material').update(data).eq('id', id);
             } else {
-                result = await supabase.from('material').insert([data]);
+                result = await supabaseClient.from('material').insert([data]);
             }
 
             if (result.error) {
@@ -1112,17 +1112,17 @@ async function openMaterialModal(material = null) {
 
 async function editMaterial(id) {
     if (!requerLogin('editar')) return;
-    if (!supabase) return;
-    const { data } = await supabase.from('material').select('*').eq('id', id).single();
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient.from('material').select('*').eq('id', id).single();
     if (data) openMaterialModal(data);
 }
 
 async function deleteMaterial(id) {
     if (!requerLogin('excluir')) return;
-    if (!supabase) return;
+    if (!supabaseClient) return;
     if (!confirm('Tem certeza que deseja excluir este material?')) return;
 
-    const { error } = await supabase.from('material').delete().eq('id', id);
+    const { error } = await supabaseClient.from('material').delete().eq('id', id);
     if (error) {
         showToast('Erro ao excluir: ' + error.message, 'error');
     } else {
@@ -1132,7 +1132,7 @@ async function deleteMaterial(id) {
 }
 
 function openSubLocalModal(subLocal = null) {
-    if (!supabase) return;
+    if (!supabaseClient) return;
     const html = `
         <form id="form-sublocal">
             <div class="form-group">
@@ -1149,9 +1149,9 @@ function openSubLocalModal(subLocal = null) {
 
         let result;
         if (id) {
-            result = await supabase.from('sub_local').update({ descricao }).eq('id', id);
+            result = await supabaseClient.from('sub_local').update({ descricao }).eq('id', id);
         } else {
-            result = await supabase.from('sub_local').insert([{ descricao }]);
+            result = await supabaseClient.from('sub_local').insert([{ descricao }]);
         }
 
         if (result.error) {
@@ -1167,17 +1167,17 @@ function openSubLocalModal(subLocal = null) {
 
 async function editSubLocal(id) {
     if (!requerLogin('editar')) return;
-    if (!supabase) return;
-    const { data } = await supabase.from('sub_local').select('*').eq('id', id).single();
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient.from('sub_local').select('*').eq('id', id).single();
     if (data) openSubLocalModal(data);
 }
 
 async function deleteSubLocal(id) {
     if (!requerLogin('excluir')) return;
-    if (!supabase) return;
+    if (!supabaseClient) return;
     if (!confirm('Tem certeza que deseja excluir este sub-local?')) return;
 
-    const { error } = await supabase.from('sub_local').delete().eq('id', id);
+    const { error } = await supabaseClient.from('sub_local').delete().eq('id', id);
     if (error) {
         showToast('Erro ao excluir: ' + error.message, 'error');
     } else {
@@ -1187,10 +1187,10 @@ async function deleteSubLocal(id) {
 }
 
 async function openLocalModal(local = null) {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data: subLocais } = await supabase.from('sub_local').select('*').order('descricao');
+        const { data: subLocais } = await supabaseClient.from('sub_local').select('*').order('descricao');
 
         const subOptions = (subLocais || []).map(s => 
             `<option value="${s.id}" ${local?.id_sub_local === s.id ? 'selected' : ''}>${s.descricao}</option>`
@@ -1222,9 +1222,9 @@ async function openLocalModal(local = null) {
 
             let result;
             if (id) {
-                result = await supabase.from('local_armazenamento').update(data).eq('id', id);
+                result = await supabaseClient.from('local_armazenamento').update(data).eq('id', id);
             } else {
-                result = await supabase.from('local_armazenamento').insert([data]);
+                result = await supabaseClient.from('local_armazenamento').insert([data]);
             }
 
             if (result.error) {
@@ -1243,17 +1243,17 @@ async function openLocalModal(local = null) {
 
 async function editLocal(id) {
     if (!requerLogin('editar')) return;
-    if (!supabase) return;
-    const { data } = await supabase.from('local_armazenamento').select('*').eq('id', id).single();
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient.from('local_armazenamento').select('*').eq('id', id).single();
     if (data) openLocalModal(data);
 }
 
 async function deleteLocal(id) {
     if (!requerLogin('excluir')) return;
-    if (!supabase) return;
+    if (!supabaseClient) return;
     if (!confirm('Tem certeza que deseja excluir este local?')) return;
 
-    const { error } = await supabase.from('local_armazenamento').delete().eq('id', id);
+    const { error } = await supabaseClient.from('local_armazenamento').delete().eq('id', id);
     if (error) {
         showToast('Erro ao excluir: ' + error.message, 'error');
     } else {
@@ -1264,10 +1264,10 @@ async function deleteLocal(id) {
 
 async function editEstoque(id) {
     if (!requerLogin('editar')) return;
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data } = await supabase.from('controle_materiais').select('*').eq('id', id).single();
+        const { data } = await supabaseClient.from('controle_materiais').select('*').eq('id', id).single();
         if (!data) return;
 
         const html = `
@@ -1296,7 +1296,7 @@ async function editEstoque(id) {
                 limite_solicitacao: parseFloat(document.getElementById('est-limite').value) || 0
             };
 
-            const { error } = await supabase.from('controle_materiais').update(updateData).eq('id', id);
+            const { error } = await supabaseClient.from('controle_materiais').update(updateData).eq('id', id);
 
             if (error) {
                 showToast('Erro: ' + error.message, 'error');
@@ -1314,10 +1314,10 @@ async function editEstoque(id) {
 
 async function editUsuario(id) {
     if (!requerLogin('editar')) return;
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data } = await supabase.from('perfis').select('*').eq('id', id).single();
+        const { data } = await supabaseClient.from('perfis').select('*').eq('id', id).single();
         if (!data) return;
 
         const html = `
@@ -1354,7 +1354,7 @@ async function editUsuario(id) {
                 ativo: document.getElementById('user-ativo').value === 'true'
             };
 
-            const { error } = await supabase.from('perfis').update(updateData).eq('id', id);
+            const { error } = await supabaseClient.from('perfis').update(updateData).eq('id', id);
 
             if (error) {
                 showToast('Erro: ' + error.message, 'error');
@@ -1374,10 +1374,10 @@ async function editUsuario(id) {
 // EXPORTAÇÃO EXCEL
 // ============================================================
 async function exportEstoque() {
-    if (!supabase) { showToast('Supabase não configurado', 'error'); return; }
+    if (!supabaseClient) { showToast('Supabase não configurado', 'error'); return; }
 
     try {
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('controle_materiais')
             .select(`
                 *,
@@ -1419,10 +1419,10 @@ async function exportEstoque() {
 }
 
 async function exportNecessidadeCompra() {
-    if (!supabase) { showToast('Supabase não configurado', 'error'); return; }
+    if (!supabaseClient) { showToast('Supabase não configurado', 'error'); return; }
 
     try {
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('controle_materiais')
             .select(`
                 *,
