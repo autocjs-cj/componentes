@@ -6,8 +6,9 @@
 // ============================================================
 // CONFIGURAÇÃO SUPABASE - SUBSTITUA AQUI!
 // ============================================================
-const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA-ANON-KEY-AQUI';
+const SUPABASE_URL = 'https://jjhspljcyuupjharujvt.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqaHNwbGpjeXV1cGpoYXJ1anZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNDY5MDIsImV4cCI6MjEwMTYyMjkwMn0.Xvu6nHKH_0U7PhNZICNuRmRAz6FZCFBYfMya38GftlU';
+
 
 let supabaseClient = null;
 try {
