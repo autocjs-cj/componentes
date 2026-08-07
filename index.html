@@ -1,1255 +1,243 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPCI - Controle de Materiais</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary:#2563eb; --primary-dark:#1d4ed8; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6; --dark:#1e293b; --light:#f8fafc; --sidebar-width:260px; }
-        * { font-family:'Inter',sans-serif; }
-        body { background:#f1f5f9; overflow-x:hidden; }
-        .sidebar { width:var(--sidebar-width); height:100vh; position:fixed; left:0; top:0; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:white; z-index:1000; transition:all 0.3s ease; overflow-y:auto; }
-        .sidebar.collapsed { width:70px; }
-        .sidebar.collapsed .nav-text, .sidebar.collapsed .logo-text { display:none; }
-        .sidebar-header { padding:20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:12px; }
-        .logo-icon { width:40px; height:40px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-        .logo-text h4 { margin:0; font-size:16px; font-weight:700; }
-        .logo-text small { color:#94a3b8; font-size:11px; }
-        .nav-menu { padding:15px 10px; }
-        .nav-item { padding:12px 15px; border-radius:10px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:12px; margin-bottom:5px; color:#cbd5e1; text-decoration:none; }
-        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.1); color:white; }
-        .nav-item i { width:20px; text-align:center; }
-        .main-content { margin-left:var(--sidebar-width); padding:20px; transition:all 0.3s ease; min-height:100vh; }
-        .sidebar.collapsed ~ .main-content { margin-left:70px; }
-        .top-bar { background:white; border-radius:16px; padding:15px 25px; display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-        .page-title { font-size:20px; font-weight:700; color:var(--dark); margin:0; }
-        .user-badge { background:var(--primary); color:white; padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; }
-        .stat-card { background:white; border-radius:16px; padding:25px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:none; transition:transform 0.2s; }
-        .stat-card:hover { transform:translateY(-3px); }
-        .stat-icon { width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:15px; }
-        .stat-value { font-size:28px; font-weight:700; color:var(--dark); margin:0; }
-        .stat-label { color:#64748b; font-size:13px; margin-top:5px; }
-        .content-card { background:white; border-radius:16px; padding:25px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:25px; }
-        .content-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px; }
-        .content-card-title { font-size:16px; font-weight:700; color:var(--dark); margin:0; }
-        .btn-primary-custom { background:var(--primary); border:none; padding:10px 20px; border-radius:10px; color:white; font-weight:600; font-size:13px; transition:all 0.2s; }
-        .btn-primary-custom:hover { background:var(--primary-dark); transform:translateY(-1px); }
-        .btn-success-custom { background:var(--success); border:none; padding:10px 20px; border-radius:10px; color:white; font-weight:600; font-size:13px; }
-        .btn-warning-custom { background:var(--warning); border:none; padding:10px 20px; border-radius:10px; color:white; font-weight:600; font-size:13px; }
-        .btn-danger-custom { background:var(--danger); border:none; padding:8px 15px; border-radius:8px; color:white; font-weight:600; font-size:12px; }
-        .btn-icon { width:35px; height:35px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:all 0.2s; }
-        .custom-table { width:100%; border-collapse:separate; border-spacing:0; }
-        .custom-table thead th { background:#f8fafc; padding:14px 16px; font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; white-space:nowrap; }
-        .custom-table tbody td { padding:14px 16px; font-size:13px; color:#334155; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
-        .custom-table tbody tr:hover { background:#f8fafc; }
-        .badge-status { padding:6px 12px; border-radius:20px; font-size:11px; font-weight:700; }
-        .badge-abaixo { background:#fef2f2; color:#dc2626; }
-        .badge-dentro { background:#f0fdf4; color:#16a34a; }
-        .badge-acima { background:#fffbeb; color:#d97706; }
-        .form-control-custom { border:2px solid #e2e8f0; border-radius:10px; padding:12px 15px; font-size:13px; transition:all 0.2s; }
-        .form-control-custom:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.1); outline:none; }
-        .form-label-custom { font-size:12px; font-weight:600; color:#475569; margin-bottom:6px; display:block; }
-        .modal-content { border-radius:16px; border:none; }
-        .modal-header { border-bottom:1px solid #f1f5f9; padding:20px 25px; }
-        .modal-body { padding:25px; }
-        .modal-footer { border-top:1px solid #f1f5f9; padding:15px 25px; }
-        .alert-floating { position:fixed; top:20px; right:20px; z-index:9999; border-radius:12px; padding:15px 20px; box-shadow:0 10px 40px rgba(0,0,0,0.15); animation:slideIn 0.3s ease; }
-        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-        .loading-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.9); z-index:9998; display:flex; align-items:center; justify-content:center; flex-direction:column; }
-        .spinner-custom { width:50px; height:50px; border:4px solid #e2e8f0; border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .section { display:none; }
-        .section.active { display:block; }
-        .filter-bar { background:#f8fafc; border-radius:12px; padding:15px; margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
-        .toggle-sidebar { background:none; border:none; color:#64748b; font-size:20px; cursor:pointer; padding:5px; }
-        .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; }
-        .empty-state i { font-size:48px; margin-bottom:15px; opacity:0.5; }
-        .mov-card { border-left:4px solid var(--primary); padding:15px; background:#f8fafc; border-radius:0 10px 10px 0; margin-bottom:10px; }
-        .mov-card.entrada { border-left-color:var(--success); }
-        .mov-card.saida { border-left-color:var(--danger); }
-        .crud-btn { padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; transition:all 0.2s; margin-right:5px; }
-        .crud-btn:hover { transform:translateY(-1px); opacity:0.9; }
-        .crud-btn-edit { background:#dbeafe; color:#1d4ed8; }
-        .crud-btn-delete { background:#fee2e2; color:#dc2626; }
-        .crud-btn-view { background:#f1f5f9; color:#475569; }
-        @media (max-width:768px) { .sidebar { width:70px; } .sidebar .nav-text, .sidebar .logo-text { display:none; } .main-content { margin-left:70px; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPCI - Controle de Materiais</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--dark:#1e293b;--sidebar-width:260px}
+*{font-family:'Inter',sans-serif}
+body{background:#f1f5f9;overflow-x:hidden}
+.sidebar{width:var(--sidebar-width);height:100vh;position:fixed;left:0;top:0;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);color:white;z-index:1000;transition:all .3s;overflow-y:auto}
+.sidebar.collapsed{width:70px}.sidebar.collapsed .nav-text,.sidebar.collapsed .logo-text{display:none}
+.sidebar-header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-text h4{margin:0;font-size:16px;font-weight:700}.logo-text small{color:#94a3b8;font-size:11px}
+.nav-menu{padding:15px 10px}.nav-item{padding:12px 15px;border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:5px;color:#cbd5e1;text-decoration:none}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,0.1);color:white}.nav-item i{width:20px;text-align:center}
+.main-content{margin-left:var(--sidebar-width);padding:20px;transition:all .3s;min-height:100vh}
+.sidebar.collapsed~.main-content{margin-left:70px}
+.top-bar{background:white;border-radius:16px;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.page-title{font-size:20px;font-weight:700;color:var(--dark);margin:0}
+.user-badge{background:var(--primary);color:white;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600}
+.stat-card{background:white;border-radius:16px;padding:25px;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:none;transition:transform .2s}.stat-card:hover{transform:translateY(-3px)}
+.stat-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:15px}
+.stat-value{font-size:28px;font-weight:700;color:var(--dark);margin:0}.stat-label{color:#64748b;font-size:13px;margin-top:5px}
+.content-card{background:white;border-radius:16px;padding:25px;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:25px}
+.content-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:15px}
+.content-card-title{font-size:16px;font-weight:700;color:var(--dark);margin:0}
+.btn-primary-custom{background:var(--primary);border:none;padding:10px 20px;border-radius:10px;color:white;font-weight:600;font-size:13px;transition:all .2s}
+.btn-primary-custom:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-success-custom{background:var(--success);border:none;padding:10px 20px;border-radius:10px;color:white;font-weight:600;font-size:13px}
+.btn-warning-custom{background:var(--warning);border:none;padding:10px 20px;border-radius:10px;color:white;font-weight:600;font-size:13px}
+.btn-danger-custom{background:var(--danger);border:none;padding:8px 15px;border-radius:8px;color:white;font-weight:600;font-size:12px}
+.btn-icon{width:35px;height:35px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:all .2s}
+.custom-table{width:100%;border-collapse:separate;border-spacing:0}
+.custom-table thead th{background:#f8fafc;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+.custom-table tbody td{padding:14px 16px;font-size:13px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.custom-table tbody tr:hover{background:#f8fafc}
+.badge-status{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700}.badge-abaixo{background:#fef2f2;color:#dc2626}.badge-dentro{background:#f0fdf4;color:#16a34a}.badge-acima{background:#fffbeb;color:#d97706}
+.form-control-custom{border:2px solid #e2e8f0;border-radius:10px;padding:12px 15px;font-size:13px;transition:all .2s}
+.form-control-custom:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,0.1);outline:none}
+.form-label-custom{font-size:12px;font-weight:600;color:#475569;margin-bottom:6px;display:block}
+.modal-content{border-radius:16px;border:none}.modal-header{border-bottom:1px solid #f1f5f9;padding:20px 25px}.modal-body{padding:25px}.modal-footer{border-top:1px solid #f1f5f9;padding:15px 25px}
+.alert-floating{position:fixed;top:20px;right:20px;z-index:9999;border-radius:12px;padding:15px 20px;box-shadow:0 10px 40px rgba(0,0,0,0.15);animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.9);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.spinner-custom{width:50px;height:50px;border:4px solid #e2e8f0;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section{display:none}.section.active{display:block}
+.filter-bar{background:#f8fafc;border-radius:12px;padding:15px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.toggle-sidebar{background:none;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:5px}
+.empty-state{text-align:center;padding:60px 20px;color:#94a3b8}.empty-state i{font-size:48px;margin-bottom:15px;opacity:.5}
+.mov-card{border-left:4px solid var(--primary);padding:15px;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:10px}.mov-card.entrada{border-left-color:var(--success)}.mov-card.saida{border-left-color:var(--danger)}
+.crud-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .2s;margin-right:5px}.crud-btn:hover{transform:translateY(-1px);opacity:.9}
+.crud-btn-edit{background:#dbeafe;color:#1d4ed8}.crud-btn-delete{background:#fee2e2;color:#dc2626}
+@media(max-width:768px){.sidebar{width:70px}.sidebar .nav-text,.sidebar .logo-text{display:none}.main-content{margin-left:70px}}
+</style>
+<base target="_blank">
 </head>
 <body>
-    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
-        <div class="spinner-custom"></div>
-        <p class="mt-3 text-muted">Carregando...</p>
-    </div>
-    <div id="alertContainer"></div>
+<div id="loadingOverlay" class="loading-overlay" style="display:none"><div class="spinner-custom"></div><p class="mt-3 text-muted">Carregando...</p></div>
+<div id="alertContainer"></div>
 
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-icon"><i class="fas fa-boxes"></i></div>
-            <div class="logo-text"><h4>SPCI</h4><small>Controle de Materiais</small></div>
-        </div>
-        <div class="nav-menu">
-            <a class="nav-item active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-pie"></i><span class="nav-text">Dashboard</span></a>
-            <a class="nav-item" onclick="showSection('subLocais', this)"><i class="fas fa-warehouse"></i><span class="nav-text">Sub-locais</span></a>
-            <a class="nav-item" onclick="showSection('locais', this)"><i class="fas fa-map-marker-alt"></i><span class="nav-text">Locais</span></a>
-            <a class="nav-item" onclick="showSection('materiais', this)"><i class="fas fa-cubes"></i><span class="nav-text">Materiais</span></a>
-            <a class="nav-item" onclick="showSection('estoque', this)"><i class="fas fa-box"></i><span class="nav-text">Controle de Estoque</span></a>
-            <a class="nav-item" onclick="showSection('movimentacao', this)"><i class="fas fa-exchange-alt"></i><span class="nav-text">Movimentação</span></a>
-            <a class="nav-item" onclick="showSection('relatorios', this)"><i class="fas fa-file-excel"></i><span class="nav-text">Relatórios</span></a>
-        </div>
-    </nav>
+<nav class="sidebar" id="sidebar">
+<div class="sidebar-header"><div class="logo-icon"><i class="fas fa-boxes"></i></div><div class="logo-text"><h4>SPCI</h4><small>Controle de Materiais</small></div></div>
+<div class="nav-menu">
+<a class="nav-item active" onclick="navigate('dashboard',this)"><i class="fas fa-chart-pie"></i><span class="nav-text">Dashboard</span></a>
+<a class="nav-item" onclick="navigate('subLocais',this)"><i class="fas fa-warehouse"></i><span class="nav-text">Sub-locais</span></a>
+<a class="nav-item" onclick="navigate('locais',this)"><i class="fas fa-map-marker-alt"></i><span class="nav-text">Locais</span></a>
+<a class="nav-item" onclick="navigate('materiais',this)"><i class="fas fa-cubes"></i><span class="nav-text">Materiais</span></a>
+<a class="nav-item" onclick="navigate('estoque',this)"><i class="fas fa-box"></i><span class="nav-text">Controle de Estoque</span></a>
+<a class="nav-item" onclick="navigate('movimentacao',this)"><i class="fas fa-exchange-alt"></i><span class="nav-text">Movimentação</span></a>
+<a class="nav-item" onclick="navigate('relatorios',this)"><i class="fas fa-file-excel"></i><span class="nav-text">Relatórios</span></a>
+</div>
+</nav>
 
-    <main class="main-content">
-        <div class="top-bar">
-            <div class="d-flex align-items-center gap-3">
-                <button class="toggle-sidebar" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <h1 class="page-title" id="pageTitle">Dashboard</h1>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <span class="badge bg-success" id="connectionStatus"><i class="fas fa-circle me-1" style="font-size:8px;"></i>Online</span>
-                <div class="user-badge"><i class="fas fa-user me-2"></i>Administrador</div>
-            </div>
-        </div>
+<main class="main-content">
+<div class="top-bar">
+<div class="d-flex align-items-center gap-3">
+<button class="toggle-sidebar" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<h1 class="page-title" id="pageTitle">Dashboard</h1>
+</div>
+<div class="d-flex align-items-center gap-3">
+<span class="badge bg-success" id="connStatus"><i class="fas fa-circle me-1" style="font-size:8px"></i>Online</span>
+<div class="user-badge"><i class="fas fa-user me-2"></i>Administrador</div>
+</div>
+</div>
 
-        <!-- DASHBOARD -->
-        <section id="dashboard" class="section active">
-            <div class="row g-4">
-                <div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-cubes"></i></div><h3 class="stat-value" id="dashTotalMateriais">0</h3><p class="stat-label">Total de Materiais</p></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><h3 class="stat-value" id="dashDentroIntervalo">0</h3><p class="stat-label">Dentro do Intervalo</p></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i></div><h3 class="stat-value" id="dashAbaixoMinimo">0</h3><p class="stat-label">Abaixo do Mínimo</p></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-arrow-up"></i></div><h3 class="stat-value" id="dashAcimaMaximo">0</h3><p class="stat-label">Acima do Máximo</p></div></div>
-            </div>
-            <div class="row g-4 mt-1">
-                <div class="col-md-6">
-                    <div class="content-card">
-                        <div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-exclamation-circle me-2 text-danger"></i>Alertas de Estoque</h5></div>
-                        <div id="dashAlertas" style="max-height:300px;overflow-y:auto;"><div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum alerta no momento</p></div></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="content-card">
-                        <div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-clock me-2 text-primary"></i>Últimas Movimentações</h5></div>
-                        <div id="dashMovimentacoes" style="max-height:300px;overflow-y:auto;"><div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+<div class="row g-4">
+<div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-cubes"></i></div><h3 class="stat-value" id="d1">0</h3><p class="stat-label">Total de Materiais</p></div></div>
+<div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-check-circle"></i></div><h3 class="stat-value" id="d2">0</h3><p class="stat-label">Dentro do Intervalo</p></div></div>
+<div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-exclamation-triangle"></i></div><h3 class="stat-value" id="d3">0</h3><p class="stat-label">Abaixo do Mínimo</p></div></div>
+<div class="col-md-3"><div class="stat-card"><div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-arrow-up"></i></div><h3 class="stat-value" id="d4">0</h3><p class="stat-label">Acima do Máximo</p></div></div>
+</div>
+<div class="row g-4 mt-1">
+<div class="col-md-6"><div class="content-card"><div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-exclamation-circle me-2 text-danger"></i>Alertas de Estoque</h5></div><div id="dashAlertas" style="max-height:300px;overflow-y:auto"><div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum alerta no momento</p></div></div></div></div>
+<div class="col-md-6"><div class="content-card"><div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-clock me-2 text-primary"></i>Últimas Movimentações</h5></div><div id="dashMov" style="max-height:300px;overflow-y:auto"><div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div></div></div></div>
+</div>
+</section>
 
-        <!-- SUB-LOCAIS -->
-        <section id="subLocais" class="section">
-            <div class="content-card">
-                <div class="content-card-header">
-                    <h5 class="content-card-title"><i class="fas fa-warehouse me-2"></i>Cadastro de Sub-locais</h5>
-                    <button class="btn-primary-custom" onclick="abrirModalSubLocal()"><i class="fas fa-plus me-2"></i><b>NOVO SUB-LOCAL</b></button>
-                </div>
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead><tr><th>ID</th><th>Descrição</th><th width="180">Ações CRUD</th></tr></thead>
-                        <tbody id="subLocalTableBody"><tr><td colspan="3" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<!-- SUB-LOCAIS -->
+<section id="subLocais" class="section">
+<div class="content-card">
+<div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-warehouse me-2"></i>Cadastro de Sub-locais</h5><button class="btn-primary-custom" onclick="openModal('subLocalModal')"><i class="fas fa-plus me-2"></i><b>NOVO SUB-LOCAL</b></button></div>
+<div class="table-responsive"><table class="custom-table"><thead><tr><th>ID</th><th>Descrição</th><th width="180">Ações</th></tr></thead><tbody id="tbSubLocal"><tr><td colspan="3" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody></table></div>
+</div>
+</section>
 
-        <!-- LOCAIS -->
-        <section id="locais" class="section">
-            <div class="content-card">
-                <div class="content-card-header">
-                    <h5 class="content-card-title"><i class="fas fa-map-marker-alt me-2"></i>Cadastro de Locais de Armazenamento</h5>
-                    <button class="btn-primary-custom" onclick="abrirModalLocal()"><i class="fas fa-plus me-2"></i><b>NOVO LOCAL</b></button>
-                </div>
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead><tr><th>ID</th><th>Descrição</th><th>Sub-local</th><th width="180">Ações CRUD</th></tr></thead>
-                        <tbody id="localTableBody"><tr><td colspan="4" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<!-- LOCAIS -->
+<section id="locais" class="section">
+<div class="content-card">
+<div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-map-marker-alt me-2"></i>Cadastro de Locais</h5><button class="btn-primary-custom" onclick="openModal('localModal')"><i class="fas fa-plus me-2"></i><b>NOVO LOCAL</b></button></div>
+<div class="table-responsive"><table class="custom-table"><thead><tr><th>ID</th><th>Descrição</th><th>Sub-local</th><th width="180">Ações</th></tr></thead><tbody id="tbLocal"><tr><td colspan="4" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody></table></div>
+</div>
+</section>
 
-        <!-- MATERIAIS -->
-        <section id="materiais" class="section">
-            <div class="content-card">
-                <div class="content-card-header">
-                    <h5 class="content-card-title"><i class="fas fa-cubes me-2"></i>Cadastro de Materiais</h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn-success-custom" onclick="exportarMateriaisExcel()"><i class="fas fa-file-excel me-2"></i>Exportar Excel</button>
-                        <button class="btn-primary-custom" onclick="abrirModalMaterial()"><i class="fas fa-plus me-2"></i><b>NOVO MATERIAL</b></button>
-                    </div>
-                </div>
-                <div class="filter-bar">
-                    <div style="flex:1;min-width:200px;"><label class="form-label-custom">OM</label><input type="text" class="form-control-custom" id="filtroOM" placeholder="Filtrar por OM..."></div>
-                    <div style="flex:2;min-width:200px;"><label class="form-label-custom">Descrição</label><input type="text" class="form-control-custom" id="filtroDescricao" placeholder="Filtrar por descrição..."></div>
-                    <div style="flex:1;min-width:150px;"><label class="form-label-custom">Data Entrada</label><input type="date" class="form-control-custom" id="filtroDataEntrada"></div>
-                    <div style="flex:1;min-width:150px;"><label class="form-label-custom">Data Saída</label><input type="date" class="form-control-custom" id="filtroDataSaida"></div>
-                    <div><button class="btn-primary-custom" onclick="aplicarFiltrosMateriais()"><i class="fas fa-search me-2"></i>Filtrar</button></div>
-                    <div><button class="btn-icon" style="background:#f1f5f9;" onclick="limparFiltrosMateriais()" title="Limpar filtros"><i class="fas fa-eraser text-muted"></i></button></div>
-                </div>
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead><tr><th>ID</th><th>Local</th><th>OM</th><th>Descrição</th><th>Pedido/Reserva</th><th>Código SAP</th><th>Qtd</th><th>Data Entrada</th><th>Data Saída</th><th>Local Aplicação</th><th>Recebedor</th><th width="180">Ações CRUD</th></tr></thead>
-                        <tbody id="materialTableBody"><tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<!-- MATERIAIS -->
+<section id="materiais" class="section">
+<div class="content-card">
+<div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-cubes me-2"></i>Cadastro de Materiais</h5><div class="d-flex gap-2"><button class="btn-success-custom" onclick="exportMateriais()"><i class="fas fa-file-excel me-2"></i>Exportar Excel</button><button class="btn-primary-custom" onclick="openModal('materialModal')"><i class="fas fa-plus me-2"></i><b>NOVO MATERIAL</b></button></div></div>
+<div class="filter-bar"><div style="flex:1;min-width:200px"><label class="form-label-custom">OM</label><input type="text" class="form-control-custom" id="fOM" placeholder="Filtrar por OM..."></div><div style="flex:2;min-width:200px"><label class="form-label-custom">Descrição</label><input type="text" class="form-control-custom" id="fDesc" placeholder="Filtrar por descrição..."></div><div style="flex:1;min-width:150px"><label class="form-label-custom">Data Entrada</label><input type="date" class="form-control-custom" id="fDtEnt"></div><div style="flex:1;min-width:150px"><label class="form-label-custom">Data Saída</label><input type="date" class="form-control-custom" id="fDtSai"></div><div><button class="btn-primary-custom" onclick="filtrarMateriais()"><i class="fas fa-search me-2"></i>Filtrar</button></div><div><button class="btn-icon" style="background:#f1f5f9" onclick="limparFiltros()" title="Limpar"><i class="fas fa-eraser text-muted"></i></button></div></div>
+<div class="table-responsive"><table class="custom-table"><thead><tr><th>ID</th><th>Local</th><th>OM</th><th>Descrição</th><th>Pedido/Reserva</th><th>Código SAP</th><th>Qtd</th><th>Data Entrada</th><th>Data Saída</th><th>Local Aplicação</th><th>Recebedor</th><th width="180">Ações</th></tr></thead><tbody id="tbMaterial"><tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody></table></div>
+</div>
+</section>
 
-        <!-- ESTOQUE -->
-        <section id="estoque" class="section">
-            <div class="content-card">
-                <div class="content-card-header">
-                    <h5 class="content-card-title"><i class="fas fa-box me-2"></i>Controle de Estoque</h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn-warning-custom" onclick="exportarNecessidadeCompra()"><i class="fas fa-file-excel me-2"></i>Necessidade de Compra</button>
-                        <button class="btn-primary-custom" onclick="abrirModalEstoque()"><i class="fas fa-plus me-2"></i><b>NOVO CONTROLE</b></button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead><tr><th>ID</th><th>Local</th><th>Est.Mín.</th><th>Est.Máx.</th><th>Limite Solic.</th><th>Entrada</th><th>Saída</th><th>Est.Atual</th><th>Status</th><th>Data Entrada</th><th>Data Saída</th><th width="180">Ações CRUD</th></tr></thead>
-                        <tbody id="estoqueTableBody"><tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<!-- ESTOQUE -->
+<section id="estoque" class="section">
+<div class="content-card">
+<div class="content-card-header"><h5 class="content-card-title"><i class="fas fa-box me-2"></i>Controle de Estoque</h5><div class="d-flex gap-2"><button class="btn-warning-custom" onclick="exportNecessidade()"><i class="fas fa-file-excel me-2"></i>Necessidade de Compra</button><button class="btn-primary-custom" onclick="openModal('estoqueModal')"><i class="fas fa-plus me-2"></i><b>NOVO CONTROLE</b></button></div></div>
+<div class="table-responsive"><table class="custom-table"><thead><tr><th>ID</th><th>Local</th><th>Est.Mín.</th><th>Est.Máx.</th><th>Limite Solic.</th><th>Entrada</th><th>Saída</th><th>Est.Atual</th><th>Status</th><th>Data Entrada</th><th>Data Saída</th><th width="180">Ações</th></tr></thead><tbody id="tbEstoque"><tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</td></tr></tbody></table></div>
+</div>
+</section>
 
-        <!-- MOVIMENTAÇÃO -->
-        <section id="movimentacao" class="section">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="content-card">
-                        <div class="content-card-header"><h5 class="content-card-title text-success"><i class="fas fa-arrow-down me-2"></i>Entrada de Material</h5></div>
-                        <form id="formEntrada" onsubmit="registrarEntrada(event)">
-                            <div class="mb-3"><label class="form-label-custom">Material *</label><select class="form-control-custom" id="movEntradaMaterial" required><option value="">Selecione o material...</option></select></div>
-                            <div class="mb-3"><label class="form-label-custom">Quantidade *</label><input type="number" class="form-control-custom" id="movEntradaQtd" step="0.01" min="0.01" required></div>
-                            <div class="mb-3"><label class="form-label-custom">Data de Entrada *</label><input type="date" class="form-control-custom" id="movEntradaData" required></div>
-                            <div class="mb-3"><label class="form-label-custom">Recebedor *</label><input type="text" class="form-control-custom" id="movEntradaRecebedor" required></div>
-                            <button type="submit" class="btn-success-custom w-100"><i class="fas fa-check me-2"></i><b>REGISTRAR ENTRADA</b></button>
-                        </form>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="content-card">
-                        <div class="content-card-header"><h5 class="content-card-title text-danger"><i class="fas fa-arrow-up me-2"></i>Saída de Material</h5></div>
-                        <form id="formSaida" onsubmit="registrarSaida(event)">
-                            <div class="mb-3"><label class="form-label-custom">Material *</label><select class="form-control-custom" id="movSaidaMaterial" required><option value="">Selecione o material...</option></select></div>
-                            <div class="mb-3"><label class="form-label-custom">Quantidade *</label><input type="number" class="form-control-custom" id="movSaidaQtd" step="0.01" min="0.01" required></div>
-                            <div class="mb-3"><label class="form-label-custom">Data de Saída *</label><input type="date" class="form-control-custom" id="movSaidaData" required></div>
-                            <div class="mb-3"><label class="form-label-custom">Local de Aplicação *</label><input type="text" class="form-control-custom" id="movSaidaLocalAplicacao" required></div>
-                            <button type="submit" class="btn-danger-custom w-100"><i class="fas fa-check me-2"></i><b>REGISTRAR SAÍDA</b></button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="content-card mt-4">
-                <div class="content-card-header"><h5 class="content-card-title">Histórico de Movimentações</h5></div>
-                <div id="historicoMovimentacoes"><div class="empty-state"><i class="fas fa-history"></i><p>Carregando histórico...</p></div></div>
-            </div>
-        </section>
+<!-- MOVIMENTAÇÃO -->
+<section id="movimentacao" class="section">
+<div class="row"><div class="col-md-6"><div class="content-card"><div class="content-card-header"><h5 class="content-card-title text-success"><i class="fas fa-arrow-down me-2"></i>Entrada de Material</h5></div><form onsubmit="registrarEntrada(event)"><div class="mb-3"><label class="form-label-custom">Material *</label><select class="form-control-custom" id="movEntMat" required><option value="">Selecione...</option></select></div><div class="mb-3"><label class="form-label-custom">Quantidade *</label><input type="number" class="form-control-custom" id="movEntQtd" step="0.01" min="0.01" required></div><div class="mb-3"><label class="form-label-custom">Data de Entrada *</label><input type="date" class="form-control-custom" id="movEntData" required></div><div class="mb-3"><label class="form-label-custom">Recebedor *</label><input type="text" class="form-control-custom" id="movEntRec" required></div><button type="submit" class="btn-success-custom w-100"><i class="fas fa-check me-2"></i><b>REGISTRAR ENTRADA</b></button></form></div></div>
+<div class="col-md-6"><div class="content-card"><div class="content-card-header"><h5 class="content-card-title text-danger"><i class="fas fa-arrow-up me-2"></i>Saída de Material</h5></div><form onsubmit="registrarSaida(event)"><div class="mb-3"><label class="form-label-custom">Material *</label><select class="form-control-custom" id="movSaiMat" required><option value="">Selecione...</option></select></div><div class="mb-3"><label class="form-label-custom">Quantidade *</label><input type="number" class="form-control-custom" id="movSaiQtd" step="0.01" min="0.01" required></div><div class="mb-3"><label class="form-label-custom">Data de Saída *</label><input type="date" class="form-control-custom" id="movSaiData" required></div><div class="mb-3"><label class="form-label-custom">Local de Aplicação *</label><input type="text" class="form-control-custom" id="movSaiLoc" required></div><button type="submit" class="btn-danger-custom w-100"><i class="fas fa-check me-2"></i><b>REGISTRAR SAÍDA</b></button></form></div></div></div>
+<div class="content-card mt-4"><div class="content-card-header"><h5 class="content-card-title">Histórico de Movimentações</h5></div><div id="histMov"><div class="empty-state"><i class="fas fa-history"></i><p>Carregando...</p></div></div></div>
+</section>
 
-        <!-- RELATÓRIOS -->
-        <section id="relatorios" class="section">
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="content-card text-center">
-                        <div class="stat-icon mx-auto" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-cubes"></i></div>
-                        <h5 class="mb-3">Materiais em Estoque</h5>
-                        <p class="text-muted small mb-3">Exporte todos os materiais atualmente em estoque</p>
-                        <button class="btn-success-custom w-100" onclick="exportarMateriaisExcel()"><i class="fas fa-download me-2"></i>Exportar Excel</button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="content-card text-center">
-                        <div class="stat-icon mx-auto" style="background:#fef3c7;color:#d97706;"><i class="fas fa-shopping-cart"></i></div>
-                        <h5 class="mb-3">Necessidade de Compra</h5>
-                        <p class="text-muted small mb-3">Materiais abaixo do limite de solicitação</p>
-                        <button class="btn-warning-custom w-100" onclick="exportarNecessidadeCompra()"><i class="fas fa-download me-2"></i>Exportar Excel</button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="content-card text-center">
-                        <div class="stat-icon mx-auto" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i></div>
-                        <h5 class="mb-3">Alertas de Estoque</h5>
-                        <p class="text-muted small mb-3">Materiais com status crítico</p>
-                        <button class="btn-danger-custom w-100" onclick="exportarAlertasExcel()"><i class="fas fa-download me-2"></i>Exportar Excel</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+<!-- RELATÓRIOS -->
+<section id="relatorios" class="section">
+<div class="row g-4"><div class="col-md-4"><div class="content-card text-center"><div class="stat-icon mx-auto" style="background:#dbeafe;color:#2563eb"><i class="fas fa-cubes"></i></div><h5 class="mb-3">Materiais em Estoque</h5><p class="text-muted small mb-3">Exporte todos os materiais atualmente em estoque</p><button class="btn-success-custom w-100" onclick="exportMateriais()"><i class="fas fa-download me-2"></i>Exportar Excel</button></div></div>
+<div class="col-md-4"><div class="content-card text-center"><div class="stat-icon mx-auto" style="background:#fef3c7;color:#d97706"><i class="fas fa-shopping-cart"></i></div><h5 class="mb-3">Necessidade de Compra</h5><p class="text-muted small mb-3">Materiais abaixo do limite de solicitação</p><button class="btn-warning-custom w-100" onclick="exportNecessidade()"><i class="fas fa-download me-2"></i>Exportar Excel</button></div></div>
+<div class="col-md-4"><div class="content-card text-center"><div class="stat-icon mx-auto" style="background:#fee2e2;color:#dc2626"><i class="fas fa-exclamation-triangle"></i></div><h5 class="mb-3">Alertas de Estoque</h5><p class="text-muted small mb-3">Materiais com status crítico</p><button class="btn-danger-custom w-100" onclick="exportAlertas()"><i class="fas fa-download me-2"></i>Exportar Excel</button></div></div></div>
+</section>
+</main>
 
-    <!-- ==================== MODAIS CRUD ==================== -->
+<!-- MODAIS -->
+<div class="modal fade" id="subLocalModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="titSubLocal"><i class="fas fa-warehouse me-2"></i>Cadastrar Sub-local</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form onsubmit="salvarSubLocal(event)"><div class="modal-body"><input type="hidden" id="subLocalId" value=""><div class="mb-3"><label class="form-label-custom">Descrição *</label><input type="text" class="form-control-custom" id="subLocalDesc" placeholder="Ex: Almoxarifado Principal" required></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button></div></form></div></div></div>
 
-    <!-- Modal Sub-local -->
-    <div class="modal fade" id="subLocalModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="subLocalModalTitle"><i class="fas fa-warehouse me-2"></i>Cadastrar Sub-local</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <form id="formSubLocal" onsubmit="salvarSubLocal(event)">
-                    <div class="modal-body">
-                        <input type="hidden" id="subLocalId" value="">
-                        <div class="mb-3">
-                            <label class="form-label-custom">Descrição *</label>
-                            <input type="text" class="form-control-custom" id="subLocalDescricao" placeholder="Ex: Almoxarifado Principal" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="localModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="titLocal"><i class="fas fa-map-marker-alt me-2"></i>Cadastrar Local</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form onsubmit="salvarLocal(event)"><div class="modal-body"><input type="hidden" id="localId" value=""><div class="mb-3"><label class="form-label-custom">Descrição *</label><input type="text" class="form-control-custom" id="localDesc" placeholder="Ex: Prateleira A1" required></div><div class="mb-3"><label class="form-label-custom">Sub-local *</label><select class="form-control-custom" id="localSubLocal" required><option value="">Selecione...</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button></div></form></div></div></div>
 
-    <!-- Modal Local -->
-    <div class="modal fade" id="localModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="localModalTitle"><i class="fas fa-map-marker-alt me-2"></i>Cadastrar Local</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <form id="formLocal" onsubmit="salvarLocal(event)">
-                    <div class="modal-body">
-                        <input type="hidden" id="localId" value="">
-                        <div class="mb-3">
-                            <label class="form-label-custom">Descrição *</label>
-                            <input type="text" class="form-control-custom" id="localDescricao" placeholder="Ex: Prateleira A1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label-custom">Sub-local *</label>
-                            <select class="form-control-custom" id="localSubLocal" required>
-                                <option value="">Selecione um sub-local...</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="materialModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="titMaterial"><i class="fas fa-cubes me-2"></i>Cadastrar Material</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form onsubmit="salvarMaterial(event)"><div class="modal-body"><input type="hidden" id="materialId" value=""><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Local *</label><select class="form-control-custom" id="matLocal" required><option value="">Selecione...</option></select></div><div class="col-md-6 mb-3"><label class="form-label-custom">OM (até 12 dígitos)</label><input type="text" class="form-control-custom" id="matOM" maxlength="12" pattern="[0-9]*" placeholder="Somente números"></div></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Descrição *</label><input type="text" class="form-control-custom" id="matDesc" placeholder="Descrição do material" required></div><div class="col-md-6 mb-3"><label class="form-label-custom">Pedido/Reserva</label><input type="text" class="form-control-custom" id="matPedido" placeholder="Número do pedido"></div></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Código SAP</label><input type="text" class="form-control-custom" id="matSAP" placeholder="Código no SAP"></div><div class="col-md-6 mb-3"><label class="form-label-custom">Quantidade *</label><input type="number" class="form-control-custom" id="matQtd" step="0.01" min="0" value="0" required></div></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Data Entrada</label><input type="date" class="form-control-custom" id="matDtEnt"></div><div class="col-md-6 mb-3"><label class="form-label-custom">Data Saída</label><input type="date" class="form-control-custom" id="matDtSai"></div></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Local Aplicação</label><input type="text" class="form-control-custom" id="matLocApl" placeholder="Onde será aplicado"></div><div class="col-md-6 mb-3"><label class="form-label-custom">Recebedor</label><input type="text" class="form-control-custom" id="matRec" placeholder="Nome do recebedor"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button></div></form></div></div></div>
 
-    <!-- Modal Material -->
-    <div class="modal fade" id="materialModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="materialModalTitle"><i class="fas fa-cubes me-2"></i>Cadastrar Material</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <form id="formMaterial" onsubmit="salvarMaterial(event)">
-                    <div class="modal-body">
-                        <input type="hidden" id="materialId" value="">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Local de Armazenamento *</label>
-                                <select class="form-control-custom" id="materialLocal" required>
-                                    <option value="">Selecione um local...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">OM (até 12 dígitos)</label>
-                                <input type="text" class="form-control-custom" id="materialOM" maxlength="12" pattern="[0-9]{0,12}" placeholder="Somente números">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Descrição *</label>
-                                <input type="text" class="form-control-custom" id="materialDescricao" placeholder="Descrição do material" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Pedido/Reserva</label>
-                                <input type="text" class="form-control-custom" id="materialPedidoReserva" placeholder="Número do pedido">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Código SAP</label>
-                                <input type="text" class="form-control-custom" id="materialCodigoSAP" placeholder="Código no SAP">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Quantidade *</label>
-                                <input type="number" class="form-control-custom" id="materialQuantidade" step="0.01" min="0" value="0" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Data de Entrada</label>
-                                <input type="date" class="form-control-custom" id="materialDataEntrada">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Data de Saída</label>
-                                <input type="date" class="form-control-custom" id="materialDataSaida">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Local de Aplicação</label>
-                                <input type="text" class="form-control-custom" id="materialLocalAplicacao" placeholder="Onde será aplicado">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Recebedor</label>
-                                <input type="text" class="form-control-custom" id="materialRecebedor" placeholder="Nome do recebedor">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="estoqueModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="titEstoque"><i class="fas fa-box me-2"></i>Controle de Estoque</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form onsubmit="salvarEstoque(event)"><div class="modal-body"><input type="hidden" id="estoqueId" value=""><div class="mb-3"><label class="form-label-custom">Local *</label><select class="form-control-custom" id="estLocal" required><option value="">Selecione...</option></select></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Estoque Mínimo *</label><input type="number" class="form-control-custom" id="estMin" step="0.01" min="0" value="0" required></div><div class="col-md-6 mb-3"><label class="form-label-custom">Estoque Máximo *</label><input type="number" class="form-control-custom" id="estMax" step="0.01" min="0" value="0" required></div></div><div class="mb-3"><label class="form-label-custom">Limite Solicitação *</label><input type="number" class="form-control-custom" id="estLimite" step="0.01" min="0" value="0" required><small class="text-muted">Alerta de compra quando estoque ≤ este valor</small></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Entrada</label><input type="number" class="form-control-custom" id="estEnt" step="0.01" min="0" value="0"></div><div class="col-md-6 mb-3"><label class="form-label-custom">Saída</label><input type="number" class="form-control-custom" id="estSai" step="0.01" min="0" value="0"></div></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label-custom">Data Entrada</label><input type="date" class="form-control-custom" id="estDtEnt"></div><div class="col-md-6 mb-3"><label class="form-label-custom">Data Saída</label><input type="date" class="form-control-custom" id="estDtSai"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button></div></form></div></div></div>
 
-    <!-- Modal Estoque -->
-    <div class="modal fade" id="estoqueModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="estoqueModalTitle"><i class="fas fa-box me-2"></i>Controle de Estoque</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <form id="formEstoque" onsubmit="salvarEstoque(event)">
-                    <div class="modal-body">
-                        <input type="hidden" id="estoqueId" value="">
-                        <div class="mb-3">
-                            <label class="form-label-custom">Local de Armazenamento *</label>
-                            <select class="form-control-custom" id="estoqueLocal" required>
-                                <option value="">Selecione um local...</option>
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Estoque Mínimo *</label>
-                                <input type="number" class="form-control-custom" id="estoqueMinimo" step="0.01" min="0" value="0" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Estoque Máximo *</label>
-                                <input type="number" class="form-control-custom" id="estoqueMaximo" step="0.01" min="0" value="0" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label-custom">Limite de Solicitação *</label>
-                            <input type="number" class="form-control-custom" id="estoqueLimite" step="0.01" min="0" value="0" required>
-                            <small class="text-muted">Quando o estoque atingir este valor, será emitido alerta de compra</small>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Entrada</label>
-                                <input type="number" class="form-control-custom" id="estoqueEntrada" step="0.01" min="0" value="0">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Saída</label>
-                                <input type="number" class="form-control-custom" id="estoqueSaida" step="0.01" min="0" value="0">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Data de Entrada</label>
-                                <input type="date" class="form-control-custom" id="estoqueDataEntrada">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label-custom">Data de Saída</label>
-                                <input type="date" class="form-control-custom" id="estoqueDataSaida">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn-primary-custom"><i class="fas fa-save me-2"></i><b>SALVAR</b></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title fw-bold"><i class="fas fa-trash-alt me-2"></i>Confirmar Exclusão</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><i class="fas fa-exclamation-triangle text-danger" style="font-size:48px"></i><p class="mt-3 mb-0">Tem certeza que deseja <b>excluir</b>?</p><p class="text-muted small">Esta ação não pode ser desfeita.</p></div><div class="modal-footer justify-content-center"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-danger" onclick="executarDelete()"><i class="fas fa-trash me-2"></i><b>EXCLUIR</b></button></div></div></div></div>
 
-    <!-- Modal Confirmação Delete -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-trash-alt me-2"></i>Confirmar Exclusão</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <i class="fas fa-exclamation-triangle text-danger" style="font-size:48px;"></i>
-                    <p class="mt-3 mb-0">Tem certeza que deseja <b>excluir</b> este registro?</p>
-                    <p class="text-muted small">Esta ação não pode ser desfeita.</p>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmDelete" onclick="executarDelete()">
-                        <i class="fas fa-trash me-2"></i><b>EXCLUIR</b>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script>
+// ===== CONFIGURAÇÃO SUPABASE =====
+const SB_URL='https://llnecvfzboqqgspvbibg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXN1ZGV0cm1hcXNtc2NmbHl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTU1MjAsImV4cCI6MjEwMTYzMTUyMH0.cjQ2ZwgpHFICbvmUl49Xxzcer83xT6Ad_44gFusIr_w';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+// ===== VARIÁVEIS GLOBAIS =====
+let dataSub=[],dataLoc=[],dataMat=[],dataEst=[],matFilt=[],delCtx={t:'',id:0,cb:null};
 
-    <script>
-    // ============================================================
-    // CONFIGURAÇÃO DO SUPABASE
-    // ============================================================
-    const SUPABASE_URL = 'https://llnecvfzboqqgspvbibg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXN1ZGV0cm1hcXNtc2NmbHl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTU1MjAsImV4cCI6MjEwMTYzMTUyMH0.cjQ2ZwgpHFICbvmUl49Xxzcer83xT6Ad_44gFusIr_w';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ===== UTILITÁRIOS =====
+function fd(d){return d?new Date(d+'T00:00:00').toLocaleDateString('pt-BR'):'-'}
+function fdi(d){return d||''}
+function fn(n){return n===null||n===undefined?'0,00':parseFloat(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function ld(s){document.getElementById('loadingOverlay').style.display=s?'flex':'none'}
+function al(m,t){t=t||'success';const c=document.getElementById('alertContainer'),d=document.createElement('div'),i={success:'check-circle',danger:'exclamation-circle',warning:'exclamation-triangle',info:'info-circle'};d.className='alert alert-'+t+' alert-floating';d.innerHTML='<i class="fas fa-'+i[t]+' me-2"></i>'+m;c.appendChild(d);setTimeout(()=>d.remove(),4000)}
+function tg(){document.getElementById('sidebar').classList.toggle('collapsed')}
+function navigate(sec,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById(sec).classList.add('active');if(el)el.classList.add('active');const t={dashboard:'Dashboard',subLocais:'Sub-locais',locais:'Locais',materiais:'Materiais',estoque:'Controle de Estoque',movimentacao:'Movimentação',relatorios:'Relatórios'};document.getElementById('pageTitle').textContent=t[sec]||'SPCI';if(sec==='dashboard')dash();if(sec==='subLocais')ls();if(sec==='locais')ll();if(sec==='materiais')lm();if(sec==='estoque')le();if(sec==='movimentacao')lmo()}
+function openModal(id){new bootstrap.Modal(document.getElementById(id)).show()}
+function hideModal(id){const m=bootstrap.Modal.getInstance(document.getElementById(id));if(m)m.hide()}
 
-    // ============================================================
-    // VARIÁVEIS GLOBAIS
-    // ============================================================
-    let dadosSubLocais = [];
-    let dadosLocais = [];
-    let dadosMateriais = [];
-    let dadosEstoque = [];
-    let materiaisFiltrados = [];
-    let deleteContext = { tabela: '', id: null, callback: null };
+// ===== CRUD SUB-LOCAIS =====
+async function ls(){ld(true);try{const{data,error}=await sb.from('sub_local').select('*').order('id');if(error)throw error;dataSub=data||[];rs();us()}catch(e){console.error(e);al('Erro ao carregar sub-locais: '+e.message,'danger')}finally{ld(false)}}
+function rs(){const b=document.getElementById('tbSubLocal');if(!dataSub.length){b.innerHTML='<tr><td colspan="3" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum sub-local. Clique em <b>NOVO SUB-LOCAL</b>.</td></tr>';return}b.innerHTML=dataSub.map(s=>`<tr><td><span class="badge bg-light text-dark">#${s.id}</span></td><td><strong>${s.descricao}</strong></td><td><button class="crud-btn crud-btn-edit" onclick="es(${s.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button><button class="crud-btn crud-btn-delete" onclick="cd('sub_local',${s.id},ls)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button></td></tr>`).join('')}
+function us(){const s=document.getElementById('localSubLocal');if(!s)return;const v=s.value;s.innerHTML='<option value="">Selecione...</option>'+dataSub.map(x=>`<option value="${x.id}">${x.descricao}</option>`).join('');if(v)s.value=v}
+async function salvarSubLocal(e){e.preventDefault();ld(true);const id=document.getElementById('subLocalId').value,desc=document.getElementById('subLocalDesc').value.trim();try{if(id){const{error}=await sb.from('sub_local').update({descricao:desc}).eq('id',parseInt(id));if(error)throw error;al('Sub-local ATUALIZADO!')}else{const{error}=await sb.from('sub_local').insert([{descricao:desc}]);if(error)throw error;al('Sub-local CADASTRADO!')}hideModal('subLocalModal');ls()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+function es(id){const s=dataSub.find(x=>x.id===id);if(!s)return;document.getElementById('subLocalId').value=s.id;document.getElementById('subLocalDesc').value=s.descricao;document.getElementById('titSubLocal').innerHTML='<i class="fas fa-edit me-2"></i>Editar Sub-local #'+s.id;openModal('subLocalModal')}
 
-    // ============================================================
-    // UTILITÁRIOS
-    // ============================================================
-    function formatarData(data) {
-        if (!data) return '-';
-        const d = new Date(data + 'T00:00:00');
-        return d.toLocaleDateString('pt-BR');
-    }
-    function formatarDataInput(data) {
-        if (!data) return '';
-        return data; // já vem YYYY-MM-DD do Supabase
-    }
-    function formatarNumero(num) {
-        if (num === null || num === undefined) return '0,00';
-        return parseFloat(num).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    function showLoading(show) {
-        document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-    }
-    function showAlert(message, type) {
-        type = type || 'success';
-        const container = document.getElementById('alertContainer');
-        const alertDiv = document.createElement('div');
-        const icons = { success: 'check-circle', danger: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
-        alertDiv.className = `alert alert-${type} alert-floating`;
-        alertDiv.innerHTML = `<i class="fas fa-${icons[type]} me-2"></i>${message}`;
-        container.appendChild(alertDiv);
-        setTimeout(() => alertDiv.remove(), 4000);
-    }
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-    function showSection(sectionId, el) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
-        if (el) el.classList.add('active');
-        const titles = { dashboard:'Dashboard', subLocais:'Sub-locais', locais:'Locais', materiais:'Materiais', estoque:'Controle de Estoque', movimentacao:'Movimentação', relatorios:'Relatórios' };
-        document.getElementById('pageTitle').textContent = titles[sectionId] || 'SPCI';
-        if (sectionId === 'dashboard') carregarDashboard();
-        if (sectionId === 'subLocais') carregarSubLocais();
-        if (sectionId === 'locais') carregarLocais();
-        if (sectionId === 'materiais') carregarMateriais();
-        if (sectionId === 'estoque') carregarEstoque();
-        if (sectionId === 'movimentacao') carregarMovimentacao();
-    }
+// ===== CRUD LOCAIS =====
+async function ll(){ld(true);try{const{data,error}=await sb.from('local_armazenamento').select('*,sub_local:sub_local(descricao)').order('id');if(error)throw error;dataLoc=data||[];rl();ul()}catch(e){console.error(e);al('Erro ao carregar locais: '+e.message,'danger')}finally{ld(false)}}
+function rl(){const b=document.getElementById('tbLocal');if(!dataLoc.length){b.innerHTML='<tr><td colspan="4" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum local. Clique em <b>NOVO LOCAL</b>.</td></tr>';return}b.innerHTML=dataLoc.map(l=>`<tr><td><span class="badge bg-light text-dark">#${l.id}</span></td><td><strong>${l.descricao}</strong></td><td><span class="badge bg-secondary">${l.sub_local?.descricao||'-'}</span></td><td><button class="crud-btn crud-btn-edit" onclick="eloc(${l.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button><button class="crud-btn crud-btn-delete" onclick="cd('local_armazenamento',${l.id},ll)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button></td></tr>`).join('')}
+function ul(){['matLocal','estLocal'].forEach(id=>{const s=document.getElementById(id);if(!s)return;const v=s.value;s.innerHTML='<option value="">Selecione...</option>'+dataLoc.map(x=>`<option value="${x.id}">${x.descricao}</option>`).join('');if(v)s.value=v})}
+async function salvarLocal(e){e.preventDefault();ld(true);const id=document.getElementById('localId').value,desc=document.getElementById('localDesc').value.trim(),sub=parseInt(document.getElementById('localSubLocal').value);try{const p={descricao:desc,id_sub_local:sub};if(id){const{error}=await sb.from('local_armazenamento').update(p).eq('id',parseInt(id));if(error)throw error;al('Local ATUALIZADO!')}else{const{error}=await sb.from('local_armazenamento').insert([p]);if(error)throw error;al('Local CADASTRADO!')}hideModal('localModal');ll()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+function eloc(id){const l=dataLoc.find(x=>x.id===id);if(!l)return;document.getElementById('localId').value=l.id;document.getElementById('localDesc').value=l.descricao;us();document.getElementById('localSubLocal').value=l.id_sub_local;document.getElementById('titLocal').innerHTML='<i class="fas fa-edit me-2"></i>Editar Local #'+l.id;openModal('localModal')}
 
-    // ============================================================
-    // CRUD - SUB-LOCAIS (Inserir, Editar, Deletar)
-    // ============================================================
-    async function carregarSubLocais() {
-        showLoading(true);
-        try {
-            const { data, error } = await supabaseClient.from('sub_local').select('*').order('id', { ascending: true });
-            if (error) throw error;
-            dadosSubLocais = data || [];
-            renderizarSubLocais();
-            atualizarSelectSubLocais();
-        } catch (err) {
-            console.error('Erro carregarSubLocais:', err);
-            showAlert('Erro ao carregar sub-locais: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function renderizarSubLocais() {
-        const tbody = document.getElementById('subLocalTableBody');
-        if (!dadosSubLocais.length) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum sub-local cadastrado. Clique em <b>NOVO SUB-LOCAL</b> para adicionar.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = dadosSubLocais.map(s => `
-            <tr>
-                <td><span class="badge bg-light text-dark">#${s.id}</span></td>
-                <td><strong>${s.descricao}</strong></td>
-                <td>
-                    <button class="crud-btn crud-btn-edit" onclick="editarSubLocal(${s.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button>
-                    <button class="crud-btn crud-btn-delete" onclick="confirmarDelete('sub_local', ${s.id}, carregarSubLocais)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    function atualizarSelectSubLocais() {
-        const select = document.getElementById('localSubLocal');
-        if (!select) return;
-        const val = select.value;
-        select.innerHTML = '<option value="">Selecione um sub-local...</option>' + 
-            dadosSubLocais.map(s => `<option value="${s.id}">${s.descricao}</option>`).join('');
-        if (val) select.value = val;
-    }
-    function abrirModalSubLocal() {
-        document.getElementById('formSubLocal').reset();
-        document.getElementById('subLocalId').value = '';
-        document.getElementById('subLocalModalTitle').innerHTML = '<i class="fas fa-warehouse me-2"></i>Cadastrar Sub-local';
-        new bootstrap.Modal(document.getElementById('subLocalModal')).show();
-    }
-    async function salvarSubLocal(event) {
-        event.preventDefault();
-        showLoading(true);
-        const id = document.getElementById('subLocalId').value;
-        const descricao = document.getElementById('subLocalDescricao').value.trim();
-        try {
-            if (id) {
-                const { error } = await supabaseClient.from('sub_local').update({ descricao }).eq('id', parseInt(id));
-                if (error) throw error;
-                showAlert('Sub-local ATUALIZADO com sucesso!');
-            } else {
-                const { error } = await supabaseClient.from('sub_local').insert([{ descricao }]);
-                if (error) throw error;
-                showAlert('Sub-local CADASTRADO com sucesso!');
-            }
-            bootstrap.Modal.getInstance(document.getElementById('subLocalModal')).hide();
-            carregarSubLocais();
-        } catch (err) {
-            console.error('Erro salvarSubLocal:', err);
-            showAlert('Erro ao salvar: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function editarSubLocal(id) {
-        const sub = dadosSubLocais.find(s => s.id === id);
-        if (!sub) return;
-        document.getElementById('subLocalId').value = sub.id;
-        document.getElementById('subLocalDescricao').value = sub.descricao;
-        document.getElementById('subLocalModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Sub-local #' + sub.id;
-        new bootstrap.Modal(document.getElementById('subLocalModal')).show();
-    }
+// ===== CRUD MATERIAIS =====
+async function lm(){ld(true);try{const{data,error}=await sb.from('material').select('*,local_armazenamento:local_armazenamento(descricao)').order('id');if(error)throw error;dataMat=data||[];matFilt=[...dataMat];rm();um()}catch(e){console.error(e);al('Erro ao carregar materiais: '+e.message,'danger')}finally{ld(false)}}
+function rm(){const b=document.getElementById('tbMaterial'),d=matFilt;if(!d.length){b.innerHTML='<tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum material. Clique em <b>NOVO MATERIAL</b>.</td></tr>';return}b.innerHTML=d.map(m=>`<tr><td><span class="badge bg-light text-dark">#${m.id}</span></td><td><span class="badge bg-info text-white">${m.local_armazenamento?.descricao||'-'}</span></td><td>${m.om||'-'}</td><td><strong>${m.descricao}</strong></td><td>${m.pedido_reserva||'-'}</td><td><code>${m.codigo_sap||'-'}</code></td><td class="fw-bold">${fn(m.quantidade)}</td><td>${fd(m.data_entrada)}</td><td>${fd(m.data_saida)}</td><td>${m.local_aplicacao||'-'}</td><td>${m.recebedor||'-'}</td><td><button class="crud-btn crud-btn-edit" onclick="emat(${m.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button><button class="crud-btn crud-btn-delete" onclick="cd('material',${m.id},lm)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button></td></tr>`).join('')}
+function um(){['movEntMat','movSaiMat'].forEach(id=>{const s=document.getElementById(id);if(!s)return;const v=s.value;s.innerHTML='<option value="">Selecione...</option>'+dataMat.map(x=>`<option value="${x.id}">${x.descricao}${x.codigo_sap?' ('+x.codigo_sap+')':''}</option>`).join('');if(v)s.value=v})}
+async function salvarMaterial(e){e.preventDefault();ld(true);const id=document.getElementById('materialId').value,p={id_local:parseInt(document.getElementById('matLocal').value)||null,om:document.getElementById('matOM').value?document.getElementById('matOM').value:null,descricao:document.getElementById('matDesc').value.trim(),pedido_reserva:document.getElementById('matPedido').value.trim()||null,codigo_sap:document.getElementById('matSAP').value.trim()||null,quantidade:parseFloat(document.getElementById('matQtd').value)||0,data_entrada:document.getElementById('matDtEnt').value||null,data_saida:document.getElementById('matDtSai').value||null,local_aplicacao:document.getElementById('matLocApl').value.trim()||null,recebedor:document.getElementById('matRec').value.trim()||null};try{if(id){const{error}=await sb.from('material').update(p).eq('id',parseInt(id));if(error)throw error;al('Material ATUALIZADO!')}else{const{error}=await sb.from('material').insert([p]);if(error)throw error;al('Material CADASTRADO!')}hideModal('materialModal');lm()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+function emat(id){const m=dataMat.find(x=>x.id===id);if(!m)return;document.getElementById('materialId').value=m.id;ul();document.getElementById('matLocal').value=m.id_local||'';document.getElementById('matOM').value=m.om||'';document.getElementById('matDesc').value=m.descricao;document.getElementById('matPedido').value=m.pedido_reserva||'';document.getElementById('matSAP').value=m.codigo_sap||'';document.getElementById('matQtd').value=m.quantidade||'';document.getElementById('matDtEnt').value=fdi(m.data_entrada);document.getElementById('matDtSai').value=fdi(m.data_saida);document.getElementById('matLocApl').value=m.local_aplicacao||'';document.getElementById('matRec').value=m.recebedor||'';document.getElementById('titMaterial').innerHTML='<i class="fas fa-edit me-2"></i>Editar Material #'+m.id;openModal('materialModal')}
+function filtrarMateriais(){const om=document.getElementById('fOM').value.trim(),desc=document.getElementById('fDesc').value.trim().toLowerCase(),de=document.getElementById('fDtEnt').value,ds=document.getElementById('fDtSai').value;matFilt=dataMat.filter(m=>{if(om&&(!m.om||!m.om.toString().includes(om)))return false;if(desc&&(!m.descricao||!m.descricao.toLowerCase().includes(desc)))return false;if(de&&m.data_entrada!==de)return false;if(ds&&m.data_saida!==ds)return false;return true});rm();al('Filtro aplicado: '+matFilt.length+' resultado(s)')}
+function limparFiltros(){document.getElementById('fOM').value='';document.getElementById('fDesc').value='';document.getElementById('fDtEnt').value='';document.getElementById('fDtSai').value='';matFilt=[...dataMat];rm()}
 
-    // ============================================================
-    // CRUD - LOCAIS (Inserir, Editar, Deletar)
-    // ============================================================
-    async function carregarLocais() {
-        showLoading(true);
-        try {
-            const { data, error } = await supabaseClient.from('local_armazenamento').select('*, sub_local:sub_local(descricao)').order('id', { ascending: true });
-            if (error) throw error;
-            dadosLocais = data || [];
-            renderizarLocais();
-            atualizarSelectLocais();
-        } catch (err) {
-            console.error('Erro carregarLocais:', err);
-            showAlert('Erro ao carregar locais: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function renderizarLocais() {
-        const tbody = document.getElementById('localTableBody');
-        if (!dadosLocais.length) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum local cadastrado. Clique em <b>NOVO LOCAL</b> para adicionar.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = dadosLocais.map(l => `
-            <tr>
-                <td><span class="badge bg-light text-dark">#${l.id}</span></td>
-                <td><strong>${l.descricao}</strong></td>
-                <td><span class="badge bg-secondary">${l.sub_local?.descricao || '-'}</span></td>
-                <td>
-                    <button class="crud-btn crud-btn-edit" onclick="editarLocal(${l.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button>
-                    <button class="crud-btn crud-btn-delete" onclick="confirmarDelete('local_armazenamento', ${l.id}, carregarLocais)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    function atualizarSelectLocais() {
-        const selects = ['materialLocal', 'estoqueLocal'];
-        selects.forEach(id => {
-            const select = document.getElementById(id);
-            if (!select) return;
-            const val = select.value;
-            select.innerHTML = '<option value="">Selecione um local...</option>' + 
-                dadosLocais.map(l => `<option value="${l.id}">${l.descricao}</option>`).join('');
-            if (val) select.value = val;
-        });
-    }
-    function abrirModalLocal() {
-        document.getElementById('formLocal').reset();
-        document.getElementById('localId').value = '';
-        atualizarSelectSubLocais();
-        document.getElementById('localModalTitle').innerHTML = '<i class="fas fa-map-marker-alt me-2"></i>Cadastrar Local';
-        new bootstrap.Modal(document.getElementById('localModal')).show();
-    }
-    async function salvarLocal(event) {
-        event.preventDefault();
-        showLoading(true);
-        const id = document.getElementById('localId').value;
-        const descricao = document.getElementById('localDescricao').value.trim();
-        const id_sub_local = parseInt(document.getElementById('localSubLocal').value);
-        try {
-            const payload = { descricao, id_sub_local };
-            if (id) {
-                const { error } = await supabaseClient.from('local_armazenamento').update(payload).eq('id', parseInt(id));
-                if (error) throw error;
-                showAlert('Local ATUALIZADO com sucesso!');
-            } else {
-                const { error } = await supabaseClient.from('local_armazenamento').insert([payload]);
-                if (error) throw error;
-                showAlert('Local CADASTRADO com sucesso!');
-            }
-            bootstrap.Modal.getInstance(document.getElementById('localModal')).hide();
-            carregarLocais();
-        } catch (err) {
-            console.error('Erro salvarLocal:', err);
-            showAlert('Erro ao salvar: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function editarLocal(id) {
-        const local = dadosLocais.find(l => l.id === id);
-        if (!local) return;
-        document.getElementById('localId').value = local.id;
-        document.getElementById('localDescricao').value = local.descricao;
-        atualizarSelectSubLocais();
-        document.getElementById('localSubLocal').value = local.id_sub_local;
-        document.getElementById('localModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Local #' + local.id;
-        new bootstrap.Modal(document.getElementById('localModal')).show();
-    }
+// ===== CRUD ESTOQUE =====
+async function le(){ld(true);try{const{data,error}=await sb.from('controle_materiais').select('*,local_armazenamento:local_armazenamento(descricao)').order('id');if(error)throw error;dataEst=data||[];re()}catch(e){console.error(e);al('Erro ao carregar estoque: '+e.message,'danger')}finally{ld(false)}}
+function re(){const b=document.getElementById('tbEstoque');if(!dataEst.length){b.innerHTML='<tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum controle. Clique em <b>NOVO CONTROLE</b>.</td></tr>';return}b.innerHTML=dataEst.map(e=>{const sc=e.status==='Abaixo do mínimo'?'badge-abaixo':e.status==='Acima do máximo'?'badge-acima':'badge-dentro';const ac=parseFloat(e.estoque_atual)<=parseFloat(e.limite_solicitacao)?'<i class="fas fa-shopping-cart text-warning ms-1" title="Comprar!"></i>':'';return`<tr><td><span class="badge bg-light text-dark">#${e.id}</span></td><td><span class="badge bg-info text-white">${e.local_armazenamento?.descricao||'-'}</span></td><td>${fn(e.estoque_minimo)}</td><td>${fn(e.estoque_maximo)}</td><td>${fn(e.limite_solicitacao)}${ac}</td><td>${fn(e.entrada)}</td><td>${fn(e.saida)}</td><td class="fw-bold text-primary">${fn(e.estoque_atual)}</td><td><span class="badge-status ${sc}">${e.status}</span></td><td>${fd(e.data_entrada)}</td><td>${fd(e.data_saida)}</td><td><button class="crud-btn crud-btn-edit" onclick="eest(${e.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button><button class="crud-btn crud-btn-delete" onclick="cd('controle_materiais',${e.id},le)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button></td></tr>`}).join('')}
+async function salvarEstoque(e){e.preventDefault();ld(true);const id=document.getElementById('estoqueId').value,p={id_local:parseInt(document.getElementById('estLocal').value)||null,estoque_minimo:parseFloat(document.getElementById('estMin').value)||0,estoque_maximo:parseFloat(document.getElementById('estMax').value)||0,limite_solicitacao:parseFloat(document.getElementById('estLimite').value)||0,entrada:parseFloat(document.getElementById('estEnt').value)||0,saida:parseFloat(document.getElementById('estSai').value)||0,data_entrada:document.getElementById('estDtEnt').value||null,data_saida:document.getElementById('estDtSai').value||null};try{if(id){const{error}=await sb.from('controle_materiais').update(p).eq('id',parseInt(id));if(error)throw error;al('Controle ATUALIZADO!')}else{const{error}=await sb.from('controle_materiais').insert([p]);if(error)throw error;al('Controle CADASTRADO!')}hideModal('estoqueModal');le()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+function eest(id){const e=dataEst.find(x=>x.id===id);if(!e)return;document.getElementById('estoqueId').value=e.id;ul();document.getElementById('estLocal').value=e.id_local||'';document.getElementById('estMin').value=e.estoque_minimo||'';document.getElementById('estMax').value=e.estoque_maximo||'';document.getElementById('estLimite').value=e.limite_solicitacao||'';document.getElementById('estEnt').value=e.entrada||'';document.getElementById('estSai').value=e.saida||'';document.getElementById('estDtEnt').value=fdi(e.data_entrada);document.getElementById('estDtSai').value=fdi(e.data_saida);document.getElementById('titEstoque').innerHTML='<i class="fas fa-edit me-2"></i>Editar Controle #'+e.id;openModal('estoqueModal')}
 
-    // ============================================================
-    // CRUD - MATERIAIS (Inserir, Editar, Deletar)
-    // ============================================================
-    async function carregarMateriais() {
-        showLoading(true);
-        try {
-            const { data, error } = await supabaseClient.from('material').select('*, local_armazenamento:local_armazenamento(descricao)').order('id', { ascending: true });
-            if (error) throw error;
-            dadosMateriais = data || [];
-            materiaisFiltrados = [...dadosMateriais];
-            renderizarMateriais();
-            atualizarSelectMateriaisMovimentacao();
-        } catch (err) {
-            console.error('Erro carregarMateriais:', err);
-            showAlert('Erro ao carregar materiais: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function renderizarMateriais() {
-        const tbody = document.getElementById('materialTableBody');
-        const dados = materiaisFiltrados;
-        if (!dados.length) {
-            tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum material cadastrado. Clique em <b>NOVO MATERIAL</b> para adicionar.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = dados.map(m => `
-            <tr>
-                <td><span class="badge bg-light text-dark">#${m.id}</span></td>
-                <td><span class="badge bg-info text-white">${m.local_armazenamento?.descricao || '-'}</span></td>
-                <td>${m.om || '-'}</td>
-                <td><strong>${m.descricao}</strong></td>
-                <td>${m.pedido_reserva || '-'}</td>
-                <td><code>${m.codigo_sap || '-'}</code></td>
-                <td class="fw-bold">${formatarNumero(m.quantidade)}</td>
-                <td>${formatarData(m.data_entrada)}</td>
-                <td>${formatarData(m.data_saida)}</td>
-                <td>${m.local_aplicacao || '-'}</td>
-                <td>${m.recebedor || '-'}</td>
-                <td>
-                    <button class="crud-btn crud-btn-edit" onclick="editarMaterial(${m.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button>
-                    <button class="crud-btn crud-btn-delete" onclick="confirmarDelete('material', ${m.id}, carregarMateriais)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    function atualizarSelectMateriaisMovimentacao() {
-        const selects = ['movEntradaMaterial', 'movSaidaMaterial'];
-        selects.forEach(id => {
-            const select = document.getElementById(id);
-            if (!select) return;
-            const val = select.value;
-            select.innerHTML = '<option value="">Selecione o material...</option>' + 
-                dadosMateriais.map(m => `<option value="${m.id}">${m.descricao} ${m.codigo_sap ? '('+m.codigo_sap+')' : ''}</option>`).join('');
-            if (val) select.value = val;
-        });
-    }
-    function abrirModalMaterial() {
-        document.getElementById('formMaterial').reset();
-        document.getElementById('materialId').value = '';
-        atualizarSelectLocais();
-        document.getElementById('materialModalTitle').innerHTML = '<i class="fas fa-cubes me-2"></i>Cadastrar Material';
-        new bootstrap.Modal(document.getElementById('materialModal')).show();
-    }
-    async function salvarMaterial(event) {
-        event.preventDefault();
-        showLoading(true);
-        const id = document.getElementById('materialId').value;
-        const payload = {
-            id_local: parseInt(document.getElementById('materialLocal').value) || null,
-            om: document.getElementById('materialOM').value ? document.getElementById('materialOM').value : null,
-            descricao: document.getElementById('materialDescricao').value.trim(),
-            pedido_reserva: document.getElementById('materialPedidoReserva').value.trim() || null,
-            codigo_sap: document.getElementById('materialCodigoSAP').value.trim() || null,
-            quantidade: parseFloat(document.getElementById('materialQuantidade').value) || 0,
-            data_entrada: document.getElementById('materialDataEntrada').value || null,
-            data_saida: document.getElementById('materialDataSaida').value || null,
-            local_aplicacao: document.getElementById('materialLocalAplicacao').value.trim() || null,
-            recebedor: document.getElementById('materialRecebedor').value.trim() || null
-        };
-        try {
-            if (id) {
-                const { error } = await supabaseClient.from('material').update(payload).eq('id', parseInt(id));
-                if (error) throw error;
-                showAlert('Material ATUALIZADO com sucesso!');
-            } else {
-                const { error } = await supabaseClient.from('material').insert([payload]);
-                if (error) throw error;
-                showAlert('Material CADASTRADO com sucesso!');
-            }
-            bootstrap.Modal.getInstance(document.getElementById('materialModal')).hide();
-            carregarMateriais();
-        } catch (err) {
-            console.error('Erro salvarMaterial:', err);
-            showAlert('Erro ao salvar: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function editarMaterial(id) {
-        const m = dadosMateriais.find(x => x.id === id);
-        if (!m) return;
-        document.getElementById('materialId').value = m.id;
-        atualizarSelectLocais();
-        document.getElementById('materialLocal').value = m.id_local || '';
-        document.getElementById('materialOM').value = m.om || '';
-        document.getElementById('materialDescricao').value = m.descricao;
-        document.getElementById('materialPedidoReserva').value = m.pedido_reserva || '';
-        document.getElementById('materialCodigoSAP').value = m.codigo_sap || '';
-        document.getElementById('materialQuantidade').value = m.quantidade || '';
-        document.getElementById('materialDataEntrada').value = formatarDataInput(m.data_entrada);
-        document.getElementById('materialDataSaida').value = formatarDataInput(m.data_saida);
-        document.getElementById('materialLocalAplicacao').value = m.local_aplicacao || '';
-        document.getElementById('materialRecebedor').value = m.recebedor || '';
-        document.getElementById('materialModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Material #' + m.id;
-        new bootstrap.Modal(document.getElementById('materialModal')).show();
-    }
-    function aplicarFiltrosMateriais() {
-        const om = document.getElementById('filtroOM').value.trim();
-        const descricao = document.getElementById('filtroDescricao').value.trim().toLowerCase();
-        const dataEntrada = document.getElementById('filtroDataEntrada').value;
-        const dataSaida = document.getElementById('filtroDataSaida').value;
-        materiaisFiltrados = dadosMateriais.filter(m => {
-            if (om && (!m.om || !m.om.toString().includes(om))) return false;
-            if (descricao && (!m.descricao || !m.descricao.toLowerCase().includes(descricao))) return false;
-            if (dataEntrada && m.data_entrada !== dataEntrada) return false;
-            if (dataSaida && m.data_saida !== dataSaida) return false;
-            return true;
-        });
-        renderizarMateriais();
-        showAlert(`Filtro aplicado: ${materiaisFiltrados.length} resultado(s)`);
-    }
-    function limparFiltrosMateriais() {
-        document.getElementById('filtroOM').value = '';
-        document.getElementById('filtroDescricao').value = '';
-        document.getElementById('filtroDataEntrada').value = '';
-        document.getElementById('filtroDataSaida').value = '';
-        materiaisFiltrados = [...dadosMateriais];
-        renderizarMateriais();
-    }
+// ===== DELETE GENÉRICO =====
+function cd(tabela,id,callback){delCtx={t:tabela,id:id,cb:callback};openModal('confirmDeleteModal')}
+async function executarDelete(){const{t,id,cb}=delCtx;if(!t||!id)return;ld(true);try{const{error}=await sb.from(t).delete().eq('id',id);if(error)throw error;al('Registro EXCLUÍDO!');hideModal('confirmDeleteModal');if(cb)cb()}catch(e){console.error(e);al('Erro ao excluir: '+e.message,'danger')}finally{ld(false)}}
 
-    // ============================================================
-    // CRUD - CONTROLE DE ESTOQUE (Inserir, Editar, Deletar)
-    // ============================================================
-    async function carregarEstoque() {
-        showLoading(true);
-        try {
-            const { data, error } = await supabaseClient.from('controle_materiais').select('*, local_armazenamento:local_armazenamento(descricao)').order('id', { ascending: true });
-            if (error) throw error;
-            dadosEstoque = data || [];
-            renderizarEstoque();
-        } catch (err) {
-            console.error('Erro carregarEstoque:', err);
-            showAlert('Erro ao carregar estoque: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function renderizarEstoque() {
-        const tbody = document.getElementById('estoqueTableBody');
-        if (!dadosEstoque.length) {
-            tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5"><i class="fas fa-inbox me-2"></i>Nenhum controle cadastrado. Clique em <b>NOVO CONTROLE</b> para adicionar.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = dadosEstoque.map(e => {
-            const statusClass = e.status === 'Abaixo do mínimo' ? 'badge-abaixo' : e.status === 'Acima do máximo' ? 'badge-acima' : 'badge-dentro';
-            const alertaCompra = parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao) ? '<i class="fas fa-shopping-cart text-warning ms-1" title="Necessidade de compra!"></i>' : '';
-            return `
-            <tr>
-                <td><span class="badge bg-light text-dark">#${e.id}</span></td>
-                <td><span class="badge bg-info text-white">${e.local_armazenamento?.descricao || '-'}</span></td>
-                <td>${formatarNumero(e.estoque_minimo)}</td>
-                <td>${formatarNumero(e.estoque_maximo)}</td>
-                <td>${formatarNumero(e.limite_solicitacao)} ${alertaCompra}</td>
-                <td>${formatarNumero(e.entrada)}</td>
-                <td>${formatarNumero(e.saida)}</td>
-                <td class="fw-bold text-primary">${formatarNumero(e.estoque_atual)}</td>
-                <td><span class="badge-status ${statusClass}">${e.status}</span></td>
-                <td>${formatarData(e.data_entrada)}</td>
-                <td>${formatarData(e.data_saida)}</td>
-                <td>
-                    <button class="crud-btn crud-btn-edit" onclick="editarEstoque(${e.id})" title="Editar"><i class="fas fa-edit me-1"></i>Editar</button>
-                    <button class="crud-btn crud-btn-delete" onclick="confirmarDelete('controle_materiais', ${e.id}, carregarEstoque)" title="Excluir"><i class="fas fa-trash me-1"></i>Excluir</button>
-                </td>
-            </tr>
-        `}).join('');
-    }
-    function abrirModalEstoque() {
-        document.getElementById('formEstoque').reset();
-        document.getElementById('estoqueId').value = '';
-        atualizarSelectLocais();
-        document.getElementById('estoqueModalTitle').innerHTML = '<i class="fas fa-box me-2"></i>Cadastrar Controle de Estoque';
-        new bootstrap.Modal(document.getElementById('estoqueModal')).show();
-    }
-    async function salvarEstoque(event) {
-        event.preventDefault();
-        showLoading(true);
-        const id = document.getElementById('estoqueId').value;
-        const payload = {
-            id_local: parseInt(document.getElementById('estoqueLocal').value) || null,
-            estoque_minimo: parseFloat(document.getElementById('estoqueMinimo').value) || 0,
-            estoque_maximo: parseFloat(document.getElementById('estoqueMaximo').value) || 0,
-            limite_solicitacao: parseFloat(document.getElementById('estoqueLimite').value) || 0,
-            entrada: parseFloat(document.getElementById('estoqueEntrada').value) || 0,
-            saida: parseFloat(document.getElementById('estoqueSaida').value) || 0,
-            data_entrada: document.getElementById('estoqueDataEntrada').value || null,
-            data_saida: document.getElementById('estoqueDataSaida').value || null
-        };
-        try {
-            if (id) {
-                const { error } = await supabaseClient.from('controle_materiais').update(payload).eq('id', parseInt(id));
-                if (error) throw error;
-                showAlert('Controle de estoque ATUALIZADO com sucesso!');
-            } else {
-                const { error } = await supabaseClient.from('controle_materiais').insert([payload]);
-                if (error) throw error;
-                showAlert('Controle de estoque CADASTRADO com sucesso!');
-            }
-            bootstrap.Modal.getInstance(document.getElementById('estoqueModal')).hide();
-            carregarEstoque();
-        } catch (err) {
-            console.error('Erro salvarEstoque:', err);
-            showAlert('Erro ao salvar: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    function editarEstoque(id) {
-        const e = dadosEstoque.find(x => x.id === id);
-        if (!e) return;
-        document.getElementById('estoqueId').value = e.id;
-        atualizarSelectLocais();
-        document.getElementById('estoqueLocal').value = e.id_local || '';
-        document.getElementById('estoqueMinimo').value = e.estoque_minimo || '';
-        document.getElementById('estoqueMaximo').value = e.estoque_maximo || '';
-        document.getElementById('estoqueLimite').value = e.limite_solicitacao || '';
-        document.getElementById('estoqueEntrada').value = e.entrada || '';
-        document.getElementById('estoqueSaida').value = e.saida || '';
-        document.getElementById('estoqueDataEntrada').value = formatarDataInput(e.data_entrada);
-        document.getElementById('estoqueDataSaida').value = formatarDataInput(e.data_saida);
-        document.getElementById('estoqueModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Controle #' + e.id;
-        new bootstrap.Modal(document.getElementById('estoqueModal')).show();
-    }
+// ===== MOVIMENTAÇÃO =====
+async function lmo(){await lm();await le();await hm();const h=new Date().toISOString().split('T')[0];document.getElementById('movEntData').value=h;document.getElementById('movSaiData').value=h}
+async function registrarEntrada(e){e.preventDefault();ld(true);const mid=parseInt(document.getElementById('movEntMat').value),qtd=parseFloat(document.getElementById('movEntQtd').value),dt=document.getElementById('movEntData').value,rec=document.getElementById('movEntRec').value.trim();try{const m=dataMat.find(x=>x.id===mid);if(!m)throw new Error('Material não encontrado');const nq=(parseFloat(m.quantidade)||0)+qtd;const{error:e1}=await sb.from('material').update({quantidade:nq,data_entrada:dt,recebedor:rec}).eq('id',mid);if(e1)throw e1;const c=dataEst.find(x=>x.id_local===m.id_local);if(c){const ne=(parseFloat(c.entrada)||0)+qtd;const{error:e2}=await sb.from('controle_materiais').update({entrada:ne,data_entrada:dt}).eq('id',c.id);if(e2)throw e2}al('Entrada registrada!');e.target.reset();document.getElementById('movEntData').value=dt;lmo();dash()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+async function registrarSaida(e){e.preventDefault();ld(true);const mid=parseInt(document.getElementById('movSaiMat').value),qtd=parseFloat(document.getElementById('movSaiQtd').value),dt=document.getElementById('movSaiData').value,loc=document.getElementById('movSaiLoc').value.trim();try{const m=dataMat.find(x=>x.id===mid);if(!m)throw new Error('Material não encontrado');if((parseFloat(m.quantidade)||0)<qtd)throw new Error('Quantidade insuficiente');const nq=(parseFloat(m.quantidade)||0)-qtd;const{error:e1}=await sb.from('material').update({quantidade:nq,data_saida:dt,local_aplicacao:loc}).eq('id',mid);if(e1)throw e1;const c=dataEst.find(x=>x.id_local===m.id_local);if(c){const ns=(parseFloat(c.saida)||0)+qtd;const{error:e2}=await sb.from('controle_materiais').update({saida:ns,data_saida:dt}).eq('id',c.id);if(e2)throw e2}al('Saída registrada!');e.target.reset();document.getElementById('movSaiData').value=dt;lmo();dash()}catch(e){console.error(e);al('Erro: '+e.message,'danger')}finally{ld(false)}}
+async function hm(){const mov=[];dataMat.forEach(m=>{if(m.data_entrada)mov.push({t:'entrada',mat:m.descricao,qtd:m.quantidade,dt:m.data_entrada,det:m.recebedor||'-'});if(m.data_saida)mov.push({t:'saida',mat:m.descricao,qtd:m.quantidade,dt:m.data_saida,det:m.local_aplicacao||'-'})});mov.sort((a,b)=>new Date(b.dt)-new Date(a.dt));const c=document.getElementById('histMov');if(!mov.length){c.innerHTML='<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação</p></div>';return}c.innerHTML=mov.slice(0,20).map(m=>`<div class="mov-card ${m.t}"><div class="d-flex justify-content-between align-items-center"><div><span class="badge ${m.t==='entrada'?'bg-success':'bg-danger'} me-2"><i class="fas fa-arrow-${m.t==='entrada'?'down':'up'}"></i> ${m.t==='entrada'?'ENTRADA':'SAÍDA'}</span><strong>${m.mat}</strong></div><small class="text-muted">${fd(m.dt)}</small></div><div class="mt-2 small text-muted">Qtd: ${fn(m.qtd)} | ${m.t==='entrada'?'Recebedor':'Local'}: ${m.det}</div></div>`).join('')}
 
-    // ============================================================
-    // DELETE GENÉRICO COM CONFIRMAÇÃO
-    // ============================================================
-    function confirmarDelete(tabela, id, callback) {
-        deleteContext = { tabela, id, callback };
-        new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
-    }
-    async function executarDelete() {
-        const { tabela, id, callback } = deleteContext;
-        if (!tabela || !id) return;
-        showLoading(true);
-        try {
-            const { error } = await supabaseClient.from(tabela).delete().eq('id', id);
-            if (error) throw error;
-            showAlert('Registro EXCLUÍDO com sucesso!');
-            bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
-            if (callback) callback();
-        } catch (err) {
-            console.error('Erro delete:', err);
-            showAlert('Erro ao excluir: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
+// ===== DASHBOARD =====
+async function dash(){ld(true);try{await Promise.all([lms(),les(),lls()]);document.getElementById('d1').textContent=dataMat.length;document.getElementById('d2').textContent=dataEst.filter(e=>e.status==='Dentro do Intervalo').length;document.getElementById('d3').textContent=dataEst.filter(e=>e.status==='Abaixo do mínimo').length;document.getElementById('d4').textContent=dataEst.filter(e=>e.status==='Acima do máximo').length;const al=dataEst.filter(e=>e.status==='Abaixo do mínimo'||parseFloat(e.estoque_atual)<=parseFloat(e.limite_solicitacao));const ca=document.getElementById('dashAlertas');if(!al.length){ca.innerHTML='<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum alerta no momento</p></div>'}else{ca.innerHTML=al.map(a=>{const l=dataLoc.find(x=>x.id===a.id_local);return`<div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#fef2f2;border-left:4px solid #dc2626"><i class="fas fa-exclamation-triangle text-danger me-3" style="font-size:20px"></i><div class="flex-grow-1"><div class="fw-bold text-danger">${l?.descricao||'Local #'+a.id_local}</div><div class="small text-muted">Estoque: ${fn(a.estoque_atual)} / Mínimo: ${fn(a.estoque_minimo)}</div></div><span class="badge-status badge-abaixo">${a.status}</span></div>`}).join('')}hd()}catch(e){console.error(e)}finally{ld(false)}}
+async function lms(){const{data}=await sb.from('material').select('*,local_armazenamento:local_armazenamento(descricao)');dataMat=data||[]}
+async function les(){const{data}=await sb.from('controle_materiais').select('*,local_armazenamento:local_armazenamento(descricao)');dataEst=data||[]}
+async function lls(){const{data}=await sb.from('local_armazenamento').select('*');dataLoc=data||[]}
+function hd(){const mov=[];dataMat.forEach(m=>{if(m.data_entrada)mov.push({t:'entrada',mat:m.descricao,dt:m.data_entrada,det:m.recebedor});if(m.data_saida)mov.push({t:'saida',mat:m.descricao,dt:m.data_saida,det:m.local_aplicacao})});mov.sort((a,b)=>new Date(b.dt)-new Date(a.dt));const c=document.getElementById('dashMov');if(!mov.length){c.innerHTML='<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';return}c.innerHTML=mov.slice(0,10).map(m=>`<div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#f8fafc"><div class="me-3" style="width:32px;height:32px;border-radius:8px;background:${m.t==='entrada'?'#dcfce7':'#fee2e2'};color:${m.t==='entrada'?'#16a34a':'#dc2626'};display:flex;align-items:center;justify-content:center"><i class="fas fa-arrow-${m.t==='entrada'?'down':'up'}"></i></div><div class="flex-grow-1"><div class="fw-bold">${m.mat}</div><div class="small text-muted">${m.det||'-'}</div></div><small class="text-muted">${fd(m.dt)}</small></div>`).join('')}
 
-    // ============================================================
-    // MOVIMENTAÇÃO (Entrada e Saída)
-    // ============================================================
-    async function carregarMovimentacao() {
-        await carregarMateriais();
-        await carregarEstoque();
-        await carregarHistoricoMovimentacoes();
-        const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('movEntradaData').value = hoje;
-        document.getElementById('movSaidaData').value = hoje;
-    }
-    async function registrarEntrada(event) {
-        event.preventDefault();
-        showLoading(true);
-        const materialId = parseInt(document.getElementById('movEntradaMaterial').value);
-        const qtd = parseFloat(document.getElementById('movEntradaQtd').value);
-        const data = document.getElementById('movEntradaData').value;
-        const recebedor = document.getElementById('movEntradaRecebedor').value.trim();
-        try {
-            const material = dadosMateriais.find(m => m.id === materialId);
-            if (!material) throw new Error('Material não encontrado');
-            const novaQtd = (parseFloat(material.quantidade) || 0) + qtd;
-            const { error: errMat } = await supabaseClient.from('material')
-                .update({ quantidade: novaQtd, data_entrada: data, recebedor })
-                .eq('id', materialId);
-            if (errMat) throw errMat;
-            const controle = dadosEstoque.find(e => e.id_local === material.id_local);
-            if (controle) {
-                const novaEntrada = (parseFloat(controle.entrada) || 0) + qtd;
-                const { error: errEst } = await supabaseClient.from('controle_materiais')
-                    .update({ entrada: novaEntrada, data_entrada: data })
-                    .eq('id', controle.id);
-                if (errEst) throw errEst;
-            }
-            showAlert('Entrada registrada com sucesso!');
-            document.getElementById('formEntrada').reset();
-            document.getElementById('movEntradaData').value = data;
-            carregarMovimentacao();
-            carregarDashboard();
-        } catch (err) {
-            console.error('Erro registrarEntrada:', err);
-            showAlert('Erro: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    async function registrarSaida(event) {
-        event.preventDefault();
-        showLoading(true);
-        const materialId = parseInt(document.getElementById('movSaidaMaterial').value);
-        const qtd = parseFloat(document.getElementById('movSaidaQtd').value);
-        const data = document.getElementById('movSaidaData').value;
-        const localAplicacao = document.getElementById('movSaidaLocalAplicacao').value.trim();
-        try {
-            const material = dadosMateriais.find(m => m.id === materialId);
-            if (!material) throw new Error('Material não encontrado');
-            if ((parseFloat(material.quantidade) || 0) < qtd) throw new Error('Quantidade insuficiente em estoque');
-            const novaQtd = (parseFloat(material.quantidade) || 0) - qtd;
-            const { error: errMat } = await supabaseClient.from('material')
-                .update({ quantidade: novaQtd, data_saida: data, local_aplicacao: localAplicacao })
-                .eq('id', materialId);
-            if (errMat) throw errMat;
-            const controle = dadosEstoque.find(e => e.id_local === material.id_local);
-            if (controle) {
-                const novaSaida = (parseFloat(controle.saida) || 0) + qtd;
-                const { error: errEst } = await supabaseClient.from('controle_materiais')
-                    .update({ saida: novaSaida, data_saida: data })
-                    .eq('id', controle.id);
-                if (errEst) throw errEst;
-            }
-            showAlert('Saída registrada com sucesso!');
-            document.getElementById('formSaida').reset();
-            document.getElementById('movSaidaData').value = data;
-            carregarMovimentacao();
-            carregarDashboard();
-        } catch (err) {
-            console.error('Erro registrarSaida:', err);
-            showAlert('Erro: ' + err.message, 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-    async function carregarHistoricoMovimentacoes() {
-        const movimentacoes = [];
-        dadosMateriais.forEach(m => {
-            if (m.data_entrada) movimentacoes.push({ tipo: 'entrada', material: m.descricao, quantidade: m.quantidade, data: m.data_entrada, detalhe: m.recebedor || '-' });
-            if (m.data_saida) movimentacoes.push({ tipo: 'saida', material: m.descricao, quantidade: m.quantidade, data: m.data_saida, detalhe: m.local_aplicacao || '-' });
-        });
-        movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
-        const container = document.getElementById('historicoMovimentacoes');
-        if (!movimentacoes.length) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
-            return;
-        }
-        container.innerHTML = movimentacoes.slice(0, 20).map(m => `
-            <div class="mov-card ${m.tipo}">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div><span class="badge ${m.tipo === 'entrada' ? 'bg-success' : 'bg-danger'} me-2"><i class="fas fa-arrow-${m.tipo === 'entrada' ? 'down' : 'up'}"></i> ${m.tipo === 'entrada' ? 'ENTRADA' : 'SAÍDA'}</span><strong>${m.material}</strong></div>
-                    <small class="text-muted">${formatarData(m.data)}</small>
-                </div>
-                <div class="mt-2 small text-muted">Qtd: ${formatarNumero(m.quantidade)} | ${m.tipo === 'entrada' ? 'Recebedor' : 'Local Aplicação'}: ${m.detalhe}</div>
-            </div>
-        `).join('');
-    }
+// ===== EXPORTAÇÃO EXCEL =====
+function exportMateriais(){const d=matFilt.length?matFilt:dataMat;if(!d.length){al('Nenhum material para exportar','warning');return}const ed=d.map(m=>({'ID':m.id,'Local':m.local_armazenamento?.descricao||'-','OM':m.om||'-','Descrição':m.descricao,'Pedido/Reserva':m.pedido_reserva||'-','Código SAP':m.codigo_sap||'-','Quantidade':m.quantidade,'Data Entrada':fd(m.data_entrada),'Data Saída':fd(m.data_saida),'Local Aplicação':m.local_aplicacao||'-','Recebedor':m.recebedor||'-'}));const ws=XLSX.utils.json_to_sheet(ed);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Materiais');XLSX.writeFile(wb,'Materiais_Estoque_'+new Date().toISOString().split('T')[0]+'.xlsx');al('Excel exportado!')}
+function exportNecessidade(){const n=dataEst.filter(e=>parseFloat(e.estoque_atual)<=parseFloat(e.limite_solicitacao));if(!n.length){al('Nenhum material necessita de compra','info');return}const ed=n.map(e=>{const l=dataLoc.find(x=>x.id===e.id_local);return{'ID':e.id,'Local':l?.descricao||'-','Estoque Atual':e.estoque_atual,'Limite Solicitação':e.limite_solicitacao,'Estoque Mínimo':e.estoque_minimo,'Estoque Máximo':e.estoque_maximo,'Status':e.status,'Necessidade':Math.max(0,parseFloat(e.estoque_maximo)-parseFloat(e.estoque_atual))}});const ws=XLSX.utils.json_to_sheet(ed);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Necessidade_Compra');XLSX.writeFile(wb,'Necessidade_Compra_'+new Date().toISOString().split('T')[0]+'.xlsx');al('Necessidade de compra exportada!')}
+function exportAlertas(){const a=dataEst.filter(e=>e.status!=='Dentro do Intervalo');if(!a.length){al('Nenhum alerta para exportar','info');return}const ed=a.map(e=>{const l=dataLoc.find(x=>x.id===e.id_local);return{'ID':e.id,'Local':l?.descricao||'-','Estoque Atual':e.estoque_atual,'Estoque Mínimo':e.estoque_minimo,'Estoque Máximo':e.estoque_maximo,'Status':e.status,'Data Entrada':fd(e.data_entrada),'Data Saída':fd(e.data_saida)}});const ws=XLSX.utils.json_to_sheet(ed);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Alertas');XLSX.writeFile(wb,'Alertas_Estoque_'+new Date().toISOString().split('T')[0]+'.xlsx');al('Alertas exportados!')}
 
-    // ============================================================
-    // DASHBOARD
-    // ============================================================
-    async function carregarDashboard() {
-        showLoading(true);
-        try {
-            await Promise.all([carregarMateriaisSilencioso(), carregarEstoqueSilencioso(), carregarLocaisSilencioso()]);
-            document.getElementById('dashTotalMateriais').textContent = dadosMateriais.length;
-            document.getElementById('dashDentroIntervalo').textContent = dadosEstoque.filter(e => e.status === 'Dentro do Intervalo').length;
-            document.getElementById('dashAbaixoMinimo').textContent = dadosEstoque.filter(e => e.status === 'Abaixo do mínimo').length;
-            document.getElementById('dashAcimaMaximo').textContent = dadosEstoque.filter(e => e.status === 'Acima do máximo').length;
-            const alertas = dadosEstoque.filter(e => e.status === 'Abaixo do mínimo' || parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao));
-            const alertasContainer = document.getElementById('dashAlertas');
-            if (!alertas.length) {
-                alertasContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum alerta no momento</p></div>';
-            } else {
-                alertasContainer.innerHTML = alertas.map(a => {
-                    const local = dadosLocais.find(l => l.id === a.id_local);
-                    return `
-                    <div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#fef2f2;border-left:4px solid #dc2626;">
-                        <i class="fas fa-exclamation-triangle text-danger me-3" style="font-size:20px;"></i>
-                        <div class="flex-grow-1"><div class="fw-bold text-danger">${local?.descricao || 'Local #' + a.id_local}</div><div class="small text-muted">Estoque: ${formatarNumero(a.estoque_atual)} / Mínimo: ${formatarNumero(a.estoque_minimo)}</div></div>
-                        <span class="badge-status badge-abaixo">${a.status}</span>
-                    </div>`;
-                }).join('');
-            }
-            carregarHistoricoMovimentacoesDash();
-        } catch (err) {
-            console.error('Erro dashboard:', err);
-        } finally {
-            showLoading(false);
-        }
-    }
-    async function carregarMateriaisSilencioso() {
-        const { data } = await supabaseClient.from('material').select('*, local_armazenamento:local_armazenamento(descricao)');
-        dadosMateriais = data || [];
-    }
-    async function carregarEstoqueSilencioso() {
-        const { data } = await supabaseClient.from('controle_materiais').select('*, local_armazenamento:local_armazenamento(descricao)');
-        dadosEstoque = data || [];
-    }
-    async function carregarLocaisSilencioso() {
-        const { data } = await supabaseClient.from('local_armazenamento').select('*');
-        dadosLocais = data || [];
-    }
-    function carregarHistoricoMovimentacoesDash() {
-        const movimentacoes = [];
-        dadosMateriais.forEach(m => {
-            if (m.data_entrada) movimentacoes.push({ tipo: 'entrada', material: m.descricao, data: m.data_entrada, detalhe: m.recebedor });
-            if (m.data_saida) movimentacoes.push({ tipo: 'saida', material: m.descricao, data: m.data_saida, detalhe: m.local_aplicacao });
-        });
-        movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
-        const container = document.getElementById('dashMovimentacoes');
-        if (!movimentacoes.length) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
-            return;
-        }
-        container.innerHTML = movimentacoes.slice(0, 10).map(m => `
-            <div class="d-flex align-items-center p-3 mb-2 rounded" style="background:#f8fafc;">
-                <div class="me-3" style="width:32px;height:32px;border-radius:8px;background:${m.tipo === 'entrada' ? '#dcfce7' : '#fee2e2'};color:${m.tipo === 'entrada' ? '#16a34a' : '#dc2626'};display:flex;align-items:center;justify-content:center;"><i class="fas fa-arrow-${m.tipo === 'entrada' ? 'down' : 'up'}"></i></div>
-                <div class="flex-grow-1"><div class="fw-bold">${m.material}</div><div class="small text-muted">${m.detalhe || '-'}</div></div>
-                <small class="text-muted">${formatarData(m.data)}</small>
-            </div>
-        `).join('');
-    }
-
-    // ============================================================
-    // EXPORTAÇÃO EXCEL
-    // ============================================================
-    function exportarMateriaisExcel() {
-        const dados = materiaisFiltrados.length > 0 ? materiaisFiltrados : dadosMateriais;
-        if (!dados.length) { showAlert('Nenhum material para exportar', 'warning'); return; }
-        const exportData = dados.map(m => ({
-            'ID': m.id, 'Local': m.local_armazenamento?.descricao || '-', 'OM': m.om || '-', 'Descrição': m.descricao,
-            'Pedido/Reserva': m.pedido_reserva || '-', 'Código SAP': m.codigo_sap || '-', 'Quantidade': m.quantidade,
-            'Data Entrada': formatarData(m.data_entrada), 'Data Saída': formatarData(m.data_saida),
-            'Local Aplicação': m.local_aplicacao || '-', 'Recebedor': m.recebedor || '-'
-        }));
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Materiais');
-        XLSX.writeFile(wb, `Materiais_Estoque_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Excel exportado com sucesso!');
-    }
-    function exportarNecessidadeCompra() {
-        const necessidade = dadosEstoque.filter(e => parseFloat(e.estoque_atual) <= parseFloat(e.limite_solicitacao));
-        if (!necessidade.length) { showAlert('Nenhum material necessita de compra', 'info'); return; }
-        const exportData = necessidade.map(e => {
-            const local = dadosLocais.find(l => l.id === e.id_local);
-            return { 'ID': e.id, 'Local': local?.descricao || '-', 'Estoque Atual': e.estoque_atual, 'Limite Solicitação': e.limite_solicitacao,
-                'Estoque Mínimo': e.estoque_minimo, 'Estoque Máximo': e.estoque_maximo, 'Status': e.status,
-                'Necessidade': Math.max(0, parseFloat(e.estoque_maximo) - parseFloat(e.estoque_atual)) };
-        });
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Necessidade_Compra');
-        XLSX.writeFile(wb, `Necessidade_Compra_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Relatório de necessidade de compra exportado!');
-    }
-    function exportarAlertasExcel() {
-        const alertas = dadosEstoque.filter(e => e.status !== 'Dentro do Intervalo');
-        if (!alertas.length) { showAlert('Nenhum alerta para exportar', 'info'); return; }
-        const exportData = alertas.map(e => {
-            const local = dadosLocais.find(l => l.id === e.id_local);
-            return { 'ID': e.id, 'Local': local?.descricao || '-', 'Estoque Atual': e.estoque_atual, 'Estoque Mínimo': e.estoque_minimo,
-                'Estoque Máximo': e.estoque_maximo, 'Status': e.status, 'Data Entrada': formatarData(e.data_entrada), 'Data Saída': formatarData(e.data_saida) };
-        });
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Alertas');
-        XLSX.writeFile(wb, `Alertas_Estoque_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showAlert('Alertas exportados com sucesso!');
-    }
-
-    // ============================================================
-    // INICIALIZAÇÃO
-    // ============================================================
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const { error } = await supabaseClient.from('sub_local').select('id').limit(1);
-            if (error) {
-                document.getElementById('connectionStatus').className = 'badge bg-danger';
-                document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline';
-                showAlert('Erro de conexão: ' + error.message, 'danger');
-            } else {
-                showAlert('Conectado ao Supabase!');
-            }
-        } catch (err) {
-            document.getElementById('connectionStatus').className = 'badge bg-danger';
-            document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline';
-        }
-        await carregarSubLocais();
-        await carregarLocais();
-        await carregarMateriais();
-        await carregarEstoque();
-        await carregarDashboard();
-    });
-    </script>
+// ===== INICIALIZAÇÃO =====
+document.addEventListener('DOMContentLoaded',async()=>{try{const{error}=await sb.from('sub_local').select('id').limit(1);if(error){document.getElementById('connStatus').className='badge bg-danger';document.getElementById('connStatus').innerHTML='<i class="fas fa-circle me-1" style="font-size:8px"></i>Offline';al('Erro de conexão: '+error.message,'danger')}else{al('Conectado ao Supabase!')}}catch(e){document.getElementById('connStatus').className='badge bg-danger';document.getElementById('connStatus').innerHTML='<i class="fas fa-circle me-1" style="font-size:8px"></i>Offline'}await ls();await ll();await lm();await le();await dash()});
+</script>
 </body>
 </html>
