@@ -4,11 +4,11 @@ let materiaisCache = [];
 let movimentacoesCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('mov-data').value = hojeISO();
+    document.getElementById('modal-mov-data').value = hojeISO();
     await carregarMateriais();
     await carregarMovimentacoes();
 
-    document.getElementById('form-movimentacao').addEventListener('submit', registrarMovimentacao);
+    // Modal de movimentação
 });
 
 async function carregarMateriais() {
@@ -21,15 +21,19 @@ async function carregarMateriais() {
 
         if (error) throw error;
         materiaisCache = data || [];
-        const select = document.getElementById('mov-material');
-    select.innerHTML = '<option value="">Selecione um material...</option>';
-    materiaisCache.forEach(m => {
-        const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
-        opt.dataset.disponivel = disponivel;
-        select.appendChild(opt);
+        // Preenche selects de material (form principal e modal)
+    ['mov-material', 'modal-mov-material'].forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        select.innerHTML = '<option value="">Selecione um material...</option>';
+        materiaisCache.forEach(m => {
+            const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
+            opt.dataset.disponivel = disponivel;
+            select.appendChild(opt);
+        });
     });
         carregarSelect('filtro-material', materiaisCache, 'id', 'nome', 'Todos os materiais');
     } catch (erro) {
@@ -76,13 +80,12 @@ function renderizarMovimentacoes(dados) {
     `).join('');
 }
 
-async function registrarMovimentacao(e) {
-    e.preventDefault();
+async function salvarMovimentacaoModal() {
     if (!validarFormulario('form-movimentacao')) return;
 
-    const tipo = document.getElementById('mov-tipo').value;
-    const materialId = document.getElementById('mov-material').value;
-    const quantidade = parseInt(document.getElementById('mov-quantidade').value);
+    const tipo = document.getElementById('modal-mov-tipo').value;
+    const materialId = document.getElementById('modal-mov-material').value;
+    const quantidade = parseInt(document.getElementById('modal-mov-quantidade').value);
     const material = materiaisCache.find(m => m.id === materialId);
 
     const disponivel = material.quantidade_atual - (material.quantidade_reservada || 0);
@@ -94,15 +97,15 @@ async function registrarMovimentacao(e) {
     toggleLoading(true);
     try {
         // CORREÇÃO DEFINITIVA: enviar apenas YYYY-MM-DD sem hora/timezone
-        const dataInput = document.getElementById('mov-data').value;
+        const dataInput = document.getElementById('modal-mov-data').value;
 
         const movData = {
             material_id: materialId,
             tipo: tipo,
             quantidade: quantidade,
             data_movimentacao: dataInput,  // Formato: "2026-08-01"
-            responsavel: document.getElementById('mov-responsavel').value.trim() || null,
-            documento_referencia: document.getElementById('mov-documento').value.trim() || null
+            responsavel: document.getElementById('modal-mov-responsavel').value.trim() || null,
+            documento_referencia: document.getElementById('modal-mov-documento').value.trim() || null
         };
 
         const { error: errMov } = await sb.from('movimentacoes').insert(movData);
@@ -123,7 +126,7 @@ async function registrarMovimentacao(e) {
 
         mostrarToast(`${tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} registrada com sucesso!`);
         limparFormulario('form-movimentacao');
-        document.getElementById('mov-data').value = hojeISO();
+        document.getElementById('modal-mov-data').value = hojeISO();
         await carregarMovimentacoes();
 
     } catch (erro) {
@@ -193,4 +196,21 @@ function exportarMovimentacoes() {
     ];
 
     exportarExcel(dadosExport, 'movimentacoes_estoque', colunas);
+}
+
+
+// ===== MODAL MOVIMENTAÇÃO =====
+
+function abrirModalNovaMovimentacao() {
+    document.getElementById('modal-mov-tipo').value = '';
+    document.getElementById('modal-mov-material').value = '';
+    document.getElementById('modal-mov-quantidade').value = '';
+    document.getElementById('modal-mov-data').value = hojeISO();
+    document.getElementById('modal-mov-responsavel').value = '';
+    document.getElementById('modal-mov-documento').value = '';
+    document.getElementById('modal-movimentacao').classList.remove('hidden');
+}
+
+function fecharModalMovimentacao() {
+    document.getElementById('modal-movimentacao').classList.add('hidden');
 }

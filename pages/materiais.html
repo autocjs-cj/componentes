@@ -20,71 +20,8 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3>📝 Formulário de Material</h3>
-                </div>
-                <form id="form-material">
-                    <input type="hidden" id="material-id">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Código SAP <span class="required">*</span></label>
-                            <input type="text" id="material-codigo" required placeholder="Ex: MAT-001">
-                        </div>
-                        <div class="form-group">
-                            <label>Nome <span class="required">*</span></label>
-                            <input type="text" id="material-nome" required placeholder="Nome do material">
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Descrição</label>
-                            <textarea id="material-descricao" placeholder="Descrição detalhada do material..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Unidade de Medida</label>
-                            <select id="material-unidade">
-                                <option value="UN">Unidade (UN)</option>
-                                <option value="KG">Quilograma (KG)</option>
-                                <option value="LT">Litro (LT)</option>
-                                <option value="MT">Metro (MT)</option>
-                                <option value="CX">Caixa (CX)</option>
-                                <option value="PC">Pacote (PC)</option>
-                                <option value="RL">Rolo (RL)</option>
-                                <option value="PAR">Par (PAR)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Local de Armazenamento</label>
-                            <select id="material-local">
-                                <option value="">Selecione um local...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Sub-local (Prateleira/Gaveta)</label>
-                            <select id="material-sublocal">
-                                <option value="">Selecione um sub-local...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Estoque Mínimo</label>
-                            <input type="number" id="material-estoque-min" min="0" value="0" placeholder="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Estoque Máximo</label>
-                            <input type="number" id="material-estoque-max" min="0" value="999999" placeholder="999999">
-                        </div>
-                        <div class="form-group">
-                            <label>Limite para Compra</label>
-                            <input type="number" id="material-limite-compra" min="0" value="0" placeholder="0">
-                        </div>
-                    </div>
-                    <div class="btn-group mt-2">
-                        <button type="submit" class="btn btn-primary">💾 Salvar Material</button>
-                        <button type="button" class="btn btn-secondary" onclick="limparFormulario('form-material')">🔄 Limpar</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
                     <h3>📦 Materiais Cadastrados</h3>
+                    <button class="btn btn-primary" onclick="abrirModalNovoMaterial()">+ Novo Material</button>
                     <div class="btn-group">
                         <input type="text" id="buscar-material" placeholder="🔍 Buscar material..." style="width: 250px;">
                         <button class="btn btn-success" onclick="exportarMateriais()">📊 Exportar Excel</button>
@@ -114,83 +51,74 @@
 
             
 
-    <!-- MODAL DETALHES / EDIÇÃO DO MATERIAL -->
+    <!-- MODAL CADASTRO / EDIÇÃO / VISUALIZAÇÃO DO MATERIAL -->
     <div id="modal-material" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 700px; text-align: left;">
-            <h3 id="titulo-modal-material">📋 Detalhes do Material</h3>
+        <div class="modal-confirm" style="max-width: 600px; text-align: left;">
+            <h3 id="titulo-modal-material">📋 Material</h3>
             <form id="form-modal-material" class="mt-2">
                 <input type="hidden" id="modal-material-id">
-                <input type="hidden" id="modal-material-modo" value="visualizar">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Código SAP <span class="required">*</span></label>
-                        <input type="text" id="modal-material-codigo" required placeholder="Ex: MAT-001">
-                    </div>
-                    <div class="form-group">
-                        <label>Nome <span class="required">*</span></label>
-                        <input type="text" id="modal-material-nome" required placeholder="Nome do material">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Descrição</label>
-                        <textarea id="modal-material-descricao" placeholder="Descrição detalhada..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Unidade de Medida</label>
-                        <select id="modal-material-unidade">
-                            <option value="UN">Unidade (UN)</option>
-                            <option value="KG">Quilograma (KG)</option>
-                            <option value="LT">Litro (LT)</option>
-                            <option value="MT">Metro (MT)</option>
-                            <option value="CX">Caixa (CX)</option>
-                            <option value="PC">Pacote (PC)</option>
-                            <option value="RL">Rolo (RL)</option>
-                            <option value="PAR">Par (PAR)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Local de Armazenamento</label>
-                        <select id="modal-material-local">
-                            <option value="">Selecione um local...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Sub-local</label>
-                        <select id="modal-material-sublocal">
-                            <option value="">Selecione um sub-local...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Estoque Mínimo</label>
-                        <input type="number" id="modal-material-estoque-min" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Estoque Máximo</label>
-                        <input type="number" id="modal-material-estoque-max" min="0" value="999999">
-                    </div>
-                    <div class="form-group">
-                        <label>Limite para Compra</label>
-                        <input type="number" id="modal-material-limite-compra" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Qtd Atual</label>
-                        <input type="number" id="modal-material-qtd-atual" min="0" value="0" readonly style="background:#f1f5f9;">
-                    </div>
-                    <div class="form-group">
-                        <label>Reservado</label>
-                        <input type="number" id="modal-material-qtd-reservada" min="0" value="0" readonly style="background:#f1f5f9;">
+                <input type="hidden" id="modal-material-modo" value="novo">
+                <div class="form-group">
+                    <label>Código SAP <span class="required">*</span></label>
+                    <input type="text" id="modal-material-codigo" required placeholder="Ex: MAT-001">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Nome <span class="required">*</span></label>
+                    <input type="text" id="modal-material-nome" required placeholder="Nome do material">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Descrição</label>
+                    <textarea id="modal-material-descricao" placeholder="Descrição detalhada..."></textarea>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Unidade de Medida</label>
+                    <select id="modal-material-unidade">
+                        <option value="UN">Unidade (UN)</option>
+                        <option value="KG">Quilograma (KG)</option>
+                        <option value="LT">Litro (LT)</option>
+                        <option value="MT">Metro (MT)</option>
+                        <option value="CX">Caixa (CX)</option>
+                        <option value="PC">Pacote (PC)</option>
+                        <option value="RL">Rolo (RL)</option>
+                        <option value="PAR">Par (PAR)</option>
+                    </select>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Local de Armazenamento</label>
+                    <select id="modal-material-local">
+                        <option value="">Selecione um local...</option>
+                    </select>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Sub-local</label>
+                    <select id="modal-material-sublocal">
+                        <option value="">Selecione um sub-local...</option>
+                    </select>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Estoque Mínimo</label>
+                    <input type="number" id="modal-material-estoque-min" min="0" value="0">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Estoque Máximo</label>
+                    <input type="number" id="modal-material-estoque-max" min="0" value="999999">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Limite para Compra</label>
+                    <input type="number" id="modal-material-limite-compra" min="0" value="0">
+                </div>
+                <div id="modal-info-estoque" class="hidden mt-1" style="background:#f8fafc;padding:12px;border-radius:8px;">
+                    <div style="display:flex;gap:24px;font-size:0.85rem;">
+                        <div><strong>Qtd Atual:</strong> <span id="modal-info-atual">0</span></div>
+                        <div><strong>Reservado:</strong> <span id="modal-info-reservada">0</span></div>
+                        <div><strong>Disponível:</strong> <span id="modal-info-disponivel">0</span></div>
                     </div>
                 </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarMaterialDoModal()">💾 Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalMaterial()">Cancelar</button>
+                </div>
             </form>
-            <div class="btn-group mt-2" id="acoes-modal-material-visualizar">
-                <button type="button" class="btn btn-primary" onclick="ativarModoEdicaoModal()">✏️ Editar</button>
-                <button type="button" class="btn btn-warning" onclick="ativarModoDuplicarModal()">📋 Duplicar</button>
-                <button type="button" class="btn btn-danger" onclick="excluirMaterialDoModal()">🗑️ Excluir</button>
-                <button type="button" class="btn btn-secondary" onclick="fecharModalMaterial()">Fechar</button>
-            </div>
-            <div class="btn-group mt-2 hidden" id="acoes-modal-material-editar">
-                <button type="button" class="btn btn-primary" onclick="salvarMaterialDoModal()">💾 Salvar</button>
-                <button type="button" class="btn btn-secondary" onclick="ativarModoVisualizarModal()">Cancelar</button>
-            </div>
         </div>
     </div>
 

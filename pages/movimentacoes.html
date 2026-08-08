@@ -20,51 +20,8 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3>📝 Registrar Recebimento / Retirada</h3>
-                </div>
-                <form id="form-movimentacao">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Tipo <span class="required">*</span></label>
-                            <select id="mov-tipo" required>
-                                <option value="">Selecione...</option>
-                                <option value="ENTRADA">📥 Entrada (Recebimento)</option>
-                                <option value="SAIDA">📤 Saída (Retirada)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Material <span class="required">*</span></label>
-                            <select id="mov-material" required>
-                                <option value="">Selecione um material...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Quantidade <span class="required">*</span></label>
-                            <input type="number" id="mov-quantidade" min="1" required placeholder="Ex: 10">
-                        </div>
-                        <div class="form-group">
-                            <label>Data <span class="required">*</span></label>
-                            <input type="date" id="mov-data" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Responsável</label>
-                            <input type="text" id="mov-responsavel" placeholder="Nome do responsável">
-                        </div>
-                        <div class="form-group">
-                            <label>OM / Pedido / Reserva</label>
-                            <input type="text" id="mov-documento" placeholder="Nº OM, Pedido ou Reserva">
-                        </div>
-                    </div>
-                    <div class="btn-group mt-2">
-                        <button type="submit" class="btn btn-primary">💾 Registrar Movimentação</button>
-                        <button type="button" class="btn btn-secondary" onclick="limparFormulario('form-movimentacao')">🔄 Limpar</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
                     <h3>📋 Histórico</h3>
+                    <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Nova Movimentação</button>
                     <div class="btn-group">
                         <input type="date" id="filtro-data-inicio" style="width: 150px;">
                         <input type="date" id="filtro-data-fim" style="width: 150px;">
@@ -101,6 +58,50 @@
             </div>
 
             
+
+    <!-- MODAL REGISTRAR MOVIMENTAÇÃO -->
+    <div id="modal-movimentacao" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 500px; text-align: left;">
+            <h3 id="titulo-modal-movimentacao">📝 Registrar Movimentação</h3>
+            <form id="form-modal-movimentacao" class="mt-2">
+                <div class="form-group">
+                    <label>Tipo <span class="required">*</span></label>
+                    <select id="modal-mov-tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="ENTRADA">📥 Entrada (Recebimento)</option>
+                        <option value="SAIDA">📤 Saída (Retirada)</option>
+                    </select>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Material <span class="required">*</span></label>
+                    <select id="modal-mov-material" required>
+                        <option value="">Selecione um material...</option>
+                    </select>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Quantidade <span class="required">*</span></label>
+                    <input type="number" id="modal-mov-quantidade" min="1" required placeholder="Ex: 10">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Data <span class="required">*</span></label>
+                    <input type="date" id="modal-mov-data" required>
+                </div>
+                <div class="form-group mt-1">
+                    <label>Responsável</label>
+                    <input type="text" id="modal-mov-responsavel" placeholder="Nome do responsável">
+                </div>
+                <div class="form-group mt-1">
+                    <label>OM / Pedido / Reserva</label>
+                    <input type="text" id="modal-mov-documento" placeholder="Nº OM, Pedido ou Reserva">
+                </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarMovimentacaoModal()">💾 Registrar</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalMovimentacao()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
         </main>
     </div>
     <script src="../js/pages/movimentacoes.js"></script>

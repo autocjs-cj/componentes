@@ -233,17 +233,44 @@ function exportarMateriais() {
 
 
 
-// ===== MODAL DETALHES / EDIÇÃO / DUPLICAÇÃO DO MATERIAL =====
 
-let materialModalId = null;
+// ===== MODAL MATERIAL (estilo Locais) =====
+
+function abrirModalNovoMaterial() {
+    document.getElementById('modal-material-id').value = '';
+    document.getElementById('modal-material-modo').value = 'novo';
+    document.getElementById('titulo-modal-material').textContent = '📋 Novo Material';
+    document.getElementById('modal-material-codigo').value = '';
+    document.getElementById('modal-material-nome').value = '';
+    document.getElementById('modal-material-descricao').value = '';
+    document.getElementById('modal-material-unidade').value = 'UN';
+    document.getElementById('modal-material-estoque-min').value = 0;
+    document.getElementById('modal-material-estoque-max').value = 999999;
+    document.getElementById('modal-material-limite-compra').value = 0;
+    document.getElementById('modal-info-estoque').classList.add('hidden');
+
+    carregarSelectModal('modal-material-local', locaisCache, 'id', 'nome', 'Selecione um local...');
+    carregarSelectModal('modal-material-sublocal', [], 'id', 'nome', 'Selecione um sub-local...');
+
+    // Habilitar todos os campos
+    ['modal-material-codigo', 'modal-material-nome', 'modal-material-descricao',
+     'modal-material-unidade', 'modal-material-local', 'modal-material-sublocal',
+     'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra']
+    .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.removeAttribute('readonly'); el.removeAttribute('disabled'); }
+    });
+
+    document.getElementById('modal-material').classList.remove('hidden');
+}
 
 function abrirModalMaterial(id) {
-    materialModalId = id;
     const m = materiaisCache.find(x => x.id === id);
     if (!m) return;
 
-    // Preencher todos os campos
     document.getElementById('modal-material-id').value = m.id;
+    document.getElementById('modal-material-modo').value = 'editar';
+    document.getElementById('titulo-modal-material').textContent = '✏️ Editar Material';
     document.getElementById('modal-material-codigo').value = m.codigo;
     document.getElementById('modal-material-nome').value = m.nome;
     document.getElementById('modal-material-descricao').value = m.descricao || '';
@@ -251,84 +278,23 @@ function abrirModalMaterial(id) {
     document.getElementById('modal-material-estoque-min').value = m.estoque_minimo;
     document.getElementById('modal-material-estoque-max').value = m.estoque_maximo;
     document.getElementById('modal-material-limite-compra').value = m.limite_compra;
-    document.getElementById('modal-material-qtd-atual').value = m.quantidade_atual;
-    document.getElementById('modal-material-qtd-reservada').value = m.quantidade_reservada || 0;
 
-    // Local e sublocal
+    document.getElementById('modal-info-atual').textContent = m.quantidade_atual;
+    document.getElementById('modal-info-reservada').textContent = m.quantidade_reservada || 0;
+    document.getElementById('modal-info-disponivel').textContent = m.quantidade_atual - (m.quantidade_reservada || 0);
+    document.getElementById('modal-info-estoque').classList.remove('hidden');
+
     const localId = m.sublocais ? sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id : '';
     carregarSelectModal('modal-material-local', locaisCache, 'id', 'nome', 'Selecione um local...');
     document.getElementById('modal-material-local').value = localId || '';
     filtrarSublocaisModal();
     document.getElementById('modal-material-sublocal').value = m.sublocal_id || '';
 
-    ativarModoVisualizarModal();
     document.getElementById('modal-material').classList.remove('hidden');
 }
 
 function fecharModalMaterial() {
     document.getElementById('modal-material').classList.add('hidden');
-    materialModalId = null;
-}
-
-function ativarModoVisualizarModal() {
-    document.getElementById('modal-material-modo').value = 'visualizar';
-    document.getElementById('titulo-modal-material').textContent = '📋 Detalhes do Material';
-
-    // Desabilitar todos os campos editáveis
-    const camposEditaveis = ['modal-material-codigo', 'modal-material-nome', 'modal-material-descricao',
-        'modal-material-unidade', 'modal-material-local', 'modal-material-sublocal',
-        'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra'];
-    camposEditaveis.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.setAttribute('readonly', 'readonly'); el.setAttribute('disabled', 'disabled'); }
-    });
-
-    document.getElementById('acoes-modal-material-visualizar').classList.remove('hidden');
-    document.getElementById('acoes-modal-material-editar').classList.add('hidden');
-}
-
-function ativarModoEdicaoModal() {
-    document.getElementById('modal-material-modo').value = 'editar';
-    document.getElementById('titulo-modal-material').textContent = '✏️ Editar Material';
-
-    // Habilitar campos editáveis
-    const camposEditaveis = ['modal-material-codigo', 'modal-material-nome', 'modal-material-descricao',
-        'modal-material-unidade', 'modal-material-local', 'modal-material-sublocal',
-        'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra'];
-    camposEditaveis.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.removeAttribute('readonly'); el.removeAttribute('disabled'); }
-    });
-
-    document.getElementById('acoes-modal-material-visualizar').classList.add('hidden');
-    document.getElementById('acoes-modal-material-editar').classList.remove('hidden');
-}
-
-function ativarModoDuplicarModal() {
-    const m = materiaisCache.find(x => x.id === materialModalId);
-    if (!m) return;
-
-    document.getElementById('modal-material-modo').value = 'duplicar';
-    document.getElementById('titulo-modal-material').textContent = '📋 Duplicar Material';
-
-    // Alterar código e nome para indicar cópia
-    document.getElementById('modal-material-id').value = '';
-    document.getElementById('modal-material-codigo').value = m.codigo + '-COPY';
-    document.getElementById('modal-material-nome').value = m.nome + ' (Cópia)';
-    document.getElementById('modal-material-qtd-atual').value = 0;
-    document.getElementById('modal-material-qtd-reservada').value = 0;
-
-    // Habilitar campos editáveis
-    const camposEditaveis = ['modal-material-codigo', 'modal-material-nome', 'modal-material-descricao',
-        'modal-material-unidade', 'modal-material-local', 'modal-material-sublocal',
-        'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra'];
-    camposEditaveis.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.removeAttribute('readonly'); el.removeAttribute('disabled'); }
-    });
-
-    document.getElementById('acoes-modal-material-visualizar').classList.add('hidden');
-    document.getElementById('acoes-modal-material-editar').classList.remove('hidden');
 }
 
 async function salvarMaterialDoModal() {
@@ -367,7 +333,6 @@ async function salvarMaterialDoModal() {
         }
         fecharModalMaterial();
         await carregarMateriais();
-        await carregarLocaisSublocais();
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao salvar: ' + (erro.message || 'Verifique o código'), 'erro');
@@ -376,16 +341,13 @@ async function salvarMaterialDoModal() {
     }
 }
 
-async function excluirMaterialDoModal() {
-    if (!materialModalId) return;
-    if (!await confirmarExclusao('Tem certeza que deseja excluir este material?')) return;
-
+async function excluirMaterial(id) {
+    if (!await confirmarExclusao()) return;
     toggleLoading(true);
     try {
-        const { error } = await sb.from('materiais').update({ ativo: false }).eq('id', materialModalId);
+        const { error } = await sb.from('materiais').update({ ativo: false }).eq('id', id);
         if (error) throw error;
         mostrarToast('Material excluído com sucesso!');
-        fecharModalMaterial();
         await carregarMateriais();
     } catch (erro) {
         console.error(erro);
@@ -395,7 +357,6 @@ async function excluirMaterialDoModal() {
     }
 }
 
-// Helpers do modal
 function carregarSelectModal(selectId, dados, valueField, textField, placeholder) {
     const select = document.getElementById(selectId);
     if (!select) return;
@@ -414,10 +375,7 @@ function filtrarSublocaisModal() {
     carregarSelectModal('modal-material-sublocal', filtrados, 'id', 'nome', 'Selecione um sub-local...');
 }
 
-// Event listener para o select de local no modal
 document.addEventListener('DOMContentLoaded', () => {
     const localSelect = document.getElementById('modal-material-local');
-    if (localSelect) {
-        localSelect.addEventListener('change', filtrarSublocaisModal);
-    }
+    if (localSelect) localSelect.addEventListener('change', filtrarSublocaisModal);
 });

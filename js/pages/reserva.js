@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMateriais();
     await carregarReservas();
 
-    document.getElementById('form-reserva').addEventListener('submit', salvarReserva);
+    // Modal de reserva
     document.getElementById('buscar-reserva').addEventListener('input', buscarReservas);
 });
 
@@ -34,7 +34,7 @@ async function carregarMateriais() {
 }
 
 function atualizarSelectsMateriais() {
-    document.querySelectorAll('.reserva-material').forEach(select => {
+    document.querySelectorAll('#modal-itens-reserva-container .reserva-material, #itens-reserva-container .reserva-material').forEach(select => {
         const valAtual = select.value;
         select.innerHTML = '<option value="">Selecione um material...</option>';
         materiaisCache.forEach(m => {
@@ -74,7 +74,7 @@ function adicionarItemReserva() {
 }
 
 function removerItemReserva(btn) {
-    const rows = document.querySelectorAll('.item-reserva-row');
+    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
     if (rows.length <= 1) {
         mostrarToast('A reserva deve ter pelo menos um item', 'erro');
         return;
@@ -82,13 +82,12 @@ function removerItemReserva(btn) {
     btn.closest('.item-reserva-row').remove();
 }
 
-async function salvarReserva(e) {
-    e.preventDefault();
+async function salvarReservaModal() {
 
-    const solicitante = document.getElementById('reserva-solicitante').value.trim();
-    const documento = document.getElementById('reserva-documento').value.trim();
-    const dataReserva = document.getElementById('reserva-data').value;
-    const observacao = document.getElementById('reserva-observacao').value.trim();
+    const solicitante = document.getElementById('modal-reserva-solicitante').value.trim();
+    const documento = document.getElementById('modal-reserva-documento').value.trim();
+    const dataReserva = document.getElementById('modal-reserva-data').value;
+    const observacao = document.getElementById('modal-reserva-observacao').value.trim();
 
     if (!solicitante || !documento || !dataReserva) {
         mostrarToast('Preencha todos os campos obrigatórios', 'erro');
@@ -96,7 +95,7 @@ async function salvarReserva(e) {
     }
 
     // Coletar itens
-    const rows = document.querySelectorAll('.item-reserva-row');
+    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
     const itens = [];
     for (const row of rows) {
         const materialId = row.querySelector('.reserva-material').value;
@@ -165,7 +164,7 @@ async function salvarReserva(e) {
         }
 
         mostrarToast('Reserva cadastrada com sucesso! Estoque bloqueado.');
-        limparFormularioReserva();
+        fecharModalNovaReserva();
         await carregarMateriais();
         await carregarReservas();
 
@@ -181,11 +180,10 @@ async function salvarReserva(e) {
     }
 }
 
-function limparFormularioReserva() {
-    document.getElementById('form-reserva').reset();
-    document.getElementById('reserva-data').value = hojeISO();
-    document.getElementById('reserva-id').value = '';
-    document.getElementById('itens-reserva-container').innerHTML = `
+function limparFormularioReservaModal() {
+    document.getElementById('form-modal-reserva').reset();
+    document.getElementById('modal-reserva-data').value = hojeISO();
+    document.getElementById('modal-itens-reserva-container').innerHTML = `
         <div class="form-grid item-reserva-row">
             <div class="form-group">
                 <label>Material <span class="required">*</span></label>
@@ -198,7 +196,7 @@ function limparFormularioReserva() {
                 <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
             </div>
             <div class="form-group" style="display:flex;align-items:flex-end;">
-                <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReserva(this)">🗑️ Remover</button>
+                <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
             </div>
         </div>
     `;
@@ -458,4 +456,48 @@ function exportarReservas() {
     ];
 
     exportarExcel(dadosExport, 'reservas_materiais', colunas);
+}
+
+
+// ===== MODAL NOVA RESERVA =====
+
+function abrirModalNovaReserva() {
+    limparFormularioReservaModal();
+    document.getElementById('modal-nova-reserva').classList.remove('hidden');
+}
+
+function fecharModalNovaReserva() {
+    document.getElementById('modal-nova-reserva').classList.add('hidden');
+}
+
+function adicionarItemReservaModal() {
+    const container = document.getElementById('modal-itens-reserva-container');
+    const row = document.createElement('div');
+    row.className = 'form-grid item-reserva-row';
+    row.innerHTML = `
+        <div class="form-group">
+            <label>Material <span class="required">*</span></label>
+            <select class="reserva-material" required>
+                <option value="">Selecione um material...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Quantidade <span class="required">*</span></label>
+            <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;">
+            <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
+        </div>
+    `;
+    container.appendChild(row);
+    atualizarSelectsMateriais();
+}
+
+function removerItemReservaModal(btn) {
+    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
+    if (rows.length <= 1) {
+        mostrarToast('A reserva deve ter pelo menos um item', 'erro');
+        return;
+    }
+    btn.closest('.item-reserva-row').remove();
 }
