@@ -83,32 +83,51 @@ async function confirmarExclusao(mensagem = 'Tem certeza que deseja excluir?') {
 
 // Exportar para Excel (CSV com BOM para acentuação)
 function exportarExcel(dados, nomeArquivo, colunas) {
-    let csv = '\uFEFF'; // BOM para UTF-8
+    function gerarXLSX() {
+        const wb = XLSX.utils.book_new();
+        const aoa = [];
 
-    // Cabeçalho
-    csv += colunas.map(c => `"${c.titulo}"`).join(';') + '\n';
+        // Cabeçalho
+        aoa.push(colunas.map(c => c.titulo));
 
-    // Dados
-    dados.forEach(item => {
-        csv += colunas.map(c => {
-            let valor = item[c.campo];
-            if (valor === null || valor === undefined) valor = '';
-            if (c.formato === 'data') valor = formatarData(valor);
-            return `"${String(valor).replace(/"/g, '""')}"`;
-        }).join(';') + '\n';
-    });
+        // Dados
+        dados.forEach(item => {
+            aoa.push(colunas.map(c => {
+                let valor = item[c.campo];
+                if (valor === null || valor === undefined) valor = '';
+                if (c.formato === 'data') valor = formatarData(valor);
+                return valor;
+            }));
+        });
 
-    const blob = new Blob([csv], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = nomeArquivo + '.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        XLSX.utils.book_append_sheet(wb, ws, 'Dados');
 
-    mostrarToast(`Arquivo "${nomeArquivo}.xlsx" exportado com sucesso!`);
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nomeArquivo + '.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        mostrarToast(`Arquivo "${nomeArquivo}.xlsx" exportado com sucesso!`);
+    }
+
+    if (typeof XLSX !== 'undefined') {
+        gerarXLSX();
+    } else {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+        script.onload = gerarXLSX;
+        script.onerror = () => {
+            mostrarToast('Erro ao carregar biblioteca de exportação. Tente novamente.', 'erro');
+        };
+        document.head.appendChild(script);
+    }
 }
-
 // Carrega select com opções
 function carregarSelect(selectId, dados, valueField, textField, placeholder = 'Selecione...') {
     const select = document.getElementById(selectId);
