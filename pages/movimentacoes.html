@@ -22,7 +22,10 @@
                 <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h3>📋 Histórico de Movimentações</h3>
-                        <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Nova Movimentação</button>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Novo</button>
+                            <button class="btn btn-success" onclick="exportarMovimentacoes()">📊 Exportar</button>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
                         <div class="form-group" style="margin: 0; min-width: 140px;">
@@ -48,9 +51,8 @@
                             </select>
                         </div>
                         <div class="btn-group" style="margin-bottom: 1px;">
-                            <button class="btn btn-outline" onclick="filtrarMovimentacoes()" title="Filtrar">🔍</button>
-                            <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()" title="Limpar">🔄</button>
-                            <button class="btn btn-success" onclick="exportarMovimentacoes()" title="Exportar">📊 Exportar</button>
+                            <button class="btn btn-outline" onclick="filtrarMovimentacoes()" title="Filtrar">🔍 Filtrar</button>
+                            <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()" title="Limpar">🔄 Limpar</button>
                         </div>
                     </div>
                 </div>
