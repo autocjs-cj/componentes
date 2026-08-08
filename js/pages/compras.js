@@ -19,8 +19,8 @@ async function carregarCompras() {
 
         if (error) throw error;
 
-        // Filtrar materiais com estoque <= estoque_minimo
-        const materiais = (data || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
+        // NOVA REGRA: quantidade_atual <= limite_compra
+        const materiais = (data || []).filter(m => m.quantidade_atual <= m.limite_compra);
 
         comprasCache = materiais;
         renderizarCompras();

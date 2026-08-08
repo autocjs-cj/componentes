@@ -22,7 +22,7 @@ async function carregarDashboard() {
             .eq('ativo', true);
         document.getElementById('total-locais').textContent = countLocais || 0;
 
-        // Buscar todos os materiais ativos e filtrar críticos no cliente
+        // Buscar todos os materiais ativos
         const { data: todosMateriais, error: errMat } = await sb
             .from('materiais')
             .select('*, sublocais(nome, locais(nome))')
@@ -30,9 +30,13 @@ async function carregarDashboard() {
 
         if (errMat) throw errMat;
 
+        // Estoque crítico: quantidade_atual <= estoque_minimo
         const materiaisCriticos = (todosMateriais || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
         document.getElementById('total-criticos').textContent = materiaisCriticos.length;
-        document.getElementById('total-compras').textContent = materiaisCriticos.length;
+
+        // NOVA REGRA - Compras necessárias: quantidade_atual <= limite_compra
+        const materiaisCompra = (todosMateriais || []).filter(m => m.quantidade_atual <= m.limite_compra);
+        document.getElementById('total-compras').textContent = materiaisCompra.length;
 
         // Últimas movimentações
         const { data: movimentacoes, error: errMov } = await sb
