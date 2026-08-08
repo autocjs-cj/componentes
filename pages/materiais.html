@@ -113,6 +113,21 @@
             </div>
 
             
+
+    <!-- MODAL DETALHES DO MATERIAL -->
+    <div id="modal-material" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 650px; text-align: left;">
+            <h3 id="titulo-modal-material">📋 Detalhes do Material</h3>
+            <div id="conteudo-modal-material" class="mt-2"></div>
+            <div class="btn-group mt-2" id="acoes-modal-material">
+                <button type="button" class="btn btn-primary" id="btn-editar-material" onclick="editarMaterialDoModal()">✏️ Editar</button>
+                <button type="button" class="btn btn-warning" id="btn-duplicar-material" onclick="duplicarMaterialDoModal()">📋 Duplicar</button>
+                <button type="button" class="btn btn-danger" id="btn-excluir-material" onclick="excluirMaterialDoModal()">🗑️ Excluir</button>
+                <button type="button" class="btn btn-secondary" onclick="fecharModalMaterial()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
         </main>
     </div>
     <script src="../js/pages/materiais.js"></script>

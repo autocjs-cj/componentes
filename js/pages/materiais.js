@@ -78,9 +78,7 @@ function renderizarMateriais(lista = materiaisCache) {
             <td><span class="badge ${badgeClass}">${status}</span></td>
             <td>
                 <div class="acoes">
-                    <button class="btn-acao editar" onclick="editarMaterial('${m.id}')" title="Editar">✏️</button>
-                    <button class="btn-acao" onclick="duplicarMaterial('${m.id}')" title="Duplicar" style="background:#fef3c7;color:#92400e;">📋</button>
-                    <button class="btn-acao excluir" onclick="excluirMaterial('${m.id}')" title="Excluir">🗑️</button>
+                    <button class="btn-acao editar" onclick="abrirModalMaterial('${m.id}')" title="Ver detalhes">👁️</button>
                 </div>
             </td>
         </tr>
@@ -231,4 +229,100 @@ function exportarMateriais() {
     ];
 
     exportarExcel(dadosExport, 'materiais_estoque', colunasExport);
+}
+
+
+// ===== MODAL DETALHES DO MATERIAL =====
+
+let materialModalId = null;
+
+function abrirModalMaterial(id) {
+    materialModalId = id;
+    const m = materiaisCache.find(x => x.id === id);
+    if (!m) return;
+
+    const status = m.quantidade_atual <= m.estoque_minimo ? 'CRITICO' :
+                   m.quantidade_atual <= m.estoque_minimo * 1.5 ? 'BAIXO' : 'NORMAL';
+    const badgeClass = status === 'CRITICO' ? 'badge-danger' :
+                       status === 'BAIXO' ? 'badge-warning' : 'badge-success';
+    const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
+
+    document.getElementById('titulo-modal-material').textContent = `📋 ${m.nome}`;
+    document.getElementById('conteudo-modal-material').innerHTML = `
+        <div class="form-grid">
+            <div class="form-group">
+                <label><strong>Código SAP</strong></label>
+                <p>${m.codigo}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Nome</strong></label>
+                <p>${m.nome}</p>
+            </div>
+            <div class="form-group full-width">
+                <label><strong>Descrição</strong></label>
+                <p>${m.descricao || '<em style="color:var(--secondary)">Sem descrição</em>'}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Unidade</strong></label>
+                <p>${m.unidade_medida}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Local / Sub-local</strong></label>
+                <p>${m.sublocais?.locais?.nome || '-'} / ${m.sublocais?.nome || '-'}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Qtd Atual</strong></label>
+                <p><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Reservado</strong></label>
+                <p>${m.quantidade_reservada || 0} ${m.unidade_medida}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Disponível</strong></label>
+                <p><strong>${disponivel}</strong> ${m.unidade_medida}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Estoque Mínimo</strong></label>
+                <p>${m.estoque_minimo}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Estoque Máximo</strong></label>
+                <p>${m.estoque_maximo}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Limite Compra</strong></label>
+                <p>${m.limite_compra || '-'}</p>
+            </div>
+            <div class="form-group">
+                <label><strong>Status</strong></label>
+                <p><span class="badge ${badgeClass}">${status}</span></p>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modal-material').classList.remove('hidden');
+}
+
+function fecharModalMaterial() {
+    document.getElementById('modal-material').classList.add('hidden');
+    materialModalId = null;
+}
+
+function editarMaterialDoModal() {
+    if (!materialModalId) return;
+    fecharModalMaterial();
+    editarMaterial(materialModalId);
+}
+
+function duplicarMaterialDoModal() {
+    if (!materialModalId) return;
+    fecharModalMaterial();
+    duplicarMaterial(materialModalId);
+}
+
+async function excluirMaterialDoModal() {
+    if (!materialModalId) return;
+    fecharModalMaterial();
+    await excluirMaterial(materialModalId);
 }
