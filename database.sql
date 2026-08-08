@@ -201,3 +201,55 @@ ON CONFLICT (nome) DO UPDATE SET senha = '-1422442968', perfil = 'admin', ativo 
 INSERT INTO usuarios (nome, senha, perfil)
 VALUES ('Almoxarife', '177274736', 'almoxarife')
 ON CONFLICT (nome) DO UPDATE SET senha = '177274736', perfil = 'almoxarife', ativo = true;
+
+
+-- ============================================================
+-- TABELAS DE RESERVA DE MATERIAIS
+-- ============================================================
+
+-- Adicionar campo quantidade_reservada na tabela materiais
+ALTER TABLE materiais ADD COLUMN IF NOT EXISTS quantidade_reservada INTEGER DEFAULT 0;
+
+-- Tabela: reservas
+CREATE TABLE IF NOT EXISTS reservas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    solicitante VARCHAR(255) NOT NULL,
+    documento VARCHAR(100) NOT NULL,
+    data_reserva DATE NOT NULL DEFAULT CURRENT_DATE,
+    observacao TEXT,
+    status VARCHAR(20) DEFAULT 'PENDENTE' CHECK (status IN ('PENDENTE', 'APROVADA', 'CANCELADA')),
+    usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    data_aprovacao TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela: reserva_itens
+CREATE TABLE IF NOT EXISTS reserva_itens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reserva_id UUID NOT NULL REFERENCES reservas(id) ON DELETE CASCADE,
+    material_id UUID NOT NULL REFERENCES materiais(id) ON DELETE CASCADE,
+    quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX IF NOT EXISTS idx_reservas_status ON reservas(status);
+CREATE INDEX IF NOT EXISTS idx_reservas_documento ON reservas(documento);
+CREATE INDEX IF NOT EXISTS idx_reserva_itens_reserva_id ON reserva_itens(reserva_id);
+CREATE INDEX IF NOT EXISTS idx_reserva_itens_material_id ON reserva_itens(material_id);
+
+-- Trigger updated_at para reservas
+DROP TRIGGER IF EXISTS update_reservas_updated_at ON reservas;
+CREATE TRIGGER update_reservas_updated_at BEFORE UPDATE ON reservas
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Políticas RLS
+ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reserva_itens ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all" ON reservas;
+CREATE POLICY "Allow all" ON reservas FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all" ON reserva_itens;
+CREATE POLICY "Allow all" ON reserva_itens FOR ALL USING (true) WITH CHECK (true);

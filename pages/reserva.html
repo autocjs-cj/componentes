@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Reserva de Materiais - Controle de Materiais</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/utils.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <div class="page-header">
+                <h2>📝 Reserva de Materiais</h2>
+                <p>Gerencie reservas de materiais e controle a liberação para retirada</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📝</div>
+                    <div class="stat-info">
+                        <h4 id="total-reservas">0</h4>
+                        <p>Reservas Pendentes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-info">
+                        <h4 id="total-concluidas">0</h4>
+                        <p>Reservas Concluídas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">📦</div>
+                    <div class="stat-info">
+                        <h4 id="total-itens-reservados">0</h4>
+                        <p>Itens Reservados</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULÁRIO DE NOVA RESERVA -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📝 Nova Reserva</h3>
+                </div>
+                <form id="form-reserva">
+                    <input type="hidden" id="reserva-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Solicitante <span class="required">*</span></label>
+                            <input type="text" id="reserva-solicitante" required placeholder="Nome do solicitante">
+                        </div>
+                        <div class="form-group">
+                            <label>OM / Pedido / Reserva <span class="required">*</span></label>
+                            <input type="text" id="reserva-documento" required placeholder="Nº OM, Pedido ou Reserva">
+                        </div>
+                        <div class="form-group">
+                            <label>Data da Reserva <span class="required">*</span></label>
+                            <input type="date" id="reserva-data" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Observações</label>
+                            <textarea id="reserva-observacao" placeholder="Observações sobre a reserva..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="card-header mt-2" style="border-top:1px solid var(--border);padding-top:16px;">
+                        <h3>📦 Itens da Reserva</h3>
+                    </div>
+                    <div id="itens-reserva-container">
+                        <div class="form-grid item-reserva-row">
+                            <div class="form-group">
+                                <label>Material <span class="required">*</span></label>
+                                <select class="reserva-material" required>
+                                    <option value="">Selecione um material...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantidade <span class="required">*</span></label>
+                                <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
+                            </div>
+                            <div class="form-group" style="display:flex;align-items:flex-end;">
+                                <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReserva(this)">🗑️ Remover</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-group mt-1">
+                        <button type="button" class="btn btn-outline" onclick="adicionarItemReserva()">+ Adicionar Item</button>
+                    </div>
+
+                    <div class="btn-group mt-2">
+                        <button type="submit" class="btn btn-primary">💾 Salvar Reserva</button>
+                        <button type="button" class="btn btn-secondary" onclick="limparFormularioReserva()">🔄 Limpar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- LISTA DE RESERVAS -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Reservas Cadastradas</h3>
+                    <div class="btn-group">
+                        <select id="filtro-status-reserva" style="width: 180px;">
+                            <option value="">Todos os status</option>
+                            <option value="PENDENTE">Pendente</option>
+                            <option value="APROVADA">Aprovada / Retirada</option>
+                            <option value="CANCELADA">Cancelada</option>
+                        </select>
+                        <input type="text" id="buscar-reserva" placeholder="🔍 Buscar..." style="width: 200px;">
+                        <button class="btn btn-outline" onclick="filtrarReservas()">🔍 Filtrar</button>
+                        <button class="btn btn-success" onclick="exportarReservas()">📊 Exportar Excel</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Data</th>
+                                <th>Solicitante</th>
+                                <th>OM / Pedido</th>
+                                <th>Itens</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-reservas">
+                            <tr><td colspan="7" class="text-center">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DETALHES DA RESERVA -->
+    <div id="modal-reserva" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 700px; text-align: left;">
+            <h3 id="titulo-modal-reserva">📋 Detalhes da Reserva</h3>
+            <div id="conteudo-modal-reserva" class="mt-2"></div>
+            <div class="btn-group mt-2" id="acoes-modal-reserva">
+                <button type="button" class="btn btn-success" id="btn-aprovar-reserva" onclick="aprovarReserva()">✅ Aprovar Retirada</button>
+                <button type="button" class="btn btn-danger" id="btn-cancelar-reserva" onclick="cancelarReserva()">❌ Cancelar Reserva</button>
+                <button type="button" class="btn btn-secondary" onclick="fecharModalReserva()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/pages/reserva.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarAcesso();
+            renderizarMenu();
+        });
+    </script>
+</body>
+</html>
