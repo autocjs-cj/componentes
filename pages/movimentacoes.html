@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔄 Movimentações de Estoque - Controle de Materiais</title>
+    <title>🔄 Recebimento / Retirada - Controle de Materiais</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js"></script>
@@ -14,13 +14,13 @@
         <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
-                <h2>🔄 Movimentações de Estoque</h2>
+                <h2>🔄 Recebimento / Retirada</h2>
                 <p></p>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h3>📝 Registrar Movimentação</h3>
+                    <h3>📝 Registrar Recebimento / Retirada</h3>
                 </div>
                 <form id="form-movimentacao">
                     <div class="form-grid">
@@ -64,7 +64,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3>📋 Histórico de Movimentações</h3>
+                    <h3>📋 Histórico</h3>
                     <div class="btn-group">
                         <input type="date" id="filtro-data-inicio" style="width: 150px;">
                         <input type="date" id="filtro-data-fim" style="width: 150px;">
@@ -77,6 +77,7 @@
                             <option value="">Todos os materiais</option>
                         </select>
                         <button class="btn btn-outline" onclick="filtrarMovimentacoes()">🔍 Filtrar</button>
+                        <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()">🔄 Limpar Filtro</button>
                         <button class="btn btn-success" onclick="exportarMovimentacoes()">📊 Exportar Excel</button>
                     </div>
                 </div>

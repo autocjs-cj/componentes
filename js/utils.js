@@ -256,7 +256,7 @@ function renderizarMenu() {
                 </li>
                 <li class="nav-item">
                     <a href="${prefix}movimentacoes.html" class="nav-link">
-                        <span class="nav-icon">🔄</span> Movimentações
+                        <span class="nav-icon">🔄</span> Recebimento / Retirada
                     </a>
                 </li>
                 ` : ''}

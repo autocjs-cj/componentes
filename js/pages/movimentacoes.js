@@ -161,6 +161,14 @@ async function filtrarMovimentacoes() {
     }
 }
 
+function limparFiltroMovimentacoes() {
+    document.getElementById('filtro-data-inicio').value = '';
+    document.getElementById('filtro-data-fim').value = '';
+    document.getElementById('filtro-tipo').value = '';
+    document.getElementById('filtro-material').value = '';
+    carregarMovimentacoes();
+}
+
 function exportarMovimentacoes() {
     const dadosExport = movimentacoesCache.map(m => ({
         data_movimentacao: m.data_movimentacao,
