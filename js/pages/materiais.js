@@ -5,7 +5,6 @@ let locaisCache = [];
 let sublocaisCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     await carregarLocaisSublocais();
     await carregarMateriais();
 

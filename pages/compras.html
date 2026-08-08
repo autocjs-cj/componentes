@@ -3,59 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compras Necessárias - Controle de Materiais</title>
+    <title>🛒 Materiais para Compra - Controle de Materiais</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js"></script>
     <script src="../js/utils.js"></script>
-
 </head>
 <body>
     <div class="app-container">
-
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1>📦 Controle de Materiais</h1>
-                <p>Sistema de Gestão de Estoque</p>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="../index.html" class="nav-link">
-                        <span class="nav-icon">📊</span> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="locais.html" class="nav-link">
-                        <span class="nav-icon">🏭</span> Locais & Sub-locais
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="materiais.html" class="nav-link">
-                        <span class="nav-icon">📋</span> Materiais
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="movimentacoes.html" class="nav-link">
-                        <span class="nav-icon">🔄</span> Movimentações
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="estoque.html" class="nav-link">
-                        <span class="nav-icon">📦</span> Controle de Estoque
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="compras.html" class="nav-link">
-                        <span class="nav-icon">🛒</span> Compras Necessárias
-                    </a>
-                </li>
-            </ul>
-        </aside>
-
+        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>🛒 Materiais para Compra</h2>
-                <p>Relatório de materiais que atingiram o estoque mínimo e necessitam de reposição</p>
+                <p></p>
             </div>
 
             <div class="card-grid">
@@ -102,8 +62,16 @@
                     </table>
                 </div>
             </div>
+
+            
         </main>
     </div>
     <script src="../js/pages/compras.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            renderizarMenu();
+        });
+    </script>
 </body>
 </html>

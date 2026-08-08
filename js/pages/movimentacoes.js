@@ -4,7 +4,6 @@ let materiaisCache = [];
 let movimentacoesCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     document.getElementById('mov-data').value = hojeISO();
     await carregarMateriais();
     await carregarMovimentacoes();
@@ -76,7 +75,6 @@ async function registrarMovimentacao(e) {
     const quantidade = parseInt(document.getElementById('mov-quantidade').value);
     const material = materiaisCache.find(m => m.id === materialId);
 
-    // Validação de saída
     if (tipo === 'SAIDA' && material.quantidade_atual < quantidade) {
         mostrarToast(`Saldo insuficiente! Disponível: ${material.quantidade_atual}`, 'erro');
         return;
@@ -84,16 +82,14 @@ async function registrarMovimentacao(e) {
 
     toggleLoading(true);
     try {
-        // Corrigir data: adicionar meio-dia para evitar problema de timezone
+        // CORREÇÃO DEFINITIVA: enviar apenas YYYY-MM-DD sem hora/timezone
         const dataInput = document.getElementById('mov-data').value;
-        const dataCorrigida = dataInput + 'T12:00:00';
 
-        // Registrar movimentação
         const movData = {
             material_id: materialId,
             tipo: tipo,
             quantidade: quantidade,
-            data_movimentacao: dataCorrigida,
+            data_movimentacao: dataInput,  // Formato: "2026-08-01"
             responsavel: document.getElementById('mov-responsavel').value.trim() || null,
             documento_referencia: document.getElementById('mov-documento').value.trim() || null
         };
@@ -101,7 +97,6 @@ async function registrarMovimentacao(e) {
         const { error: errMov } = await sb.from('movimentacoes').insert(movData);
         if (errMov) throw errMov;
 
-        // Atualizar estoque do material
         const novaQtd = tipo === 'ENTRADA' 
             ? material.quantidade_atual + quantidade 
             : material.quantidade_atual - quantidade;
@@ -113,7 +108,6 @@ async function registrarMovimentacao(e) {
 
         if (errMat) throw errMat;
 
-        // Atualizar cache
         material.quantidade_atual = novaQtd;
 
         mostrarToast(`${tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} registrada com sucesso!`);
@@ -138,8 +132,8 @@ async function filtrarMovimentacoes() {
     try {
         let query = sb.from('movimentacoes').select('*, materiais(nome, codigo, unidade_medida)');
 
-        if (dataInicio) query = query.gte('data_movimentacao', dataInicio + 'T00:00:00');
-        if (dataFim) query = query.lte('data_movimentacao', dataFim + 'T23:59:59');
+        if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
+        if (dataFim) query = query.lte('data_movimentacao', dataFim);
         if (tipo) query = query.eq('tipo', tipo);
 
         const { data, error } = await query.order('data_movimentacao', { ascending: false });

@@ -4,7 +4,6 @@ let locaisCache = [];
 let sublocaisCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     await carregarDados();
 
     document.getElementById('form-local').addEventListener('submit', salvarLocal);

@@ -3,7 +3,6 @@
 let estoqueCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     await carregarEstoque();
 
     document.getElementById('buscar-estoque').addEventListener('input', buscarEstoque);

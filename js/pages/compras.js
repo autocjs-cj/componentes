@@ -3,7 +3,6 @@
 let comprasCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     await carregarCompras();
 });
 

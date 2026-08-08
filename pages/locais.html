@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Locais e Sub-locais - Controle de Materiais</title>
+    <title>🏭 Locais e Sub-locais - Controle de Materiais</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js"></script>
@@ -11,48 +11,11 @@
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1>📦 Controle de Materiais</h1>
-                <p>Sistema de Gestão de Estoque</p>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="../index.html" class="nav-link">
-                        <span class="nav-icon">📊</span> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="locais.html" class="nav-link">
-                        <span class="nav-icon">🏭</span> Locais & Sub-locais
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="materiais.html" class="nav-link">
-                        <span class="nav-icon">📋</span> Materiais
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="movimentacoes.html" class="nav-link">
-                        <span class="nav-icon">🔄</span> Movimentações
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="estoque.html" class="nav-link">
-                        <span class="nav-icon">📦</span> Controle de Estoque
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="compras.html" class="nav-link">
-                        <span class="nav-icon">🛒</span> Compras Necessárias
-                    </a>
-                </li>
-            </ul>
-        </aside>
+        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>🏭 Locais e Sub-locais</h2>
-                <p>Cadastre os galpões, prateleiras e locais de armazenamento</p>
+                <p></p>
             </div>
 
             <div class="card">
@@ -96,8 +59,6 @@
                     </table>
                 </div>
             </div>
-        </main>
-    </div>
 
     <div id="modal-local" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 500px; text-align: left;">
@@ -139,6 +100,15 @@
         </div>
     </div>
 
+            
+        </main>
+    </div>
     <script src="../js/pages/locais.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarAcesso();
+            renderizarMenu();
+        });
+    </script>
 </body>
 </html>

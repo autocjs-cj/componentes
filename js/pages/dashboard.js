@@ -1,7 +1,6 @@
 // ===== DASHBOARD =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-    ativarMenuAtual();
     await carregarDashboard();
 });
 

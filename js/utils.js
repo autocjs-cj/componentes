@@ -3,8 +3,18 @@
 // Formata data para DD/MM/AAAA
 function formatarData(data) {
     if (!data) return '';
+    // Se for string no formato YYYY-MM-DD, extrair diretamente
+    if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [ano, mes, dia] = data.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
     const d = new Date(data);
-    if (isNaN(d.getTime())) return data;
+    if (isNaN(d.getTime())) {
+        // Tentar extrair de string ISO
+        const match = String(data).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+        return data;
+    }
     const dia = String(d.getDate()).padStart(2, '0');
     const mes = String(d.getMonth() + 1).padStart(2, '0');
     const ano = d.getFullYear();
@@ -73,7 +83,7 @@ async function confirmarExclusao(mensagem = 'Tem certeza que deseja excluir?') {
 
 // Exportar para Excel (CSV com BOM para acentuação)
 function exportarExcel(dados, nomeArquivo, colunas) {
-    let csv = '﻿'; // BOM para UTF-8
+    let csv = '\uFEFF'; // BOM para UTF-8
 
     // Cabeçalho
     csv += colunas.map(c => `"${c.titulo}"`).join(';') + '\n';
@@ -149,6 +159,130 @@ function toggleLoading(mostrar) {
         document.body.appendChild(loading);
     }
     loading.style.display = mostrar ? 'flex' : 'none';
+}
+
+// ===== CONTROLE DE ACESSO =====
+
+// Páginas que requerem login e perfil
+const PAGINAS_RESTRITAS = {
+    'locais.html': 'almoxarife',
+    'materiais.html': 'almoxarife',
+    'movimentacoes.html': 'almoxarife',
+    'usuarios.html': 'admin'
+};
+
+// Páginas públicas (não precisam de login)
+const PAGINAS_PUBLICAS = ['index.html', 'estoque.html', 'compras.html'];
+
+function verificarAcesso() {
+    const path = window.location.pathname;
+    const page = path.split('/').pop() || 'index.html';
+    const user = usuarioLogado();
+
+    // Se for página restrita
+    if (PAGINAS_RESTRITAS[page]) {
+        const perfilNecessario = PAGINAS_RESTRITAS[page];
+
+        if (!user) {
+            mostrarToast('Faça login para acessar esta página', 'erro');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            return false;
+        }
+
+        if (!temPerfil(perfilNecessario)) {
+            mostrarToast('Você não tem permissão para acessar esta página', 'erro');
+            setTimeout(() => {
+                window.location.href = '../index.html';
+            }, 1500);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Renderiza menu dinâmico baseado no usuário logado
+function renderizarMenu() {
+    const user = usuarioLogado();
+    const path = window.location.pathname;
+    const isRoot = !path.includes('/pages/');
+    const prefix = isRoot ? 'pages/' : '';
+    const rootPrefix = isRoot ? '' : '../';
+
+    const menuHTML = `
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>📦 Controle de Materiais</h1>
+                <p>Sistema de Gestão de Estoque</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="${rootPrefix}index.html" class="nav-link">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                </li>
+                ${user && (user.perfil === 'almoxarife' || user.perfil === 'admin') ? `
+                <li class="nav-item">
+                    <a href="${prefix}locais.html" class="nav-link">
+                        <span class="nav-icon">🏭</span> Locais & Sub-locais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}materiais.html" class="nav-link">
+                        <span class="nav-icon">📋</span> Materiais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}movimentacoes.html" class="nav-link">
+                        <span class="nav-icon">🔄</span> Movimentações
+                    </a>
+                </li>
+                ` : ''}
+                <li class="nav-item">
+                    <a href="${prefix}estoque.html" class="nav-link">
+                        <span class="nav-icon">📦</span> Controle de Estoque
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}compras.html" class="nav-link">
+                        <span class="nav-icon">🛒</span> Compras Necessárias
+                    </a>
+                </li>
+                ${user && user.perfil === 'admin' ? `
+                <li class="nav-item">
+                    <a href="${prefix}usuarios.html" class="nav-link">
+                        <span class="nav-icon">👤</span> Usuários
+                    </a>
+                </li>
+                ` : ''}
+            </ul>
+            <div style="padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+                ${user ? `
+                <div style="color: #94a3b8; font-size: 0.8rem; padding: 0 16px 8px;">
+                    👤 ${user.nome}<br>
+                    <span style="text-transform: uppercase; font-size: 0.7rem;">${user.perfil}</span>
+                </div>
+                <button onclick="logout()" class="btn btn-danger" style="width: 100%;">🚪 Sair</button>
+                ` : `
+                <a href="${prefix}login.html" class="btn btn-primary" style="width: 100%; text-decoration: none;">🔐 Entrar</a>
+                `}
+            </div>
+        </aside>
+    `;
+
+    // Inserir menu no container
+    const container = document.querySelector('.app-container');
+    if (container) {
+        // Remover sidebar antiga se existir
+        const oldSidebar = container.querySelector('.sidebar');
+        if (oldSidebar) oldSidebar.remove();
+
+        container.insertAdjacentHTML('afterbegin', menuHTML);
+    }
+
+    ativarMenuAtual();
 }
 
 // Navegação ativa no menu
