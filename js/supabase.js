@@ -46,7 +46,8 @@ async function login(nome, senha) {
 
 function logout() {
     localStorage.removeItem(AUTH_KEY);
-    window.location.href = '../pages/login.html';
+    const isInPages = window.location.pathname.includes('/pages/');
+    window.location.href = isInPages ? 'login.html' : 'pages/login.html';
 }
 
 function usuarioLogado() {
