@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Locais e Sub-locais - Controle de Materiais</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/utils.js"></script>
 
 </head>
 <body>
@@ -20,7 +20,7 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link">
+                    <a href="../index.html" class="nav-link">
                         <span class="nav-icon">📊</span> Dashboard
                     </a>
                 </li>
@@ -58,7 +58,6 @@
                 <p>Cadastre os galpões, prateleiras e locais de armazenamento</p>
             </div>
 
-            <!-- LOCAIS -->
             <div class="card">
                 <div class="card-header">
                     <h3>📍 Locais de Armazenamento</h3>
@@ -81,7 +80,6 @@
                 </div>
             </div>
 
-            <!-- SUB-LOCAIS -->
             <div class="card">
                 <div class="card-header">
                     <h3>📂 Sub-locais (Prateleiras, Gavetas, etc.)</h3>
@@ -107,7 +105,6 @@
         </main>
     </div>
 
-    <!-- MODAL LOCAL -->
     <div id="modal-local" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 500px; text-align: left;">
             <h3 id="titulo-modal-local">📍 Novo Local</h3>
@@ -129,7 +126,6 @@
         </div>
     </div>
 
-    <!-- MODAL SUB-LOCAL -->
     <div id="modal-sublocal" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 500px; text-align: left;">
             <h3 id="titulo-modal-sublocal">📂 Novo Sub-local</h3>
@@ -161,6 +157,6 @@
         </div>
     </div>
 
-    <script src="js/pages/locais.js"></script>
+    <script src="../js/pages/locais.js"></script>
 </body>
 </html>
