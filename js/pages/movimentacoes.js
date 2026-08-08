@@ -8,7 +8,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMateriais();
     await carregarMovimentacoes();
 
-    // Modal de movimentação
+    // Filtro automático por digitação (igual página de materiais)
+    const buscarInput = document.getElementById('buscar-movimentacao');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', buscarMovimentacao);
+    }
 });
 
 async function carregarMateriais() {
@@ -21,21 +25,19 @@ async function carregarMateriais() {
 
         if (error) throw error;
         materiaisCache = data || [];
-        // Preenche selects de material (form principal e modal)
-    ['mov-material', 'modal-mov-material'].forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if (!select) return;
-        select.innerHTML = '<option value="">Selecione um material...</option>';
-        materiaisCache.forEach(m => {
-            const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
-            const opt = document.createElement('option');
-            opt.value = m.id;
-            opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
-            opt.dataset.disponivel = disponivel;
-            select.appendChild(opt);
-        });
-    });
-        carregarSelect('filtro-material', materiaisCache, 'id', 'nome', 'Todos os materiais');
+        // Preenche select de material no modal
+        const selectModal = document.getElementById('modal-mov-material');
+        if (selectModal) {
+            selectModal.innerHTML = '<option value="">Selecione um material...</option>';
+            materiaisCache.forEach(m => {
+                const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
+                opt.dataset.disponivel = disponivel;
+                selectModal.appendChild(opt);
+            });
+        }
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar materiais', 'erro');
@@ -80,6 +82,97 @@ function renderizarMovimentacoes(dados) {
     `).join('');
 }
 
+// ===== FILTRO AUTOMÁTICO POR DIGITAÇÃO (igual página de materiais) =====
+
+function buscarMovimentacao() {
+    const termo = document.getElementById('buscar-movimentacao').value.toLowerCase().trim();
+    if (!termo) {
+        renderizarMovimentacoes(movimentacoesCache);
+        return;
+    }
+    const filtrados = movimentacoesCache.filter(m => {
+        const materialNome = (m.materiais?.nome || '').toLowerCase();
+        const materialCodigo = (m.materiais?.codigo || '').toLowerCase();
+        const responsavel = (m.responsavel || '').toLowerCase();
+        const documento = (m.documento_referencia || '').toLowerCase();
+        const tipo = (m.tipo || '').toLowerCase();
+        return materialNome.includes(termo) ||
+               materialCodigo.includes(termo) ||
+               responsavel.includes(termo) ||
+               documento.includes(termo) ||
+               tipo.includes(termo);
+    });
+    renderizarMovimentacoes(filtrados);
+}
+
+// ===== FILTRO POR DATA/TIPO (botão Filtrar) =====
+
+async function filtrarMovimentacoes() {
+    const dataInicio = document.getElementById('filtro-data-inicio').value;
+    const dataFim = document.getElementById('filtro-data-fim').value;
+    const tipo = document.getElementById('filtro-tipo').value;
+
+    toggleLoading(true);
+    try {
+        let query = sb.from('movimentacoes').select('*, materiais(nome, codigo, unidade_medida)');
+
+        if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
+        if (dataFim) query = query.lte('data_movimentacao', dataFim);
+        if (tipo) query = query.eq('tipo', tipo);
+
+        const { data, error } = await query.order('data_movimentacao', { ascending: false });
+        if (error) throw error;
+
+        movimentacoesCache = data || [];
+        // Aplica o filtro de texto também, se houver
+        const termoBusca = document.getElementById('buscar-movimentacao')?.value.toLowerCase().trim() || '';
+        if (termoBusca) {
+            buscarMovimentacao();
+        } else {
+            renderizarMovimentacoes(movimentacoesCache);
+        }
+    } catch (erro) {
+        console.error(erro);
+        mostrarToast('Erro ao filtrar', 'erro');
+    } finally {
+        toggleLoading(false);
+    }
+}
+
+function limparFiltroMovimentacoes() {
+    document.getElementById('filtro-data-inicio').value = '';
+    document.getElementById('filtro-data-fim').value = '';
+    document.getElementById('filtro-tipo').value = '';
+    document.getElementById('buscar-movimentacao').value = '';
+    carregarMovimentacoes();
+}
+
+function exportarMovimentacoes() {
+    const dadosExport = movimentacoesCache.map(m => ({
+        data_movimentacao: m.data_movimentacao,
+        tipo: m.tipo,
+        material: m.materiais?.nome || 'N/A',
+        codigo: m.materiais?.codigo || '',
+        quantidade: m.quantidade,
+        unidade: m.materiais?.unidade_medida || '',
+        responsavel: m.responsavel || '',
+        documento: m.documento_referencia || ''
+    }));
+
+    const colunas = [
+        { titulo: 'Data', campo: 'data_movimentacao', formato: 'data' },
+        { titulo: 'Tipo', campo: 'tipo' },
+        { titulo: 'Código', campo: 'codigo' },
+        { titulo: 'Material', campo: 'material' },
+        { titulo: 'Quantidade', campo: 'quantidade' },
+        { titulo: 'Unidade', campo: 'unidade' },
+        { titulo: 'Responsável', campo: 'responsavel' },
+        { titulo: 'Documento', campo: 'documento' }
+    ];
+
+    exportarExcel(dadosExport, 'movimentacoes_estoque', colunas);
+}
+
 async function salvarMovimentacaoModal() {
     if (!validarFormulario('form-movimentacao')) return;
 
@@ -96,14 +189,13 @@ async function salvarMovimentacaoModal() {
 
     toggleLoading(true);
     try {
-        // CORREÇÃO DEFINITIVA: enviar apenas YYYY-MM-DD sem hora/timezone
         const dataInput = document.getElementById('modal-mov-data').value;
 
         const movData = {
             material_id: materialId,
             tipo: tipo,
             quantidade: quantidade,
-            data_movimentacao: dataInput,  // Formato: "2026-08-01"
+            data_movimentacao: dataInput,
             responsavel: document.getElementById('modal-mov-responsavel').value.trim() || null,
             documento_referencia: document.getElementById('modal-mov-documento').value.trim() || null
         };
@@ -136,68 +228,6 @@ async function salvarMovimentacaoModal() {
         toggleLoading(false);
     }
 }
-
-async function filtrarMovimentacoes() {
-    const dataInicio = document.getElementById('filtro-data-inicio').value;
-    const dataFim = document.getElementById('filtro-data-fim').value;
-    const tipo = document.getElementById('filtro-tipo').value;
-    const materialId = document.getElementById('filtro-material').value;
-
-    toggleLoading(true);
-    try {
-        let query = sb.from('movimentacoes').select('*, materiais(nome, codigo, unidade_medida)');
-
-        if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
-        if (dataFim) query = query.lte('data_movimentacao', dataFim);
-        if (tipo) query = query.eq('tipo', tipo);
-        if (materialId) query = query.eq('material_id', materialId);
-
-        const { data, error } = await query.order('data_movimentacao', { ascending: false });
-        if (error) throw error;
-
-        renderizarMovimentacoes(data || []);
-    } catch (erro) {
-        console.error(erro);
-        mostrarToast('Erro ao filtrar', 'erro');
-    } finally {
-        toggleLoading(false);
-    }
-}
-
-function limparFiltroMovimentacoes() {
-    document.getElementById('filtro-data-inicio').value = '';
-    document.getElementById('filtro-data-fim').value = '';
-    document.getElementById('filtro-tipo').value = '';
-    document.getElementById('filtro-material').value = '';
-    carregarMovimentacoes();
-}
-
-function exportarMovimentacoes() {
-    const dadosExport = movimentacoesCache.map(m => ({
-        data_movimentacao: m.data_movimentacao,
-        tipo: m.tipo,
-        material: m.materiais?.nome || 'N/A',
-        codigo: m.materiais?.codigo || '',
-        quantidade: m.quantidade,
-        unidade: m.materiais?.unidade_medida || '',
-        responsavel: m.responsavel || '',
-        documento: m.documento_referencia || ''
-    }));
-
-    const colunas = [
-        { titulo: 'Data', campo: 'data_movimentacao', formato: 'data' },
-        { titulo: 'Tipo', campo: 'tipo' },
-        { titulo: 'Código', campo: 'codigo' },
-        { titulo: 'Material', campo: 'material' },
-        { titulo: 'Quantidade', campo: 'quantidade' },
-        { titulo: 'Unidade', campo: 'unidade' },
-        { titulo: 'Responsável', campo: 'responsavel' },
-        { titulo: 'Documento', campo: 'documento' }
-    ];
-
-    exportarExcel(dadosExport, 'movimentacoes_estoque', colunas);
-}
-
 
 // ===== MODAL MOVIMENTAÇÃO =====
 

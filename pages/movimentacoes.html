@@ -11,7 +11,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>🔄 Recebimento / Retirada</h2>
@@ -44,11 +43,9 @@
                                 <option value="SAIDA">Saídas</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin: 0; min-width: 200px; flex: 1;">
-                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Material</label>
-                            <select id="filtro-material" style="width: 100%; padding: 8px 10px;">
-                                <option value="">Todos os materiais</option>
-                            </select>
+                        <div class="form-group" style="margin: 0; min-width: 240px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
+                            <input type="text" id="buscar-movimentacao" placeholder="🔍 Buscar material, responsável, documento..." style="width: 100%; padding: 8px 12px;">
                         </div>
                         <div class="btn-group" style="margin-bottom: 1px;">
                             <button class="btn btn-outline" onclick="filtrarMovimentacoes()" title="Filtrar">🔍 Filtrar</button>
@@ -75,7 +72,6 @@
                 </div>
             </div>
 
-    <!-- MODAL REGISTRAR MOVIMENTAÇÃO -->
     <div id="modal-movimentacao" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 500px; text-align: left;">
             <h3 id="titulo-modal-movimentacao">📝 Registrar Movimentação</h3>
