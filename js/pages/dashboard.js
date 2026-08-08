@@ -22,29 +22,26 @@ async function carregarDashboard() {
             .eq('ativo', true);
         document.getElementById('total-locais').textContent = countLocais || 0;
 
-        // Materiais críticos
-        const { data: criticos } = await sb
-            .from('materiais')
-            .select('*')
-            .eq('ativo', true)
-            .lte('quantidade_atual', sb.rpc('get_estoque_minimo'));
-
-        // Consulta manual para críticos
-        const { data: todosMateriais } = await sb
+        // Buscar todos os materiais ativos e filtrar críticos no cliente
+        const { data: todosMateriais, error: errMat } = await sb
             .from('materiais')
             .select('*, sublocais(nome, locais(nome))')
             .eq('ativo', true);
 
-        const materiaisCriticos = todosMateriais?.filter(m => m.quantidade_atual <= m.estoque_minimo) || [];
+        if (errMat) throw errMat;
+
+        const materiaisCriticos = (todosMateriais || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
         document.getElementById('total-criticos').textContent = materiaisCriticos.length;
         document.getElementById('total-compras').textContent = materiaisCriticos.length;
 
         // Últimas movimentações
-        const { data: movimentacoes } = await sb
+        const { data: movimentacoes, error: errMov } = await sb
             .from('movimentacoes')
             .select('*, materiais(nome, codigo)')
             .order('created_at', { ascending: false })
             .limit(10);
+
+        if (errMov) throw errMov;
 
         renderizarMovimentacoes(movimentacoes || []);
         renderizarCriticos(materiaisCriticos);

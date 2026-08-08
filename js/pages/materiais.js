@@ -102,7 +102,6 @@ async function salvarMaterial(e) {
     const dados = {
         codigo: document.getElementById('material-codigo').value.trim().toUpperCase(),
         nome: document.getElementById('material-nome').value.trim(),
-        descricao: document.getElementById('material-descricao').value.trim() || null,
         unidade_medida: document.getElementById('material-unidade').value,
         estoque_minimo: parseInt(document.getElementById('material-estoque-min').value) || 0,
         estoque_maximo: parseInt(document.getElementById('material-estoque-max').value) || 999999,
@@ -137,13 +136,11 @@ async function editarMaterial(id) {
     document.getElementById('material-id').value = m.id;
     document.getElementById('material-codigo').value = m.codigo;
     document.getElementById('material-nome').value = m.nome;
-    document.getElementById('material-descricao').value = m.descricao || '';
     document.getElementById('material-unidade').value = m.unidade_medida;
     document.getElementById('material-estoque-min').value = m.estoque_minimo;
     document.getElementById('material-estoque-max').value = m.estoque_maximo;
     document.getElementById('material-limite-compra').value = m.limite_compra;
 
-    // Selecionar local e sublocal
     if (m.sublocais) {
         const localId = sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id;
         document.getElementById('material-local').value = localId || '';
@@ -172,36 +169,27 @@ async function excluirMaterial(id) {
 }
 
 function exportarMateriais() {
-    const colunas = [
-        { titulo: 'Código', campo: 'codigo' },
-        { titulo: 'Nome', campo: 'nome' },
-        { titulo: 'Descrição', campo: 'descricao' },
-        { titulo: 'Unidade', campo: 'unidade_medida' },
-        { titulo: 'Quantidade Atual', campo: 'quantidade_atual' },
-        { titulo: 'Estoque Mínimo', campo: 'estoque_minimo' },
-        { titulo: 'Estoque Máximo', campo: 'estoque_maximo' },
-        { titulo: 'Limite Compra', campo: 'limite_compra' },
-        { titulo: 'Local', campo: 'sublocais' },
-        { titulo: 'Sub-local', campo: 'sublocais' }
-    ];
-
-    // Preparar dados para exportação
     const dadosExport = materiaisCache.map(m => ({
-        ...m,
-        sublocais: m.sublocais?.locais?.nome || '-',
+        codigo: m.codigo,
+        nome: m.nome,
+        unidade_medida: m.unidade_medida,
+        quantidade_atual: m.quantidade_atual,
+        estoque_minimo: m.estoque_minimo,
+        estoque_maximo: m.estoque_maximo,
+        limite_compra: m.limite_compra,
+        local: m.sublocais?.locais?.nome || '-',
         sublocal_nome: m.sublocais?.nome || '-'
     }));
 
     const colunasExport = [
-        { titulo: 'Código', campo: 'codigo' },
+        { titulo: 'Código SAP', campo: 'codigo' },
         { titulo: 'Nome', campo: 'nome' },
-        { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Unidade', campo: 'unidade_medida' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },
         { titulo: 'Estoque Min', campo: 'estoque_minimo' },
         { titulo: 'Estoque Max', campo: 'estoque_maximo' },
         { titulo: 'Limite Compra', campo: 'limite_compra' },
-        { titulo: 'Local', campo: 'sublocais' },
+        { titulo: 'Local', campo: 'local' },
         { titulo: 'Sub-local', campo: 'sublocal_nome' }
     ];
 

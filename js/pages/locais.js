@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function carregarDados() {
     toggleLoading(true);
     try {
-        // Carregar locais
         const { data: locais, error: errLocais } = await sb
             .from('locais')
             .select('*')
@@ -26,7 +25,6 @@ async function carregarDados() {
         renderizarLocais();
         carregarSelect('sublocal-local-id', locaisCache, 'id', 'nome');
 
-        // Carregar sub-locais
         const { data: sublocais, error: errSub } = await sb
             .from('sublocais')
             .select('*, locais(nome)')
@@ -49,7 +47,7 @@ async function carregarDados() {
 function renderizarLocais() {
     const tbody = document.getElementById('tabela-locais');
     if (!locaisCache.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum local cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum local cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = locaisCache.map(l => {
@@ -57,7 +55,6 @@ function renderizarLocais() {
         return `
         <tr>
             <td><strong>${l.nome}</strong></td>
-            <td>${l.descricao || '-'}</td>
             <td><span class="badge badge-info">${qtdSub} sub-locais</span></td>
             <td>
                 <div class="acoes">
@@ -73,7 +70,6 @@ function abrirModalLocal(id = null) {
     document.getElementById('titulo-modal-local').textContent = id ? '✏️ Editar Local' : '📍 Novo Local';
     document.getElementById('local-id').value = id || '';
     document.getElementById('local-nome').value = id ? locaisCache.find(l => l.id === id)?.nome || '' : '';
-    document.getElementById('local-descricao').value = id ? locaisCache.find(l => l.id === id)?.descricao || '' : '';
     document.getElementById('modal-local').classList.remove('hidden');
 }
 
@@ -89,8 +85,7 @@ async function salvarLocal(e) {
     toggleLoading(true);
     const id = document.getElementById('local-id').value;
     const dados = {
-        nome: document.getElementById('local-nome').value.trim(),
-        descricao: document.getElementById('local-descricao').value.trim() || null
+        nome: document.getElementById('local-nome').value.trim()
     };
 
     try {
@@ -138,15 +133,13 @@ async function excluirLocal(id) {
 function renderizarSublocais() {
     const tbody = document.getElementById('tabela-sublocais');
     if (!sublocaisCache.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum sub-local cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum sub-local cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = sublocaisCache.map(s => `
         <tr>
             <td><span class="badge badge-info">${s.locais?.nome || 'N/A'}</span></td>
             <td><strong>${s.nome}</strong></td>
-            <td>${s.descricao || '-'}</td>
-            <td>${s.capacidade || '-'}</td>
             <td>
                 <div class="acoes">
                     <button class="btn-acao editar" onclick="editarSublocal('${s.id}')" title="Editar">✏️</button>
@@ -164,8 +157,6 @@ function abrirModalSublocal(id = null) {
         const s = sublocaisCache.find(x => x.id === id);
         document.getElementById('sublocal-local-id').value = s?.local_id || '';
         document.getElementById('sublocal-nome').value = s?.nome || '';
-        document.getElementById('sublocal-descricao').value = s?.descricao || '';
-        document.getElementById('sublocal-capacidade').value = s?.capacidade || '';
     } else {
         limparFormulario('form-sublocal');
     }
@@ -185,9 +176,7 @@ async function salvarSublocal(e) {
     const id = document.getElementById('sublocal-id').value;
     const dados = {
         local_id: document.getElementById('sublocal-local-id').value,
-        nome: document.getElementById('sublocal-nome').value.trim(),
-        descricao: document.getElementById('sublocal-descricao').value.trim() || null,
-        capacidade: parseInt(document.getElementById('sublocal-capacidade').value) || null
+        nome: document.getElementById('sublocal-nome').value.trim()
     };
 
     try {

@@ -52,7 +52,7 @@ async function carregarMovimentacoes() {
 function renderizarMovimentacoes(dados) {
     const tbody = document.getElementById('tabela-movimentacoes');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhuma movimentação registrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma movimentação registrada</td></tr>';
         return;
     }
     tbody.innerHTML = dados.map(m => `
@@ -63,7 +63,6 @@ function renderizarMovimentacoes(dados) {
             <td><strong>${m.quantidade}</strong> ${m.materiais?.unidade_medida || ''}</td>
             <td>${m.responsavel || '-'}</td>
             <td>${m.documento_referencia || '-'}</td>
-            <td>${m.motivo || '-'}</td>
         </tr>
     `).join('');
 }
@@ -85,15 +84,18 @@ async function registrarMovimentacao(e) {
 
     toggleLoading(true);
     try {
+        // Corrigir data: adicionar meio-dia para evitar problema de timezone
+        const dataInput = document.getElementById('mov-data').value;
+        const dataCorrigida = dataInput + 'T12:00:00';
+
         // Registrar movimentação
         const movData = {
             material_id: materialId,
             tipo: tipo,
             quantidade: quantidade,
-            data_movimentacao: document.getElementById('mov-data').value,
+            data_movimentacao: dataCorrigida,
             responsavel: document.getElementById('mov-responsavel').value.trim() || null,
-            documento_referencia: document.getElementById('mov-documento').value.trim() || null,
-            motivo: document.getElementById('mov-motivo').value.trim() || null
+            documento_referencia: document.getElementById('mov-documento').value.trim() || null
         };
 
         const { error: errMov } = await sb.from('movimentacoes').insert(movData);
@@ -136,8 +138,8 @@ async function filtrarMovimentacoes() {
     try {
         let query = sb.from('movimentacoes').select('*, materiais(nome, codigo, unidade_medida)');
 
-        if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
-        if (dataFim) query = query.lte('data_movimentacao', dataFim);
+        if (dataInicio) query = query.gte('data_movimentacao', dataInicio + 'T00:00:00');
+        if (dataFim) query = query.lte('data_movimentacao', dataFim + 'T23:59:59');
         if (tipo) query = query.eq('tipo', tipo);
 
         const { data, error } = await query.order('data_movimentacao', { ascending: false });
@@ -161,8 +163,7 @@ function exportarMovimentacoes() {
         quantidade: m.quantidade,
         unidade: m.materiais?.unidade_medida || '',
         responsavel: m.responsavel || '',
-        documento: m.documento_referencia || '',
-        motivo: m.motivo || ''
+        documento: m.documento_referencia || ''
     }));
 
     const colunas = [
@@ -173,8 +174,7 @@ function exportarMovimentacoes() {
         { titulo: 'Quantidade', campo: 'quantidade' },
         { titulo: 'Unidade', campo: 'unidade' },
         { titulo: 'Responsável', campo: 'responsavel' },
-        { titulo: 'Documento', campo: 'documento' },
-        { titulo: 'Motivo', campo: 'motivo' }
+        { titulo: 'Documento', campo: 'documento' }
     ];
 
     exportarExcel(dadosExport, 'movimentacoes_estoque', colunas);

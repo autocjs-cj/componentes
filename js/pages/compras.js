@@ -10,27 +10,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function carregarCompras() {
     toggleLoading(true);
     try {
-        // Buscar materiais com estoque <= estoque_minimo
+        // Buscar todos os materiais ativos e filtrar no cliente
         const { data, error } = await sb
             .from('materiais')
             .select('*, sublocais(nome, locais(nome))')
             .eq('ativo', true)
-            .lte('quantidade_atual', sb.raw('estoque_minimo'))
             .order('nome');
 
         if (error) throw error;
 
-        // Se o filtro raw não funcionar, filtramos no cliente
-        let materiais = data || [];
-        if (!materiais.length) {
-            // Tentar buscar todos e filtrar no cliente
-            const { data: todos } = await sb
-                .from('materiais')
-                .select('*, sublocais(nome, locais(nome))')
-                .eq('ativo', true)
-                .order('nome');
-            materiais = (todos || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
-        }
+        // Filtrar materiais com estoque <= estoque_minimo
+        const materiais = (data || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
 
         comprasCache = materiais;
         renderizarCompras();
@@ -63,7 +53,7 @@ function atualizarCards() {
 function renderizarCompras() {
     const tbody = document.getElementById('tabela-compras');
     if (!comprasCache.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">🎉 Nenhum material necessita de compra no momento!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center">🎉 Nenhum material necessita de compra no momento!</td></tr>';
         return;
     }
     tbody.innerHTML = comprasCache.map(m => {
@@ -72,7 +62,6 @@ function renderizarCompras() {
         <tr class="critico">
             <td><strong>${m.codigo}</strong></td>
             <td>${m.nome}</td>
-            <td>${m.descricao || '-'}</td>
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong></td>
@@ -89,7 +78,6 @@ function exportarCompras() {
     const dadosExport = comprasCache.map(m => ({
         codigo: m.codigo,
         nome: m.nome,
-        descricao: m.descricao || '',
         local: m.sublocais?.locais?.nome || '-',
         sublocal: m.sublocais?.nome || '-',
         quantidade_atual: m.quantidade_atual,
@@ -101,9 +89,8 @@ function exportarCompras() {
     }));
 
     const colunas = [
-        { titulo: 'Código', campo: 'codigo' },
+        { titulo: 'Código SAP', campo: 'codigo' },
         { titulo: 'Material', campo: 'nome' },
-        { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Local', campo: 'local' },
         { titulo: 'Sub-local', campo: 'sublocal' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },

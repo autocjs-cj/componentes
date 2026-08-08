@@ -8,11 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js"></script>
     <script src="../js/utils.js"></script>
-
 </head>
 <body>
     <div class="app-container">
-
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h1>📦 Controle de Materiais</h1>
@@ -51,7 +49,6 @@
                 </li>
             </ul>
         </aside>
-
         <main class="main-content">
             <div class="page-header">
                 <h2>📋 Cadastro de Materiais</h2>
@@ -66,7 +63,7 @@
                     <input type="hidden" id="material-id">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Código <span class="required">*</span></label>
+                            <label>Código SAP <span class="required">*</span></label>
                             <input type="text" id="material-codigo" required placeholder="Ex: MAT-001">
                         </div>
                         <div class="form-group">
@@ -110,10 +107,6 @@
                             <label>Limite para Compra</label>
                             <input type="number" id="material-limite-compra" min="0" value="0" placeholder="0">
                         </div>
-                        <div class="form-group full-width">
-                            <label>Descrição</label>
-                            <textarea id="material-descricao" placeholder="Descrição detalhada do material..."></textarea>
-                        </div>
                     </div>
                     <div class="btn-group mt-2">
                         <button type="submit" class="btn btn-primary">💾 Salvar Material</button>
@@ -134,7 +127,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Código</th>
+                                <th>Código SAP</th>
                                 <th>Nome</th>
                                 <th>Local</th>
                                 <th>Sub-local</th>
