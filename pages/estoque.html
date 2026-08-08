@@ -11,67 +11,47 @@
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1>📦 Controle de Materiais</h1>
-                <p>Sistema de Gestão de Estoque</p>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="../index.html" class="nav-link">
-                        <span class="nav-icon">📊</span> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item" data-restrito="almoxarife">
-                    <a href="locais.html" class="nav-link">
-                        <span class="nav-icon">🏭</span> Locais & Sub-locais
-                    </a>
-                </li>
-                <li class="nav-item" data-restrito="almoxarife">
-                    <a href="materiais.html" class="nav-link">
-                        <span class="nav-icon">📋</span> Materiais
-                    </a>
-                </li>
-                <li class="nav-item" data-restrito="almoxarife">
-                    <a href="movimentacoes.html" class="nav-link">
-                        <span class="nav-icon">🔄</span> Movimentações
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="estoque.html" class="nav-link">
-                        <span class="nav-icon">📦</span> Controle de Estoque
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="compras.html" class="nav-link">
-                        <span class="nav-icon">🛒</span> Compras Necessárias
-                    </a>
-                </li>
-                <li class="nav-item" data-restrito="admin">
-                    <a href="usuarios.html" class="nav-link">
-                        <span class="nav-icon">👤</span> Usuários
-                    </a>
-                </li>
-            </ul>
-            <div id="auth-area" style="padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <!-- Preenchido pelo JS -->
-            </div>
-        </aside>
+        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>📦 Controle de Estoque</h2>
                 <p></p>
             </div>
+
             <div class="card-grid">
-                <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h4 id="estoque-normal">0</h4><p>Estoque Normal</p></div></div>
-                <div class="stat-card"><div class="stat-icon orange">⚠️</div><div class="stat-info"><h4 id="estoque-baixo">0</h4><p>Estoque Baixo</p></div></div>
-                <div class="stat-card"><div class="stat-icon red">🚨</div><div class="stat-info"><h4 id="estoque-critico">0</h4><p>Estoque Crítico</p></div></div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-info">
+                        <h4 id="estoque-normal">0</h4>
+                        <p>Estoque Normal</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">⚠️</div>
+                    <div class="stat-info">
+                        <h4 id="estoque-baixo">0</h4>
+                        <p>Estoque Baixo</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">🚨</div>
+                    <div class="stat-info">
+                        <h4 id="estoque-critico">0</h4>
+                        <p>Estoque Crítico</p>
+                    </div>
+                </div>
             </div>
+
             <div class="card">
                 <div class="card-header">
                     <h3>📋 Posição de Estoque</h3>
                     <div class="btn-group">
-                        <select id="filtro-status" style="width: 180px;"><option value="">Todos os status</option><option value="NORMAL">Estoque Normal</option><option value="BAIXO">Estoque Baixo</option><option value="CRITICO">Estoque Crítico</option></select>
+                        <select id="filtro-status" style="width: 180px;">
+                            <option value="">Todos os status</option>
+                            <option value="NORMAL">Estoque Normal</option>
+                            <option value="BAIXO">Estoque Baixo</option>
+                            <option value="CRITICO">Estoque Crítico</option>
+                        </select>
                         <input type="text" id="buscar-estoque" placeholder="🔍 Buscar..." style="width: 200px;">
                         <button class="btn btn-outline" onclick="filtrarEstoque()">🔍 Filtrar</button>
                         <button class="btn btn-success" onclick="exportarEstoque()">📊 Exportar Excel</button>
@@ -79,18 +59,34 @@
                 </div>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Código</th><th>Material</th><th>Local</th><th>Sub-local</th><th>Qtd Atual</th><th>Mínimo</th><th>Máximo</th><th>Limite Compra</th><th>Status</th></tr></thead>
-                        <tbody id="tabela-estoque"><tr><td colspan="9" class="text-center">Carregando...</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Material</th>
+                                <th>Local</th>
+                                <th>Sub-local</th>
+                                <th>Qtd Atual</th>
+                                <th>Mínimo</th>
+                                <th>Máximo</th>
+                                <th>Limite Compra</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-estoque">
+                            <tr><td colspan="9" class="text-center">Carregando...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
+
+            
         </main>
     </div>
     <script src="../js/pages/estoque.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            verificarAcessoPagina();
-            configurarMenu();
+            
+            renderizarMenu();
         });
     </script>
 </body>

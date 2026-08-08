@@ -3,12 +3,14 @@
 // Formata data para DD/MM/AAAA
 function formatarData(data) {
     if (!data) return '';
+    // Se for string no formato YYYY-MM-DD, extrair diretamente
     if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [ano, mes, dia] = data.split('-');
         return `${dia}/${mes}/${ano}`;
     }
     const d = new Date(data);
     if (isNaN(d.getTime())) {
+        // Tentar extrair de string ISO
         const match = String(data).match(/^(\d{4})-(\d{2})-(\d{2})/);
         if (match) return `${match[3]}/${match[2]}/${match[1]}`;
         return data;
@@ -19,26 +21,31 @@ function formatarData(data) {
     return `${dia}/${mes}/${ano}`;
 }
 
+// Converte DD/MM/AAAA para AAAA-MM-DD (ISO)
 function parseDataBR(dataBR) {
     if (!dataBR) return null;
     const [dia, mes, ano] = dataBR.split('/');
     return `${ano}-${mes}-${dia}`;
 }
 
+// Formata data atual para input date
 function hojeISO() {
     const hoje = new Date();
     return hoje.toISOString().split('T')[0];
 }
 
+// Formata data atual para DD/MM/AAAA
 function hojeBR() {
     return formatarData(new Date());
 }
 
+// Mostra mensagem de toast
 function mostrarToast(mensagem, tipo = 'sucesso') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${tipo}`;
     toast.textContent = mensagem;
     document.body.appendChild(toast);
+
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => {
         toast.classList.remove('show');
@@ -46,6 +53,7 @@ function mostrarToast(mensagem, tipo = 'sucesso') {
     }, 3000);
 }
 
+// Confirmação de exclusão
 async function confirmarExclusao(mensagem = 'Tem certeza que deseja excluir?') {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
@@ -61,6 +69,7 @@ async function confirmarExclusao(mensagem = 'Tem certeza que deseja excluir?') {
             </div>
         `;
         document.body.appendChild(overlay);
+
         document.getElementById('btn-confirmar-sim').onclick = () => {
             overlay.remove();
             resolve(true);
@@ -72,9 +81,14 @@ async function confirmarExclusao(mensagem = 'Tem certeza que deseja excluir?') {
     });
 }
 
+// Exportar para Excel (CSV com BOM para acentuação)
 function exportarExcel(dados, nomeArquivo, colunas) {
-    let csv = '\uFEFF';
+    let csv = '\uFEFF'; // BOM para UTF-8
+
+    // Cabeçalho
     csv += colunas.map(c => `"${c.titulo}"`).join(';') + '\n';
+
+    // Dados
     dados.forEach(item => {
         csv += colunas.map(c => {
             let valor = item[c.campo];
@@ -83,6 +97,7 @@ function exportarExcel(dados, nomeArquivo, colunas) {
             return `"${String(valor).replace(/"/g, '""')}"`;
         }).join(';') + '\n';
     });
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -90,9 +105,11 @@ function exportarExcel(dados, nomeArquivo, colunas) {
     document.body.appendChild(link);
     link.click();
     link.remove();
+
     mostrarToast(`Arquivo "${nomeArquivo}.csv" exportado com sucesso!`);
 }
 
+// Carrega select com opções
 function carregarSelect(selectId, dados, valueField, textField, placeholder = 'Selecione...') {
     const select = document.getElementById(selectId);
     if (!select) return;
@@ -105,10 +122,12 @@ function carregarSelect(selectId, dados, valueField, textField, placeholder = 'S
     });
 }
 
+// Valida formulário
 function validarFormulario(formId) {
     const form = document.getElementById(formId);
     const requireds = form.querySelectorAll('[required]');
     let valido = true;
+
     requireds.forEach(field => {
         if (!field.value.trim()) {
             field.classList.add('erro');
@@ -117,16 +136,19 @@ function validarFormulario(formId) {
             field.classList.remove('erro');
         }
     });
+
     if (!valido) mostrarToast('Preencha todos os campos obrigatórios!', 'erro');
     return valido;
 }
 
+// Limpa formulário
 function limparFormulario(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
     form.querySelectorAll('.erro').forEach(el => el.classList.remove('erro'));
 }
 
+// Mostra/esconde loading
 function toggleLoading(mostrar) {
     let loading = document.getElementById('loading-global');
     if (!loading) {
@@ -141,80 +163,123 @@ function toggleLoading(mostrar) {
 
 // ===== CONTROLE DE ACESSO =====
 
-function verificarAcessoPagina() {
+// Páginas que requerem login e perfil
+const PAGINAS_RESTRITAS = {
+    'locais.html': 'almoxarife',
+    'materiais.html': 'almoxarife',
+    'movimentacoes.html': 'almoxarife',
+    'usuarios.html': 'admin'
+};
+
+// Páginas públicas (não precisam de login)
+const PAGINAS_PUBLICAS = ['index.html', 'estoque.html', 'compras.html'];
+
+function verificarAcesso() {
     const path = window.location.pathname;
     const page = path.split('/').pop() || 'index.html';
     const user = usuarioLogado();
 
-    const restricoes = {
-        'locais.html': 'almoxarife',
-        'materiais.html': 'almoxarife',
-        'movimentacoes.html': 'almoxarife',
-        'usuarios.html': 'admin'
-    };
+    // Se for página restrita
+    if (PAGINAS_RESTRITAS[page]) {
+        const perfilNecessario = PAGINAS_RESTRITAS[page];
 
-    if (restricoes[page]) {
-        const perfilNecessario = restricoes[page];
         if (!user) {
             mostrarToast('Faça login para acessar esta página', 'erro');
-            setTimeout(() => window.location.href = 'login.html', 1500);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
             return false;
         }
+
         if (!temPerfil(perfilNecessario)) {
             mostrarToast('Você não tem permissão para acessar esta página', 'erro');
-            setTimeout(() => window.location.href = '../index.html', 1500);
+            setTimeout(() => {
+                window.location.href = '../index.html';
+            }, 1500);
             return false;
         }
     }
+
     return true;
 }
 
-// Verifica acesso antes de navegar (para links em páginas públicas)
-function verificarLink(perfilNecessario, destino) {
+// Renderiza menu dinâmico baseado no usuário logado
+function renderizarMenu() {
     const user = usuarioLogado();
-    if (!user) {
-        mostrarToast('Faça login para acessar esta página', 'erro');
-        setTimeout(() => window.location.href = 'pages/login.html', 1500);
-        return false;
-    }
-    if (!temPerfil(perfilNecessario)) {
-        mostrarToast('Você não tem permissão para acessar esta página', 'erro');
-        return false;
-    }
-    window.location.href = destino;
-    return true;
-}
+    const path = window.location.pathname;
+    const isRoot = !path.includes('/pages/');
+    const prefix = isRoot ? 'pages/' : '';
+    const rootPrefix = isRoot ? '' : '../';
 
-// Configura o menu baseado no usuário logado
-function configurarMenu() {
-    const user = usuarioLogado();
-
-    // Mostrar/esconder itens restritos
-    document.querySelectorAll('[data-restrito]').forEach(el => {
-        const perfil = el.getAttribute('data-restrito');
-        if (user && temPerfil(perfil)) {
-            el.style.display = '';
-        } else {
-            el.style.display = 'none';
-        }
-    });
-
-    // Atualizar área de login/logout
-    const authArea = document.getElementById('auth-area');
-    if (authArea) {
-        if (user) {
-            authArea.innerHTML = `
-                <div class="user-info">
-                    👤 <strong>${user.nome}</strong><br>
+    const menuHTML = `
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>📦 Controle de Materiais</h1>
+                <p>Sistema de Gestão de Estoque</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="${rootPrefix}index.html" class="nav-link">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                </li>
+                ${user && (user.perfil === 'almoxarife' || user.perfil === 'admin') ? `
+                <li class="nav-item">
+                    <a href="${prefix}locais.html" class="nav-link">
+                        <span class="nav-icon">🏭</span> Locais & Sub-locais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}materiais.html" class="nav-link">
+                        <span class="nav-icon">📋</span> Materiais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}movimentacoes.html" class="nav-link">
+                        <span class="nav-icon">🔄</span> Movimentações
+                    </a>
+                </li>
+                ` : ''}
+                <li class="nav-item">
+                    <a href="${prefix}estoque.html" class="nav-link">
+                        <span class="nav-icon">📦</span> Controle de Estoque
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}compras.html" class="nav-link">
+                        <span class="nav-icon">🛒</span> Compras Necessárias
+                    </a>
+                </li>
+                ${user && user.perfil === 'admin' ? `
+                <li class="nav-item">
+                    <a href="${prefix}usuarios.html" class="nav-link">
+                        <span class="nav-icon">👤</span> Usuários
+                    </a>
+                </li>
+                ` : ''}
+            </ul>
+            <div style="padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+                ${user ? `
+                <div style="color: #94a3b8; font-size: 0.8rem; padding: 0 16px 8px;">
+                    👤 ${user.nome}<br>
                     <span style="text-transform: uppercase; font-size: 0.7rem;">${user.perfil}</span>
                 </div>
                 <button onclick="logout()" class="btn btn-danger" style="width: 100%;">🚪 Sair</button>
-            `;
-        } else {
-            const isRoot = !window.location.pathname.includes('/pages/');
-            const loginLink = isRoot ? 'pages/login.html' : 'login.html';
-            authArea.innerHTML = `<a href="${loginLink}" class="btn btn-primary" style="width: 100%; text-decoration: none;">🔐 Entrar</a>`;
-        }
+                ` : `
+                <a href="${prefix}login.html" class="btn btn-primary" style="width: 100%; text-decoration: none;">🔐 Entrar</a>
+                `}
+            </div>
+        </aside>
+    `;
+
+    // Inserir menu no container
+    const container = document.querySelector('.app-container');
+    if (container) {
+        // Remover sidebar antiga se existir
+        const oldSidebar = container.querySelector('.sidebar');
+        if (oldSidebar) oldSidebar.remove();
+
+        container.insertAdjacentHTML('afterbegin', menuHTML);
     }
 
     ativarMenuAtual();
@@ -225,11 +290,8 @@ function ativarMenuAtual() {
     const path = window.location.pathname;
     const page = path.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link').forEach(link => {
-        const href = link.getAttribute('href') || '';
-        if (href.includes(page)) {
+        if (link.getAttribute('href')?.includes(page)) {
             link.classList.add('active');
-        } else {
-            link.classList.remove('active');
         }
     });
 }
