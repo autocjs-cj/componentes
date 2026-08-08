@@ -147,19 +147,19 @@ ALTER TABLE movimentacoes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow all" ON locais;
-CREATE POLICY "Allow all" ON locais FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON locais FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all" ON sublocais;
-CREATE POLICY "Allow all" ON sublocais FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON sublocais FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all" ON materiais;
-CREATE POLICY "Allow all" ON materiais FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON materiais FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all" ON movimentacoes;
-CREATE POLICY "Allow all" ON movimentacoes FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON movimentacoes FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all" ON usuarios;
-CREATE POLICY "Allow all" ON usuarios FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON usuarios FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 -- Usuário administrador padrão (senha: admin123)
 -- O hash é calculado no cliente, mas aqui inserimos um valor conhecido
@@ -244,12 +244,12 @@ DROP TRIGGER IF EXISTS update_reservas_updated_at ON reservas;
 CREATE TRIGGER update_reservas_updated_at BEFORE UPDATE ON reservas
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Políticas RLS
+-- Políticas RLS (permitir acesso anônimo — projeto usa auth customizada no cliente)
 ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reserva_itens ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow all" ON reservas;
-CREATE POLICY "Allow all" ON reservas FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON reservas FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all" ON reserva_itens;
-CREATE POLICY "Allow all" ON reserva_itens FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON reserva_itens FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);

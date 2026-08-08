@@ -171,7 +171,11 @@ async function salvarReserva(e) {
 
     } catch (erro) {
         console.error(erro);
-        mostrarToast('Erro ao salvar reserva: ' + (erro.message || 'Tente novamente'), 'erro');
+        if (erro?.code === '42501' || erro?.message?.includes('row-level security')) {
+            mostrarToast('Erro de permissão: execute o script SQL de atualização no Supabase (database.sql).', 'erro');
+        } else {
+            mostrarToast('Erro ao salvar reserva: ' + (erro.message || 'Tente novamente'), 'erro');
+        }
     } finally {
         toggleLoading(false);
     }
