@@ -213,7 +213,7 @@ async function carregarReservas() {
         const { data, error } = await sb
             .from('reservas')
             .select('*, reserva_itens(material_id, quantidade, materiais(nome, codigo, unidade_medida))')
-            .order('created_at', { ascending: false });
+            .order('id', { ascending: false });
 
         if (error) throw error;
         reservasCache = data || [];
