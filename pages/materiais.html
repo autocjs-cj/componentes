@@ -19,12 +19,19 @@
             </div>
 
             <div class="card">
-                <div class="card-header">
-                    <h3>📦 Materiais Cadastrados</h3>
-                    <button class="btn btn-primary" onclick="abrirModalNovoMaterial()">+ Novo Material</button>
-                    <div class="btn-group">
-                        <input type="text" id="buscar-material" placeholder="🔍 Buscar material..." style="width: 250px;">
-                        <button class="btn btn-success" onclick="exportarMateriais()">📊 Exportar Excel</button>
+                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>📦 Materiais Cadastrados</h3>
+                        <button class="btn btn-primary" onclick="abrirModalNovoMaterial()">+ Novo Material</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="margin: 0; min-width: 260px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
+                            <input type="text" id="buscar-material" placeholder="🔍 Buscar material..." style="width: 100%; padding: 8px 12px;">
+                        </div>
+                        <div class="btn-group" style="margin-bottom: 1px;">
+                            <button class="btn btn-success" onclick="exportarMateriais()">📊 Exportar Excel</button>
+                        </div>
                     </div>
                 </div>
                 <div class="table-container">
@@ -43,13 +50,11 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-materiais">
-                            <tr><td colspan="11" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="9" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            
 
     <!-- MODAL CADASTRO / EDIÇÃO / VISUALIZAÇÃO DO MATERIAL -->
     <div id="modal-material" class="modal-overlay hidden">

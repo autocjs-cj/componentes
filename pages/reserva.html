@@ -9,6 +9,104 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="../js/supabase.js"></script>
     <script src="../js/utils.js"></script>
+    <style>
+        /* Estilos extras para o modal de reserva */
+        .reserva-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .reserva-modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        .reserva-section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reserva-item-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 40px;
+            gap: 10px;
+            align-items: flex-end;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .reserva-item-row .form-group {
+            margin: 0;
+        }
+        .reserva-item-row .form-group label {
+            font-size: 0.72rem;
+            margin-bottom: 3px;
+        }
+        .reserva-item-row .form-group input,
+        .reserva-item-row .form-group select {
+            padding: 7px 10px;
+            font-size: 0.85rem;
+        }
+        .btn-remover-item-inline {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: #fee2e2;
+            color: #ef4444;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .btn-remover-item-inline:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-adicionar-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px dashed #cbd5e1;
+            background: white;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+        .btn-adicionar-item:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+        .reserva-total-itens {
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #1e40af;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -44,19 +142,29 @@
 
             <!-- LISTA DE RESERVAS -->
             <div class="card">
-                <div class="card-header">
-                    <h3>📋 Reservas Cadastradas</h3>
-                    <button class="btn btn-primary" onclick="abrirModalNovaReserva()">+ Nova Reserva</button>
-                    <div class="btn-group">
-                        <select id="filtro-status-reserva" style="width: 180px;">
-                            <option value="">Todos os status</option>
-                            <option value="PENDENTE">Pendente</option>
-                            <option value="APROVADA">Aprovada / Retirada</option>
-                            <option value="CANCELADA">Cancelada</option>
-                        </select>
-                        <input type="text" id="buscar-reserva" placeholder="🔍 Buscar..." style="width: 200px;">
-                        <button class="btn btn-outline" onclick="filtrarReservas()">🔍 Filtrar</button>
-                        <button class="btn btn-success" onclick="exportarReservas()">📊 Exportar Excel</button>
+                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>📋 Reservas Cadastradas</h3>
+                        <button class="btn btn-primary" onclick="abrirModalNovaReserva()">+ Nova Reserva</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="margin: 0; min-width: 160px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Status</label>
+                            <select id="filtro-status-reserva" style="width: 100%; padding: 8px 10px;">
+                                <option value="">Todos os status</option>
+                                <option value="PENDENTE">Pendente</option>
+                                <option value="APROVADA">Aprovada / Retirada</option>
+                                <option value="CANCELADA">Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 220px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
+                            <input type="text" id="buscar-reserva" placeholder="🔍 Buscar..." style="width: 100%; padding: 8px 12px;">
+                        </div>
+                        <div class="btn-group" style="margin-bottom: 1px;">
+                            <button class="btn btn-outline" onclick="filtrarReservas()" title="Filtrar">🔍</button>
+                            <button class="btn btn-success" onclick="exportarReservas()" title="Exportar">📊 Exportar</button>
+                        </div>
                     </div>
                 </div>
                 <div class="table-container">
@@ -81,54 +189,73 @@
         </main>
     </div>
 
-
     <!-- MODAL NOVA RESERVA -->
     <div id="modal-nova-reserva" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 600px; text-align: left;">
-            <h3>📝 Nova Reserva</h3>
-            <form id="form-modal-reserva" class="mt-2">
-                <div class="form-group">
-                    <label>Solicitante <span class="required">*</span></label>
-                    <input type="text" id="modal-reserva-solicitante" required placeholder="Nome do solicitante">
+        <div class="modal-confirm" style="max-width: 560px; text-align: left; padding: 0; overflow: hidden;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px 24px;">
+                <div class="reserva-modal-header" style="border: none; margin: 0; padding: 0; color: white;">
+                    <span style="font-size: 1.5rem;">📝</span>
+                    <h3 style="color: white; font-size: 1.15rem;">Nova Reserva</h3>
                 </div>
-                <div class="form-group mt-1">
-                    <label>OM / Pedido / Reserva <span class="required">*</span></label>
-                    <input type="text" id="modal-reserva-documento" required placeholder="Nº OM, Pedido ou Reserva">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Data da Reserva <span class="required">*</span></label>
-                    <input type="date" id="modal-reserva-data" required>
-                </div>
-                <div class="form-group mt-1">
-                    <label>Observações</label>
-                    <textarea id="modal-reserva-observacao" placeholder="Observações sobre a reserva..."></textarea>
-                </div>
-                <h4 class="mt-2">📦 Itens da Reserva</h4>
-                <div id="modal-itens-reserva-container">
-                    <div class="form-grid item-reserva-row">
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; opacity: 0.9;">Preencha os dados da reserva e adicione os materiais desejados.</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding: 20px 24px;">
+                <form id="form-modal-reserva">
+                    <!-- Dados da Reserva -->
+                    <div class="reserva-section-title">📋 Dados da Reserva</div>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
-                            <label>Material <span class="required">*</span></label>
-                            <select class="reserva-material" required>
-                                <option value="">Selecione um material...</option>
-                            </select>
+                            <label>Solicitante <span class="required">*</span></label>
+                            <input type="text" id="modal-reserva-solicitante" required placeholder="Nome do solicitante">
                         </div>
                         <div class="form-group">
-                            <label>Quantidade <span class="required">*</span></label>
-                            <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
-                        </div>
-                        <div class="form-group" style="display:flex;align-items:flex-end;">
-                            <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
+                            <label>OM / Pedido / Reserva <span class="required">*</span></label>
+                            <input type="text" id="modal-reserva-documento" required placeholder="Nº OM, Pedido ou Reserva">
                         </div>
                     </div>
-                </div>
-                <div class="btn-group mt-1">
-                    <button type="button" class="btn btn-outline" onclick="adicionarItemReservaModal()">+ Adicionar Item</button>
-                </div>
-                <div class="btn-group mt-2">
-                    <button type="button" class="btn btn-primary" onclick="salvarReservaModal()">💾 Salvar Reserva</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalNovaReserva()">Cancelar</button>
-                </div>
-            </form>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                        <div class="form-group">
+                            <label>Data da Reserva <span class="required">*</span></label>
+                            <input type="date" id="modal-reserva-data" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <input type="text" id="modal-reserva-observacao" placeholder="Observações (opcional)">
+                        </div>
+                    </div>
+
+                    <!-- Itens da Reserva -->
+                    <div class="reserva-section-title">📦 Itens da Reserva</div>
+                    <div id="modal-itens-reserva-container">
+                        <div class="reserva-item-row">
+                            <div class="form-group">
+                                <label>Material <span class="required">*</span></label>
+                                <select class="reserva-material" required>
+                                    <option value="">Selecione um material...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Qtd <span class="required">*</span></label>
+                                <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
+                            </div>
+                            <button type="button" class="btn-remover-item-inline" onclick="removerItemReservaModal(this)" title="Remover item">🗑️</button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-adicionar-item" onclick="adicionarItemReservaModal()">
+                        <span>+</span> Adicionar Item
+                    </button>
+
+                    <!-- Footer -->
+                    <div style="display: flex; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                        <button type="button" class="btn btn-primary" onclick="salvarReservaModal()" style="flex: 1;">💾 Salvar Reserva</button>
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalNovaReserva()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

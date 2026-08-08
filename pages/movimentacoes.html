@@ -19,23 +19,39 @@
             </div>
 
             <div class="card">
-                <div class="card-header">
-                    <h3>📋 Histórico</h3>
-                    <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Nova Movimentação</button>
-                    <div class="btn-group">
-                        <input type="date" id="filtro-data-inicio" style="width: 150px;">
-                        <input type="date" id="filtro-data-fim" style="width: 150px;">
-                        <select id="filtro-tipo" style="width: 150px;">
-                            <option value="">Todos os tipos</option>
-                            <option value="ENTRADA">Entradas</option>
-                            <option value="SAIDA">Saídas</option>
-                        </select>
-                        <select id="filtro-material" style="width: 220px;">
-                            <option value="">Todos os materiais</option>
-                        </select>
-                        <button class="btn btn-outline" onclick="filtrarMovimentacoes()">🔍 Filtrar</button>
-                        <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()">🔄 Limpar Filtro</button>
-                        <button class="btn btn-success" onclick="exportarMovimentacoes()">📊 Exportar Excel</button>
+                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>📋 Histórico de Movimentações</h3>
+                        <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Nova Movimentação</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="margin: 0; min-width: 140px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">De</label>
+                            <input type="date" id="filtro-data-inicio" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 140px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Até</label>
+                            <input type="date" id="filtro-data-fim" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 140px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Tipo</label>
+                            <select id="filtro-tipo" style="width: 100%; padding: 8px 10px;">
+                                <option value="">Todos os tipos</option>
+                                <option value="ENTRADA">Entradas</option>
+                                <option value="SAIDA">Saídas</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 200px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Material</label>
+                            <select id="filtro-material" style="width: 100%; padding: 8px 10px;">
+                                <option value="">Todos os materiais</option>
+                            </select>
+                        </div>
+                        <div class="btn-group" style="margin-bottom: 1px;">
+                            <button class="btn btn-outline" onclick="filtrarMovimentacoes()" title="Filtrar">🔍</button>
+                            <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()" title="Limpar">🔄</button>
+                            <button class="btn btn-success" onclick="exportarMovimentacoes()" title="Exportar">📊 Exportar</button>
+                        </div>
                     </div>
                 </div>
                 <div class="table-container">
@@ -56,8 +72,6 @@
                     </table>
                 </div>
             </div>
-
-            
 
     <!-- MODAL REGISTRAR MOVIMENTAÇÃO -->
     <div id="modal-movimentacao" class="modal-overlay hidden">
