@@ -4,16 +4,14 @@ let materiaisCache = [];
 let reservasCache = [];
 let reservaAtualId = null;
 
-// Precisamos da quantidade_atual e quantidade_reservada dos materiais
-// Vamos buscar com os campos necessários
-
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('reserva-data').value = hojeISO();
     await carregarMateriais();
     await carregarReservas();
 
-    // Modal de reserva
-    document.getElementById('buscar-reserva').addEventListener('input', buscarReservas);
+    const buscarInput = document.getElementById('buscar-reserva');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', buscarReservas);
+    }
 });
 
 async function carregarMateriais() {
@@ -34,7 +32,7 @@ async function carregarMateriais() {
 }
 
 function atualizarSelectsMateriais() {
-    document.querySelectorAll('#modal-itens-reserva-container .reserva-material, #itens-reserva-container .reserva-material').forEach(select => {
+    document.querySelectorAll('#modal-itens-reserva-container .reserva-material').forEach(select => {
         const valAtual = select.value;
         select.innerHTML = '<option value="">Selecione um material...</option>';
         materiaisCache.forEach(m => {
@@ -50,40 +48,7 @@ function atualizarSelectsMateriais() {
     });
 }
 
-function adicionarItemReserva() {
-    const container = document.getElementById('itens-reserva-container');
-    const row = document.createElement('div');
-    row.className = 'form-grid item-reserva-row';
-    row.innerHTML = `
-        <div class="form-group">
-            <label>Material <span class="required">*</span></label>
-            <select class="reserva-material" required>
-                <option value="">Selecione um material...</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Quantidade <span class="required">*</span></label>
-            <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
-        </div>
-        <div class="form-group" style="display:flex;align-items:flex-end;">
-            <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReserva(this)">🗑️ Remover</button>
-        </div>
-    `;
-    container.appendChild(row);
-    atualizarSelectsMateriais();
-}
-
-function removerItemReserva(btn) {
-    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
-    if (rows.length <= 1) {
-        mostrarToast('A reserva deve ter pelo menos um item', 'erro');
-        return;
-    }
-    btn.closest('.item-reserva-row').remove();
-}
-
 async function salvarReservaModal() {
-
     const solicitante = document.getElementById('modal-reserva-solicitante').value.trim();
     const documento = document.getElementById('modal-reserva-documento').value.trim();
     const dataReserva = document.getElementById('modal-reserva-data').value;
@@ -181,25 +146,32 @@ async function salvarReservaModal() {
 }
 
 function limparFormularioReservaModal() {
-    document.getElementById('form-modal-reserva').reset();
-    document.getElementById('modal-reserva-data').value = hojeISO();
-    document.getElementById('modal-itens-reserva-container').innerHTML = `
-        <div class="form-grid item-reserva-row">
-            <div class="form-group">
-                <label>Material <span class="required">*</span></label>
-                <select class="reserva-material" required>
-                    <option value="">Selecione um material...</option>
-                </select>
+    const form = document.getElementById('form-modal-reserva');
+    if (form) form.reset();
+
+    const dataInput = document.getElementById('modal-reserva-data');
+    if (dataInput) dataInput.value = hojeISO();
+
+    const container = document.getElementById('modal-itens-reserva-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="form-grid item-reserva-row">
+                <div class="form-group">
+                    <label>Material <span class="required">*</span></label>
+                    <select class="reserva-material" required>
+                        <option value="">Selecione um material...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade <span class="required">*</span></label>
+                    <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end;">
+                    <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Quantidade <span class="required">*</span></label>
-                <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
-            </div>
-            <div class="form-group" style="display:flex;align-items:flex-end;">
-                <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
-            </div>
-        </div>
-    `;
+        `;
+    }
     atualizarSelectsMateriais();
 }
 
@@ -322,8 +294,10 @@ async function abrirModalReserva(id) {
         </div>
     `;
 
-    document.getElementById('btn-aprovar-reserva').style.display = podeAprovar ? 'inline-flex' : 'none';
-    document.getElementById('btn-cancelar-reserva').style.display = podeAprovar ? 'inline-flex' : 'none';
+    const btnAprovar = document.getElementById('btn-aprovar-reserva');
+    const btnCancelar = document.getElementById('btn-cancelar-reserva');
+    if (btnAprovar) btnAprovar.style.display = podeAprovar ? 'inline-flex' : 'none';
+    if (btnCancelar) btnCancelar.style.display = podeAprovar ? 'inline-flex' : 'none';
 
     document.getElementById('modal-reserva').classList.remove('hidden');
 }
@@ -457,7 +431,6 @@ function exportarReservas() {
 
     exportarExcel(dadosExport, 'reservas_materiais', colunas);
 }
-
 
 // ===== MODAL NOVA RESERVA =====
 

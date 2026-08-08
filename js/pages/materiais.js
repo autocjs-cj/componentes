@@ -8,28 +8,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarLocaisSublocais();
     await carregarMateriais();
 
-    document.getElementById('form-material').addEventListener('submit', salvarMaterial);
-    document.getElementById('material-local').addEventListener('change', filtrarSublocais);
-    document.getElementById('buscar-material').addEventListener('input', buscarMaterial);
+    // Busca na tabela
+    const buscarInput = document.getElementById('buscar-material');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', buscarMaterial);
+    }
+
+    // Filtro de sublocais no modal
+    const modalLocal = document.getElementById('modal-material-local');
+    if (modalLocal) {
+        modalLocal.addEventListener('change', filtrarSublocaisModal);
+    }
 });
 
 async function carregarLocaisSublocais() {
     try {
         const { data: locais } = await sb.from('locais').select('*').eq('ativo', true).order('nome');
         locaisCache = locais || [];
-        carregarSelect('material-local', locaisCache, 'id', 'nome', 'Selecione um local...');
 
         const { data: sublocais } = await sb.from('sublocais').select('*, locais(nome)').eq('ativo', true).order('nome');
         sublocaisCache = sublocais || [];
     } catch (erro) {
         console.error(erro);
     }
-}
-
-function filtrarSublocais() {
-    const localId = document.getElementById('material-local').value;
-    const filtrados = localId ? sublocaisCache.filter(s => s.local_id === localId) : sublocaisCache;
-    carregarSelect('material-sublocal', filtrados, 'id', 'nome', 'Selecione um sub-local...');
 }
 
 async function carregarMateriais() {
@@ -55,7 +56,7 @@ async function carregarMateriais() {
 function renderizarMateriais(lista = materiaisCache) {
     const tbody = document.getElementById('tabela-materiais');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="12" class="text-center">Nenhum material cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhum material cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(m => {
@@ -67,7 +68,6 @@ function renderizarMateriais(lista = materiaisCache) {
         <tr class="${status.toLowerCase()}">
             <td><strong>${m.codigo}</strong></td>
             <td>${m.nome}</td>
-            <td>${m.descricao || '-'}</td>
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</td>
@@ -78,7 +78,8 @@ function renderizarMateriais(lista = materiaisCache) {
             <td><span class="badge ${badgeClass}">${status}</span></td>
             <td>
                 <div class="acoes">
-                    <button class="btn-acao editar" onclick="abrirModalMaterial('${m.id}')" title="Ver detalhes">👁️</button>
+                    <button class="btn-acao editar" onclick="abrirModalMaterial('${m.id}')" title="Editar">✏️</button>
+                    <button class="btn-acao excluir" onclick="excluirMaterial('${m.id}')" title="Excluir">🗑️</button>
                 </div>
             </td>
         </tr>
@@ -92,109 +93,6 @@ function buscarMaterial() {
         m.codigo.toLowerCase().includes(termo)
     );
     renderizarMateriais(filtrados);
-}
-
-async function salvarMaterial(e) {
-    e.preventDefault();
-    if (!validarFormulario('form-material')) return;
-
-    toggleLoading(true);
-    const id = document.getElementById('material-id').value;
-    const dados = {
-        codigo: document.getElementById('material-codigo').value.trim().toUpperCase(),
-        nome: document.getElementById('material-nome').value.trim(),
-        descricao: document.getElementById('material-descricao').value.trim() || null,
-        unidade_medida: document.getElementById('material-unidade').value,
-        estoque_minimo: parseInt(document.getElementById('material-estoque-min').value) || 0,
-        estoque_maximo: parseInt(document.getElementById('material-estoque-max').value) || 999999,
-        limite_compra: parseInt(document.getElementById('material-limite-compra').value) || 0,
-        sublocal_id: document.getElementById('material-sublocal').value || null
-    };
-
-    try {
-        if (id) {
-            const { error } = await sb.from('materiais').update(dados).eq('id', id);
-            if (error) throw error;
-            mostrarToast('Material atualizado com sucesso!');
-        } else {
-            const { error } = await sb.from('materiais').insert(dados);
-            if (error) throw error;
-            mostrarToast('Material cadastrado com sucesso!');
-        }
-        limparFormulario('form-material');
-        await carregarMateriais();
-    } catch (erro) {
-        console.error(erro);
-        mostrarToast('Erro ao salvar material: ' + (erro.message || 'Verifique o código'), 'erro');
-    } finally {
-        toggleLoading(false);
-    }
-}
-
-async function editarMaterial(id) {
-    const m = materiaisCache.find(x => x.id === id);
-    if (!m) return;
-
-    document.getElementById('material-id').value = m.id;
-    document.getElementById('material-codigo').value = m.codigo;
-    document.getElementById('material-nome').value = m.nome;
-    document.getElementById('material-descricao').value = m.descricao || '';
-    document.getElementById('material-unidade').value = m.unidade_medida;
-    document.getElementById('material-estoque-min').value = m.estoque_minimo;
-    document.getElementById('material-estoque-max').value = m.estoque_maximo;
-    document.getElementById('material-limite-compra').value = m.limite_compra;
-
-    if (m.sublocais) {
-        const localId = sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id;
-        document.getElementById('material-local').value = localId || '';
-        filtrarSublocais();
-        document.getElementById('material-sublocal').value = m.sublocal_id || '';
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function excluirMaterial(id) {
-    if (!await confirmarExclusao()) return;
-
-    toggleLoading(true);
-    try {
-        const { error } = await sb.from('materiais').update({ ativo: false }).eq('id', id);
-        if (error) throw error;
-        mostrarToast('Material excluído com sucesso!');
-        await carregarMateriais();
-    } catch (erro) {
-        console.error(erro);
-        mostrarToast('Erro ao excluir material', 'erro');
-    } finally {
-        toggleLoading(false);
-    }
-}
-
-async function duplicarMaterial(id) {
-    const m = materiaisCache.find(x => x.id === id);
-    if (!m) return;
-
-    // Limpa o formulário e preenche com os dados do material original
-    limparFormulario('form-material');
-    document.getElementById('material-id').value = '';
-    document.getElementById('material-codigo').value = m.codigo + '-COPY';
-    document.getElementById('material-nome').value = m.nome + ' (Cópia)';
-    document.getElementById('material-descricao').value = m.descricao || '';
-    document.getElementById('material-unidade').value = m.unidade_medida;
-    document.getElementById('material-estoque-min').value = m.estoque_minimo;
-    document.getElementById('material-estoque-max').value = m.estoque_maximo;
-    document.getElementById('material-limite-compra').value = m.limite_compra;
-
-    if (m.sublocais) {
-        const localId = sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id;
-        document.getElementById('material-local').value = localId || '';
-        filtrarSublocais();
-        document.getElementById('material-sublocal').value = m.sublocal_id || '';
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    mostrarToast('Material duplicado no formulário. Edite o código e salve!');
 }
 
 function exportarMateriais() {
@@ -231,10 +129,7 @@ function exportarMateriais() {
     exportarExcel(dadosExport, 'materiais_estoque', colunasExport);
 }
 
-
-
-
-// ===== MODAL MATERIAL (estilo Locais) =====
+// ===== MODAL MATERIAL =====
 
 function abrirModalNovoMaterial() {
     document.getElementById('modal-material-id').value = '';
@@ -374,8 +269,3 @@ function filtrarSublocaisModal() {
     const filtrados = localId ? sublocaisCache.filter(s => s.local_id === localId) : [];
     carregarSelectModal('modal-material-sublocal', filtrados, 'id', 'nome', 'Selecione um sub-local...');
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const localSelect = document.getElementById('modal-material-local');
-    if (localSelect) localSelect.addEventListener('change', filtrarSublocaisModal);
-});

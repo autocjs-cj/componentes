@@ -42,7 +42,7 @@ async function carregarUsuarios() {
 function renderizarUsuarios() {
     const tbody = document.getElementById('tabela-usuarios');
     if (!usuariosCache.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum usuário cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum usuário cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = usuariosCache.map(u => {
@@ -55,12 +55,50 @@ function renderizarUsuarios() {
             <td>${perfilBadge}</td>
             <td>
                 <div class="acoes">
-                    <button class="btn-acao editar" onclick="editarUsuario('${u.id}')" title="Editar">✏️</button>
+                    <button class="btn-acao editar" onclick="abrirModalUsuario('${u.id}')" title="Editar">✏️</button>
                     <button class="btn-acao excluir" onclick="excluirUsuario('${u.id}')" title="Excluir">🗑️</button>
                 </div>
             </td>
         </tr>
     `}).join('');
+}
+
+// ===== MODAL USUÁRIO =====
+
+function abrirModalUsuario(id = null) {
+    const titulo = document.getElementById('titulo-modal-usuario');
+    const inputId = document.getElementById('usuario-id');
+    const inputNome = document.getElementById('usuario-nome');
+    const inputSenha = document.getElementById('usuario-senha');
+    const inputPerfil = document.getElementById('usuario-perfil');
+
+    if (id) {
+        const u = usuariosCache.find(x => x.id === id);
+        if (!u) return;
+
+        titulo.textContent = '✏️ Editar Usuário';
+        inputId.value = u.id;
+        inputNome.value = u.nome;
+        inputPerfil.value = u.perfil;
+        inputSenha.value = '';
+        inputSenha.required = false;
+        inputSenha.placeholder = 'Deixe em branco para manter a senha atual';
+    } else {
+        titulo.textContent = '👤 Novo Usuário';
+        inputId.value = '';
+        inputNome.value = '';
+        inputPerfil.value = '';
+        inputSenha.value = '';
+        inputSenha.required = true;
+        inputSenha.placeholder = 'Mínimo 4 caracteres';
+    }
+
+    document.getElementById('modal-usuario').classList.remove('hidden');
+}
+
+function fecharModalUsuario() {
+    document.getElementById('modal-usuario').classList.add('hidden');
+    limparFormulario('form-usuario');
 }
 
 async function salvarUsuario(e) {
@@ -70,7 +108,12 @@ async function salvarUsuario(e) {
     const id = document.getElementById('usuario-id').value;
     const senha = document.getElementById('usuario-senha').value;
 
-    if (senha.length < 4) {
+    if (!id && senha.length < 4) {
+        mostrarToast('A senha deve ter no mínimo 4 caracteres', 'erro');
+        return;
+    }
+
+    if (id && senha && senha.length < 4) {
         mostrarToast('A senha deve ter no mínimo 4 caracteres', 'erro');
         return;
     }
@@ -98,8 +141,7 @@ async function salvarUsuario(e) {
             if (error) throw error;
             mostrarToast('Usuário cadastrado com sucesso!');
         }
-        limparFormulario('form-usuario');
-        document.getElementById('usuario-senha').required = true;
+        fecharModalUsuario();
         await carregarUsuarios();
     } catch (erro) {
         console.error(erro);
@@ -107,21 +149,6 @@ async function salvarUsuario(e) {
     } finally {
         toggleLoading(false);
     }
-}
-
-async function editarUsuario(id) {
-    const u = usuariosCache.find(x => x.id === id);
-    if (!u) return;
-
-    document.getElementById('usuario-id').value = u.id;
-    document.getElementById('usuario-nome').value = u.nome;
-    
-    document.getElementById('usuario-perfil').value = u.perfil;
-    document.getElementById('usuario-senha').value = '';
-    document.getElementById('usuario-senha').required = false;
-    document.getElementById('usuario-senha').placeholder = 'Deixe em branco para manter a senha atual';
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function excluirUsuario(id) {
