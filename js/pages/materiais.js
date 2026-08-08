@@ -55,7 +55,7 @@ async function carregarMateriais() {
 function renderizarMateriais(lista = materiaisCache) {
     const tbody = document.getElementById('tabela-materiais');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Nenhum material cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center">Nenhum material cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(m => {
@@ -67,6 +67,7 @@ function renderizarMateriais(lista = materiaisCache) {
         <tr class="${status.toLowerCase()}">
             <td><strong>${m.codigo}</strong></td>
             <td>${m.nome}</td>
+            <td>${m.descricao || '-'}</td>
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</td>
@@ -104,6 +105,7 @@ async function salvarMaterial(e) {
     const dados = {
         codigo: document.getElementById('material-codigo').value.trim().toUpperCase(),
         nome: document.getElementById('material-nome').value.trim(),
+        descricao: document.getElementById('material-descricao').value.trim() || null,
         unidade_medida: document.getElementById('material-unidade').value,
         estoque_minimo: parseInt(document.getElementById('material-estoque-min').value) || 0,
         estoque_maximo: parseInt(document.getElementById('material-estoque-max').value) || 999999,
@@ -138,6 +140,7 @@ async function editarMaterial(id) {
     document.getElementById('material-id').value = m.id;
     document.getElementById('material-codigo').value = m.codigo;
     document.getElementById('material-nome').value = m.nome;
+    document.getElementById('material-descricao').value = m.descricao || '';
     document.getElementById('material-unidade').value = m.unidade_medida;
     document.getElementById('material-estoque-min').value = m.estoque_minimo;
     document.getElementById('material-estoque-max').value = m.estoque_maximo;
@@ -179,6 +182,7 @@ async function duplicarMaterial(id) {
     document.getElementById('material-id').value = '';
     document.getElementById('material-codigo').value = m.codigo + '-COPY';
     document.getElementById('material-nome').value = m.nome + ' (Cópia)';
+    document.getElementById('material-descricao').value = m.descricao || '';
     document.getElementById('material-unidade').value = m.unidade_medida;
     document.getElementById('material-estoque-min').value = m.estoque_minimo;
     document.getElementById('material-estoque-max').value = m.estoque_maximo;
@@ -199,6 +203,7 @@ function exportarMateriais() {
     const dadosExport = materiaisCache.map(m => ({
         codigo: m.codigo,
         nome: m.nome,
+        descricao: m.descricao || '',
         unidade_medida: m.unidade_medida,
         quantidade_atual: m.quantidade_atual,
         quantidade_reservada: m.quantidade_reservada || 0,
@@ -213,6 +218,7 @@ function exportarMateriais() {
     const colunasExport = [
         { titulo: 'Código SAP', campo: 'codigo' },
         { titulo: 'Nome', campo: 'nome' },
+        { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Unidade', campo: 'unidade_medida' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },
         { titulo: 'Reservado', campo: 'quantidade_reservada' },
