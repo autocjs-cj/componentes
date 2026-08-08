@@ -24,17 +24,17 @@ async function carregarDashboard() {
         // Buscar todos os materiais ativos
         const { data: todosMateriais, error: errMat } = await sb
             .from('materiais')
-            .select('*, sublocais(nome, locais(nome))')
+            .select('*, quantidade_reservada, sublocais(nome, locais(nome))')
             .eq('ativo', true);
 
         if (errMat) throw errMat;
 
         // Estoque crítico: quantidade_atual <= estoque_minimo
-        const materiaisCriticos = (todosMateriais || []).filter(m => m.quantidade_atual <= m.estoque_minimo);
+        const materiaisCriticos = (todosMateriais || []).filter(m => (m.quantidade_atual - (m.quantidade_reservada || 0)) <= m.estoque_minimo);
         document.getElementById('total-criticos').textContent = materiaisCriticos.length;
 
         // NOVA REGRA - Compras necessárias: quantidade_atual <= limite_compra
-        const materiaisCompra = (todosMateriais || []).filter(m => m.quantidade_atual <= m.limite_compra);
+        const materiaisCompra = (todosMateriais || []).filter(m => (m.quantidade_atual - (m.quantidade_reservada || 0)) <= m.limite_compra);
         document.getElementById('total-compras').textContent = materiaisCompra.length;
 
         // Últimas movimentações
@@ -84,7 +84,7 @@ function renderizarCriticos(dados) {
         <tr class="critico">
             <td>${m.codigo}</td>
             <td>${m.nome}</td>
-            <td><strong>${m.quantidade_atual}</strong></td>
+            <td><strong>${m.quantidade_atual}</strong> <small style="color:var(--secondary)">(Disp: ${m.quantidade_atual - (m.quantidade_reservada || 0)})</small></td>
             <td>${m.estoque_minimo}</td>
             <td><span class="badge badge-danger">CRÍTICO</span></td>
         </tr>

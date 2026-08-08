@@ -37,7 +37,7 @@ async function carregarMateriais() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('*, sublocais(nome, locais(nome))')
+            .select('*, quantidade_reservada, sublocais(nome, locais(nome))')
             .eq('ativo', true)
             .order('nome');
 
@@ -55,7 +55,7 @@ async function carregarMateriais() {
 function renderizarMateriais(lista = materiaisCache) {
     const tbody = document.getElementById('tabela-materiais');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhum material cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Nenhum material cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(m => {
@@ -70,6 +70,8 @@ function renderizarMateriais(lista = materiaisCache) {
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</td>
+            <td>${m.quantidade_reservada || 0}</td>
+            <td><strong>${m.quantidade_atual - (m.quantidade_reservada || 0)}</strong></td>
             <td>${m.estoque_minimo}</td>
             <td>${m.estoque_maximo}</td>
             <td><span class="badge ${badgeClass}">${status}</span></td>
@@ -199,6 +201,8 @@ function exportarMateriais() {
         nome: m.nome,
         unidade_medida: m.unidade_medida,
         quantidade_atual: m.quantidade_atual,
+        quantidade_reservada: m.quantidade_reservada || 0,
+        disponivel: m.quantidade_atual - (m.quantidade_reservada || 0),
         estoque_minimo: m.estoque_minimo,
         estoque_maximo: m.estoque_maximo,
         limite_compra: m.limite_compra,
@@ -211,6 +215,8 @@ function exportarMateriais() {
         { titulo: 'Nome', campo: 'nome' },
         { titulo: 'Unidade', campo: 'unidade_medida' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },
+        { titulo: 'Reservado', campo: 'quantidade_reservada' },
+        { titulo: 'Disponível', campo: 'disponivel' },
         { titulo: 'Estoque Min', campo: 'estoque_minimo' },
         { titulo: 'Estoque Max', campo: 'estoque_maximo' },
         { titulo: 'Limite Compra', campo: 'limite_compra' },

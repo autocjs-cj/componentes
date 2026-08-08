@@ -13,7 +13,7 @@ async function carregarEstoque() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('*, sublocais(nome, locais(nome))')
+            .select('*, quantidade_reservada, sublocais(nome, locais(nome))')
             .eq('ativo', true)
             .order('nome');
 
@@ -62,6 +62,8 @@ function renderizarEstoque(lista = estoqueCache) {
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</td>
+            <td>${m.quantidade_reservada || 0}</td>
+            <td><strong>${m.quantidade_atual - (m.quantidade_reservada || 0)}</strong> ${m.unidade_medida}</td>
             <td>${m.estoque_minimo}</td>
             <td>${m.estoque_maximo}</td>
             <td>${m.limite_compra}</td>
@@ -107,6 +109,8 @@ function exportarEstoque() {
         local: m.sublocais?.locais?.nome || '-',
         sublocal: m.sublocais?.nome || '-',
         quantidade_atual: m.quantidade_atual,
+        quantidade_reservada: m.quantidade_reservada || 0,
+        disponivel: m.quantidade_atual - (m.quantidade_reservada || 0),
         unidade: m.unidade_medida,
         estoque_minimo: m.estoque_minimo,
         estoque_maximo: m.estoque_maximo,
@@ -121,6 +125,8 @@ function exportarEstoque() {
         { titulo: 'Local', campo: 'local' },
         { titulo: 'Sub-local', campo: 'sublocal' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },
+        { titulo: 'Reservado', campo: 'quantidade_reservada' },
+        { titulo: 'Disponível', campo: 'disponivel' },
         { titulo: 'Unidade', campo: 'unidade' },
         { titulo: 'Estoque Min', campo: 'estoque_minimo' },
         { titulo: 'Estoque Max', campo: 'estoque_maximo' },

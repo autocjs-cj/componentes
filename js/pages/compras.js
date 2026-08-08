@@ -12,14 +12,14 @@ async function carregarCompras() {
         // Buscar todos os materiais ativos e filtrar no cliente
         const { data, error } = await sb
             .from('materiais')
-            .select('*, sublocais(nome, locais(nome))')
+            .select('*, quantidade_reservada, sublocais(nome, locais(nome))')
             .eq('ativo', true)
             .order('nome');
 
         if (error) throw error;
 
         // NOVA REGRA: quantidade_atual <= limite_compra
-        const materiais = (data || []).filter(m => m.quantidade_atual <= m.limite_compra);
+        const materiais = (data || []).filter(m => (m.quantidade_atual - (m.quantidade_reservada || 0)) <= m.limite_compra);
 
         comprasCache = materiais;
         renderizarCompras();
@@ -52,7 +52,7 @@ function atualizarCards() {
 function renderizarCompras() {
     const tbody = document.getElementById('tabela-compras');
     if (!comprasCache.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center">🎉 Nenhum material necessita de compra no momento!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center">🎉 Nenhum material necessita de compra no momento!</td></tr>';
         return;
     }
     tbody.innerHTML = comprasCache.map(m => {
@@ -64,6 +64,8 @@ function renderizarCompras() {
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong></td>
+            <td>${m.quantidade_reservada || 0}</td>
+            <td><strong>${m.quantidade_atual - (m.quantidade_reservada || 0)}</strong></td>
             <td>${m.estoque_minimo}</td>
             <td>${m.estoque_maximo}</td>
             <td><strong style="color: var(--danger);">${sugerido}</strong></td>
@@ -80,6 +82,8 @@ function exportarCompras() {
         local: m.sublocais?.locais?.nome || '-',
         sublocal: m.sublocais?.nome || '-',
         quantidade_atual: m.quantidade_atual,
+        quantidade_reservada: m.quantidade_reservada || 0,
+        disponivel: m.quantidade_atual - (m.quantidade_reservada || 0),
         estoque_minimo: m.estoque_minimo,
         estoque_maximo: m.estoque_maximo,
         quantidade_sugerida: calcularSugerido(m),
@@ -93,6 +97,8 @@ function exportarCompras() {
         { titulo: 'Local', campo: 'local' },
         { titulo: 'Sub-local', campo: 'sublocal' },
         { titulo: 'Qtd Atual', campo: 'quantidade_atual' },
+        { titulo: 'Reservado', campo: 'quantidade_reservada' },
+        { titulo: 'Disponível', campo: 'disponivel' },
         { titulo: 'Estoque Min', campo: 'estoque_minimo' },
         { titulo: 'Estoque Max', campo: 'estoque_maximo' },
         { titulo: 'Qtd Sugerida', campo: 'quantidade_sugerida' },

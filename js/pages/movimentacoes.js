@@ -15,13 +15,22 @@ async function carregarMateriais() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('id, codigo, nome, quantidade_atual')
+            .select('id, codigo, nome, quantidade_atual, quantidade_reservada, unidade_medida')
             .eq('ativo', true)
             .order('nome');
 
         if (error) throw error;
         materiaisCache = data || [];
-        carregarSelect('mov-material', materiaisCache, 'id', 'nome', 'Selecione um material...');
+        const select = document.getElementById('mov-material');
+    select.innerHTML = '<option value="">Selecione um material...</option>';
+    materiaisCache.forEach(m => {
+        const disponivel = m.quantidade_atual - (m.quantidade_reservada || 0);
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
+        opt.dataset.disponivel = disponivel;
+        select.appendChild(opt);
+    });
         carregarSelect('filtro-material', materiaisCache, 'id', 'nome', 'Todos os materiais');
     } catch (erro) {
         console.error(erro);
@@ -76,8 +85,9 @@ async function registrarMovimentacao(e) {
     const quantidade = parseInt(document.getElementById('mov-quantidade').value);
     const material = materiaisCache.find(m => m.id === materialId);
 
-    if (tipo === 'SAIDA' && material.quantidade_atual < quantidade) {
-        mostrarToast(`Saldo insuficiente! Disponível: ${material.quantidade_atual}`, 'erro');
+    const disponivel = material.quantidade_atual - (material.quantidade_reservada || 0);
+    if (tipo === 'SAIDA' && disponivel < quantidade) {
+        mostrarToast(`Saldo insuficiente! Disponível: ${disponivel} ${material.unidade_medida} (Reservado: ${material.quantidade_reservada || 0})`, 'erro');
         return;
     }
 
