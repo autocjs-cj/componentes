@@ -20,11 +20,11 @@ function hashSenha(senha) {
     return String(hash);
 }
 
-async function login(email, senha) {
+async function login(nome, senha) {
     const { data, error } = await sb
         .from('usuarios')
         .select('*')
-        .eq('email', email)
+        .eq('nome', nome)
         .eq('ativo', true)
         .single();
 
@@ -37,7 +37,6 @@ async function login(email, senha) {
     const usuario = {
         id: data.id,
         nome: data.nome,
-        email: data.email,
         perfil: data.perfil
     };
 

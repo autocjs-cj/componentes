@@ -98,15 +98,15 @@ function exportarExcel(dados, nomeArquivo, colunas) {
         }).join(';') + '\n';
     });
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = nomeArquivo + '.csv';
+    link.download = nomeArquivo + '.xlsx';
     document.body.appendChild(link);
     link.click();
     link.remove();
 
-    mostrarToast(`Arquivo "${nomeArquivo}.csv" exportado com sucesso!`);
+    mostrarToast(`Arquivo "${nomeArquivo}.xlsx" exportado com sucesso!`);
 }
 
 // Carrega select com opções

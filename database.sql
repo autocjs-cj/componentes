@@ -173,3 +173,31 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO usuarios (email, nome, senha, perfil)
 VALUES ('almoxarife@sistema.com', 'Almoxarife', '177274736', 'almoxarife')
 ON CONFLICT (email) DO NOTHING;
+
+
+-- ============================================================
+-- MIGRAÇÃO: REMOVER COLUNA EMAIL DA TABELA USUARIOS
+-- ============================================================
+-- Execute estes comandos no SQL Editor do Supabase:
+
+-- 1. Remover a constraint UNIQUE do email (se existir)
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_email_key;
+
+-- 2. Remover a coluna email
+ALTER TABLE usuarios DROP COLUMN IF EXISTS email;
+
+-- 3. Adicionar constraint UNIQUE no nome (login agora é por nome)
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_nome_key UNIQUE (nome);
+
+-- 4. Atualizar os usuários padrão (remover referências a email)
+UPDATE usuarios SET nome = 'Administrador' WHERE nome = 'admin@sistema.com' OR nome = 'Administrador';
+UPDATE usuarios SET nome = 'Almoxarife' WHERE nome = 'almoxarife@sistema.com' OR nome = 'Almoxarife';
+
+-- 5. Inserir usuários padrão atualizados (se não existirem)
+INSERT INTO usuarios (nome, senha, perfil)
+VALUES ('Administrador', '-1422442968', 'admin')
+ON CONFLICT (nome) DO UPDATE SET senha = '-1422442968', perfil = 'admin', ativo = true;
+
+INSERT INTO usuarios (nome, senha, perfil)
+VALUES ('Almoxarife', '177274736', 'almoxarife')
+ON CONFLICT (nome) DO UPDATE SET senha = '177274736', perfil = 'almoxarife', ativo = true;

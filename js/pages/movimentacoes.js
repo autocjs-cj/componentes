@@ -22,6 +22,7 @@ async function carregarMateriais() {
         if (error) throw error;
         materiaisCache = data || [];
         carregarSelect('mov-material', materiaisCache, 'id', 'nome', 'Selecione um material...');
+        carregarSelect('filtro-material', materiaisCache, 'id', 'nome', 'Todos os materiais');
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar materiais', 'erro');
@@ -127,6 +128,7 @@ async function filtrarMovimentacoes() {
     const dataInicio = document.getElementById('filtro-data-inicio').value;
     const dataFim = document.getElementById('filtro-data-fim').value;
     const tipo = document.getElementById('filtro-tipo').value;
+    const materialId = document.getElementById('filtro-material').value;
 
     toggleLoading(true);
     try {
@@ -135,6 +137,7 @@ async function filtrarMovimentacoes() {
         if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
         if (dataFim) query = query.lte('data_movimentacao', dataFim);
         if (tipo) query = query.eq('tipo', tipo);
+        if (materialId) query = query.eq('material_id', materialId);
 
         const { data, error } = await query.order('data_movimentacao', { ascending: false });
         if (error) throw error;

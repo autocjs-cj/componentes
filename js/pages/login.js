@@ -10,11 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-login').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById('login-email').value.trim();
+        const nome = document.getElementById('login-nome').value.trim();
         const senha = document.getElementById('login-senha').value;
 
         toggleLoading(true);
-        const resultado = await login(email, senha);
+        const resultado = await login(nome, senha);
         toggleLoading(false);
 
         if (resultado.sucesso) {

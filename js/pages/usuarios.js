@@ -52,7 +52,6 @@ function renderizarUsuarios() {
         return `
         <tr>
             <td><strong>${u.nome}</strong></td>
-            <td>${u.email}</td>
             <td>${perfilBadge}</td>
             <td>
                 <div class="acoes">
@@ -79,7 +78,6 @@ async function salvarUsuario(e) {
     toggleLoading(true);
     const dados = {
         nome: document.getElementById('usuario-nome').value.trim(),
-        email: document.getElementById('usuario-email').value.trim().toLowerCase(),
         perfil: document.getElementById('usuario-perfil').value
     };
 
@@ -105,7 +103,7 @@ async function salvarUsuario(e) {
         await carregarUsuarios();
     } catch (erro) {
         console.error(erro);
-        mostrarToast('Erro ao salvar usuário: ' + (erro.message || 'Email já cadastrado'), 'erro');
+        mostrarToast('Erro ao salvar usuário: ' + (erro.message || 'Nome já cadastrado'), 'erro');
     } finally {
         toggleLoading(false);
     }
@@ -117,7 +115,7 @@ async function editarUsuario(id) {
 
     document.getElementById('usuario-id').value = u.id;
     document.getElementById('usuario-nome').value = u.nome;
-    document.getElementById('usuario-email').value = u.email;
+    
     document.getElementById('usuario-perfil').value = u.perfil;
     document.getElementById('usuario-senha').value = '';
     document.getElementById('usuario-senha').required = false;

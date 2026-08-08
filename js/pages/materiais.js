@@ -76,6 +76,7 @@ function renderizarMateriais(lista = materiaisCache) {
             <td>
                 <div class="acoes">
                     <button class="btn-acao editar" onclick="editarMaterial('${m.id}')" title="Editar">✏️</button>
+                    <button class="btn-acao" onclick="duplicarMaterial('${m.id}')" title="Duplicar" style="background:#fef3c7;color:#92400e;">📋</button>
                     <button class="btn-acao excluir" onclick="excluirMaterial('${m.id}')" title="Excluir">🗑️</button>
                 </div>
             </td>
@@ -165,6 +166,31 @@ async function excluirMaterial(id) {
     } finally {
         toggleLoading(false);
     }
+}
+
+async function duplicarMaterial(id) {
+    const m = materiaisCache.find(x => x.id === id);
+    if (!m) return;
+
+    // Limpa o formulário e preenche com os dados do material original
+    limparFormulario('form-material');
+    document.getElementById('material-id').value = '';
+    document.getElementById('material-codigo').value = m.codigo + '-COPY';
+    document.getElementById('material-nome').value = m.nome + ' (Cópia)';
+    document.getElementById('material-unidade').value = m.unidade_medida;
+    document.getElementById('material-estoque-min').value = m.estoque_minimo;
+    document.getElementById('material-estoque-max').value = m.estoque_maximo;
+    document.getElementById('material-limite-compra').value = m.limite_compra;
+
+    if (m.sublocais) {
+        const localId = sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id;
+        document.getElementById('material-local').value = localId || '';
+        filtrarSublocais();
+        document.getElementById('material-sublocal').value = m.sublocal_id || '';
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    mostrarToast('Material duplicado no formulário. Edite o código e salve!');
 }
 
 function exportarMateriais() {

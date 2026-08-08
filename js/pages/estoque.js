@@ -115,7 +115,7 @@ function exportarEstoque() {
     }));
 
     const colunas = [
-        { titulo: 'Código', campo: 'codigo' },
+        { titulo: 'Código SAP', campo: 'codigo' },
         { titulo: 'Nome', campo: 'nome' },
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Local', campo: 'local' },
