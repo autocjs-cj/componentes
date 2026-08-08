@@ -11,7 +11,52 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Menu será renderizado dinamicamente pelo JS -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>📦 Controle de Materiais</h1>
+                <p>Sistema de Gestão de Estoque</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item" data-restrito="almoxarife">
+                    <a href="pages/locais.html" class="nav-link">
+                        <span class="nav-icon">🏭</span> Locais & Sub-locais
+                    </a>
+                </li>
+                <li class="nav-item" data-restrito="almoxarife">
+                    <a href="pages/materiais.html" class="nav-link">
+                        <span class="nav-icon">📋</span> Materiais
+                    </a>
+                </li>
+                <li class="nav-item" data-restrito="almoxarife">
+                    <a href="pages/movimentacoes.html" class="nav-link">
+                        <span class="nav-icon">🔄</span> Movimentações
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/estoque.html" class="nav-link">
+                        <span class="nav-icon">📦</span> Controle de Estoque
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pages/compras.html" class="nav-link">
+                        <span class="nav-icon">🛒</span> Compras Necessárias
+                    </a>
+                </li>
+                <li class="nav-item" data-restrito="admin">
+                    <a href="pages/usuarios.html" class="nav-link">
+                        <span class="nav-icon">👤</span> Usuários
+                    </a>
+                </li>
+            </ul>
+            <div id="auth-area" style="padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <!-- Preenchido pelo JS -->
+            </div>
+        </aside>
         <main class="main-content">
             <div class="page-header">
                 <h2>📊 Dashboard</h2>
@@ -52,7 +97,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3>📈 Últimas Movimentações</h3>
-                    <a href="pages/movimentacoes.html" class="btn btn-sm btn-outline">Ver todas</a>
+                    <button class="btn btn-sm btn-outline" onclick="verificarLink('almoxarife', 'pages/movimentacoes.html')">Ver todas</button>
                 </div>
                 <div class="table-container">
                     <table>
@@ -98,9 +143,8 @@
     </div>
     <script src="js/pages/dashboard.js"></script>
     <script>
-        // Renderizar menu dinâmico
         document.addEventListener('DOMContentLoaded', () => {
-            renderizarMenu();
+            configurarMenu();
         });
     </script>
 </body>

@@ -3,10 +3,8 @@
 let usuariosCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Verificar acesso (apenas admin)
-    if (!verificarAcesso()) return;
+    if (!verificarAcessoPagina()) return;
 
-    // Mostrar info do usuário logado no sidebar
     const user = usuarioLogado();
     if (user) {
         document.getElementById('user-info-sidebar').innerHTML = 
@@ -69,43 +67,53 @@ async function salvarUsuario(e) {
     if (!validarFormulario('form-usuario')) return;
 
     const id = document.getElementById('usuario-id').value;
-    const senha = document.getElementById('usuario-senha').value;
+    const senhaInput = document.getElementById('usuario-senha').value;
 
-    if (senha.length < 4) {
+    // Novo usuário precisa de senha
+    if (!id && (!senhaInput || senhaInput.length < 4)) {
         mostrarToast('A senha deve ter no mínimo 4 caracteres', 'erro');
         return;
     }
 
     toggleLoading(true);
+
     const dados = {
         nome: document.getElementById('usuario-nome').value.trim(),
         email: document.getElementById('usuario-email').value.trim().toLowerCase(),
-        perfil: document.getElementById('usuario-perfil').value
+        perfil: document.getElementById('usuario-perfil').value,
+        ativo: true
     };
 
-    // Só envia senha se for preenchida (edição pode manter a mesma)
-    if (senha) {
-        dados.senha = hashSenha(senha);
+    // Só envia senha se for preenchida
+    if (senhaInput) {
+        dados.senha = hashSenha(senhaInput);
     }
 
     try {
         if (id) {
             // Edição: remover senha se estiver vazia (manter atual)
-            if (!senha) delete dados.senha;
+            if (!senhaInput) delete dados.senha;
             const { error } = await sb.from('usuarios').update(dados).eq('id', id);
-            if (error) throw error;
+            if (error) {
+                console.error('Erro update:', error);
+                throw error;
+            }
             mostrarToast('Usuário atualizado com sucesso!');
         } else {
             const { error } = await sb.from('usuarios').insert(dados);
-            if (error) throw error;
+            if (error) {
+                console.error('Erro insert:', error);
+                throw error;
+            }
             mostrarToast('Usuário cadastrado com sucesso!');
         }
         limparFormulario('form-usuario');
         document.getElementById('usuario-senha').required = true;
+        document.getElementById('usuario-senha').placeholder = 'Mínimo 4 caracteres';
         await carregarUsuarios();
     } catch (erro) {
         console.error(erro);
-        mostrarToast('Erro ao salvar usuário: ' + (erro.message || 'Email já cadastrado'), 'erro');
+        mostrarToast('Erro ao salvar usuário: ' + (erro.message || 'Email já cadastrado ou perfil inválido'), 'erro');
     } finally {
         toggleLoading(false);
     }
@@ -129,7 +137,6 @@ async function editarUsuario(id) {
 async function excluirUsuario(id) {
     if (!await confirmarExclusao()) return;
 
-    // Não permitir excluir a si mesmo
     const user = usuarioLogado();
     if (user && user.id === id) {
         mostrarToast('Você não pode excluir seu próprio usuário', 'erro');
