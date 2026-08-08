@@ -259,12 +259,12 @@ function renderizarMenu() {
                         <span class="nav-icon">🔄</span> Recebimento / Retirada
                     </a>
                 </li>
-                ` : ''}
                 <li class="nav-item">
                     <a href="${prefix}reserva.html" class="nav-link">
                         <span class="nav-icon">📝</span> Reserva de Materiais
                     </a>
                 </li>
+                ` : ''}
                 <li class="nav-item">
                     <a href="${prefix}estoque.html" class="nav-link">
                         <span class="nav-icon">📦</span> Controle de Estoque
