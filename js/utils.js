@@ -188,6 +188,7 @@ const PAGINAS_RESTRITAS = {
     'materiais.html': 'almoxarife',
     'movimentacoes.html': 'almoxarife',
     'reserva.html': 'almoxarife',
+    'mangueiras.html': 'almoxarife',
     'usuarios.html': 'admin'
 };
 
@@ -262,6 +263,11 @@ function renderizarMenu() {
                 <li class="nav-item">
                     <a href="${prefix}reserva.html" class="nav-link">
                         <span class="nav-icon">📝</span> Reserva de Materiais
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}mangueiras.html" class="nav-link">
+                        <span class="nav-icon">🚒</span> Controle de Mangueiras
                     </a>
                 </li>
                 ` : ''}
