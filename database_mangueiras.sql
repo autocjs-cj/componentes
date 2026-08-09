@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS mangueira_movimentacoes (
         'DESCARTE_REPROVADA'
     )),
     quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+    documento_referencia VARCHAR(100),
     data_movimentacao DATE NOT NULL DEFAULT CURRENT_DATE,
     responsavel VARCHAR(255),
     observacao TEXT,

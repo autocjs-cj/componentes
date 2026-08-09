@@ -240,12 +240,13 @@
                                 <th>Tipo</th>
                                 <th>Mangueira</th>
                                 <th>Qtd</th>
+                                <th>OM / Pedido</th>
                                 <th>Responsável</th>
                                 <th>Observação</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-movimentacoes-mangueira">
-                            <tr><td colspan="6" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="7" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -333,6 +334,10 @@
                 <div class="form-group mt-1">
                     <label>Quantidade <span class="required">*</span></label>
                     <input type="number" id="modal-mov-quantidade" min="1" required placeholder="Ex: 5">
+                </div>
+                <div class="form-group mt-1">
+                    <label>OM / Pedido / Reserva</label>
+                    <input type="text" id="modal-mov-documento" placeholder="Nº OM, Pedido ou Reserva">
                 </div>
                 <div class="form-group mt-1">
                     <label>Data <span class="required">*</span></label>

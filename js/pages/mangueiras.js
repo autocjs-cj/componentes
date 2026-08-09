@@ -167,7 +167,7 @@ function buscarMangueira() {
 function renderizarMovimentacoes(dados) {
     const tbody = document.getElementById('tabela-movimentacoes-mangueira');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma movimentação registrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhuma movimentação registrada</td></tr>';
         return;
     }
     tbody.innerHTML = dados.map(m => {
@@ -419,6 +419,7 @@ function abrirModalMovimentacao() {
     document.getElementById('modal-mov-mangueira').value = '';
     document.getElementById('modal-mov-quantidade').value = '';
     document.getElementById('modal-mov-data').value = hojeISO();
+    document.getElementById('modal-mov-documento').value = '';
     document.getElementById('modal-mov-responsavel').value = '';
     document.getElementById('modal-mov-observacao').value = '';
     document.getElementById('info-saldo-movimentacao').classList.add('hidden');
@@ -483,6 +484,7 @@ async function salvarMovimentacaoMangueira() {
             mangueira_id: mangueiraId,
             tipo_movimentacao: tipo,
             quantidade: quantidade,
+            documento_referencia: document.getElementById('modal-mov-documento').value.trim() || null,
             data_movimentacao: document.getElementById('modal-mov-data').value,
             responsavel: document.getElementById('modal-mov-responsavel').value.trim() || null,
             observacao: document.getElementById('modal-mov-observacao').value.trim() || null
@@ -602,6 +604,7 @@ function exportarMovimentacoesMangueira() {
         tipo_mangueira: m.mangueiras?.tipo || 'N/A',
         diametro: m.mangueiras?.diametro || '',
         quantidade: m.quantidade,
+        documento: m.documento_referencia || '',
         responsavel: m.responsavel || '',
         observacao: m.observacao || ''
     }));
@@ -613,6 +616,7 @@ function exportarMovimentacoesMangueira() {
         { titulo: 'Tipo Mangueira', campo: 'tipo_mangueira' },
         { titulo: 'Diâmetro', campo: 'diametro' },
         { titulo: 'Quantidade', campo: 'quantidade' },
+        { titulo: 'OM / Pedido', campo: 'documento' },
         { titulo: 'Responsável', campo: 'responsavel' },
         { titulo: 'Observação', campo: 'observacao' }
     ];

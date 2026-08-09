@@ -271,6 +271,7 @@ function exportarMovimentacoesMangueira() {
         tipo_mangueira: m.mangueiras?.tipo || 'N/A',
         diametro: m.mangueiras?.diametro || '',
         quantidade: m.quantidade,
+        documento: m.documento_referencia || '',
         responsavel: m.responsavel || '',
         observacao: m.observacao || ''
     }));
@@ -282,6 +283,7 @@ function exportarMovimentacoesMangueira() {
         { titulo: 'Tipo Mangueira', campo: 'tipo_mangueira' },
         { titulo: 'Diâmetro', campo: 'diametro' },
         { titulo: 'Quantidade', campo: 'quantidade' },
+        { titulo: 'OM / Pedido', campo: 'documento' },
         { titulo: 'Responsável', campo: 'responsavel' },
         { titulo: 'Observação', campo: 'observacao' }
     ];
