@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚒 Mangueiras - Controle de Materiais</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/utils.js"></script>
+    <style>
+        .mangueira-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .mangueira-stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-left: 4px solid;
+        }
+        .mangueira-stat-card.disponivel { border-left-color: #22c55e; }
+        .mangueira-stat-card.necessario { border-left-color: #f59e0b; }
+        .mangueira-stat-card.em-teste { border-left-color: #3b82f6; }
+        .mangueira-stat-card.reprovada { border-left-color: #ef4444; }
+        .mangueira-stat-card.descartada { border-left-color: #6b7280; }
+        .mangueira-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        .mangueira-stat-icon.disponivel { background: #dcfce7; }
+        .mangueira-stat-icon.necessario { background: #fef3c7; }
+        .mangueira-stat-icon.em-teste { background: #dbeafe; }
+        .mangueira-stat-icon.reprovada { background: #fee2e2; }
+        .mangueira-stat-icon.descartada { background: #f3f4f6; }
+        .mangueira-stat-info h4 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .mangueira-stat-info p {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin: 2px 0 0 0;
+        }
+        .badge-movimentacao {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-recebimento { background: #dcfce7; color: #166534; }
+        .badge-envio-teste { background: #dbeafe; color: #1e40af; }
+        .badge-retorno-aprovado { background: #dcfce7; color: #166534; }
+        .badge-retorno-reprovado { background: #fee2e2; color: #991b1b; }
+        .badge-descarte-area { background: #fef3c7; color: #92400e; }
+        .badge-descarte-reprovada { background: #f3f4f6; color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <div class="page-header">
+                <h2>🚒 Controle de Mangueiras</h2>
+                <p>Visualização pública do estoque e movimentações de mangueiras</p>
+            </div>
+
+            <!-- CARDS DE STATUS -->
+            <div class="mangueira-card-grid">
+                <div class="mangueira-stat-card disponivel">
+                    <div class="mangueira-stat-icon disponivel">✅</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-disponivel">0</h4>
+                        <p>Disponíveis para Área</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card necessario">
+                    <div class="mangueira-stat-icon necessario">📋</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-teste-necessario">0</h4>
+                        <p>Teste Hidrostático Necessário</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card em-teste">
+                    <div class="mangueira-stat-icon em-teste">🔬</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-em-teste">0</h4>
+                        <p>Em Teste Hidrostático</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card reprovada">
+                    <div class="mangueira-stat-icon reprovada">❌</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-reprovada">0</h4>
+                        <p>Reprovadas no Teste</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card descartada">
+                    <div class="mangueira-stat-icon descartada">🗑️</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-descartada">0</h4>
+                        <p>Descartadas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DE MANGUEIRAS -->
+            <div class="card">
+                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>🚒 Mangueiras Cadastradas</h3>
+                        <button class="btn btn-success" onclick="exportarMangueiras()">📊 Exportar Excel</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="margin: 0; min-width: 260px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
+                            <input type="text" id="buscar-mangueira" placeholder="🔍 Buscar mangueira..." style="width: 100%; padding: 8px 12px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Diâmetro</th>
+                                <th>Disponível</th>
+                                <th>Teste Necessário</th>
+                                <th>Em Teste</th>
+                                <th>Reprovada</th>
+                                <th>Descartada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-mangueiras">
+                            <tr><td colspan="8" class="text-center">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- HISTÓRICO DE MOVIMENTAÇÕES -->
+            <div class="card">
+                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>📋 Histórico de Movimentações</h3>
+                        <button class="btn btn-success" onclick="exportarMovimentacoesMangueira()">📊 Exportar</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="margin: 0; min-width: 140px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">De</label>
+                            <input type="date" id="filtro-data-inicio" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 140px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Até</label>
+                            <input type="date" id="filtro-data-fim" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 200px;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Tipo</label>
+                            <select id="filtro-tipo-movimentacao" style="width: 100%; padding: 8px 10px;">
+                                <option value="">Todos os tipos</option>
+                                <option value="RECEBIMENTO">📥 Recebimento</option>
+                                <option value="ENVIO_TESTE">🔬 Envio para Teste</option>
+                                <option value="RETORNO_APROVADO">✅ Retorno Aprovado</option>
+                                <option value="RETORNO_REPROVADO">❌ Retorno Reprovado</option>
+                                <option value="DESCARTE_AREA">🗑️ Descarte (Área)</option>
+                                <option value="DESCARTE_REPROVADA">🗑️ Descarte (Reprovada)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 240px; flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
+                            <input type="text" id="buscar-movimentacao" placeholder="🔍 Buscar..." style="width: 100%; padding: 8px 12px;">
+                        </div>
+                        <div class="btn-group" style="margin-bottom: 1px;">
+                            <button class="btn btn-outline" onclick="filtrarMovimentacoesMangueira()" title="Filtrar">🔍 Filtrar</button>
+                            <button class="btn btn-secondary" onclick="limparFiltroMovimentacoes()" title="Limpar">🔄 Limpar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Mangueira</th>
+                                <th>Qtd</th>
+                                <th>Responsável</th>
+                                <th>Observação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-movimentacoes-mangueira">
+                            <tr><td colspan="6" class="text-center">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/pages/mangueiras_visualizacao.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarMenu();
+        });
+    </script>
+</body>
+</html>

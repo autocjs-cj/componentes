@@ -193,7 +193,7 @@ const PAGINAS_RESTRITAS = {
 };
 
 // Páginas públicas (não precisam de login)
-const PAGINAS_PUBLICAS = ['index.html', 'estoque.html', 'compras.html'];
+const PAGINAS_PUBLICAS = ['index.html', 'estoque.html', 'compras.html', 'mangueiras_visualizacao.html'];
 
 function verificarAcesso() {
     const path = window.location.pathname;
@@ -274,6 +274,11 @@ function renderizarMenu() {
                 <li class="nav-item">
                     <a href="${prefix}estoque.html" class="nav-link">
                         <span class="nav-icon">📦</span> Controle de Estoque
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="${prefix}mangueiras_visualizacao.html" class="nav-link">
+                        <span class="nav-icon">🚒</span> Mangueiras
                     </a>
                 </li>
                 <li class="nav-item">
