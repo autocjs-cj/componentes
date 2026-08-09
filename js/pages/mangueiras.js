@@ -346,8 +346,8 @@ function atualizarSaldoMovimentacao() {
 
     switch (tipo) {
         case 'RECEBIMENTO':
-            label = 'Estoque disponível atual';
-            saldo = m.qtd_disponivel || 0;
+            label = 'Entrada de estoque — sem limite de saldo';
+            saldo = '∞';
             break;
         case 'ENVIO_TESTE':
             label = 'Disponível para envio';
@@ -404,9 +404,12 @@ async function salvarMovimentacaoMangueira() {
         return;
     }
 
-    // Validações de saldo
-    let saldoOrigem = 0;
+    // Validações de saldo (RECEBIMENTO não precisa validar saldo de origem)
+    let saldoOrigem = null;
     switch (tipo) {
+        case 'RECEBIMENTO':
+            saldoOrigem = null; // Sem limite
+            break;
         case 'ENVIO_TESTE':
         case 'DESCARTE_AREA':
             saldoOrigem = m.qtd_disponivel || 0;
@@ -420,7 +423,7 @@ async function salvarMovimentacaoMangueira() {
             break;
     }
 
-    if (saldoOrigem < quantidade) {
+    if (saldoOrigem !== null && saldoOrigem < quantidade) {
         mostrarToast(`Saldo insuficiente! Disponível: ${saldoOrigem} unidades`, 'erro');
         return;
     }
