@@ -3,14 +3,14 @@
 let mangueirasCache = [];
 let movimentacoesCache = [];
 
-// Mapeamento de tipos de movimentação para labels e badges
 const TIPOS_MOVIMENTACAO = {
-    'RECEBIMENTO': { label: 'Recebimento', badge: 'badge-recebimento', icon: '📥' },
-    'ENVIO_TESTE': { label: 'Envio p/ Teste', badge: 'badge-envio-teste', icon: '🔬' },
-    'RETORNO_APROVADO': { label: 'Retorno Aprovado', badge: 'badge-retorno-aprovado', icon: '✅' },
-    'RETORNO_REPROVADO': { label: 'Retorno Reprovado', badge: 'badge-retorno-reprovado', icon: '❌' },
-    'DESCARTE_AREA': { label: 'Descarte (Área)', badge: 'badge-descarte-area', icon: '🗑️' },
-    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)', badge: 'badge-descarte-reprovada', icon: '🗑️' }
+    'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
+    'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
+    'ENVIO_TESTE':        { label: 'Envio p/ Teste',     badge: 'badge-envio-teste',      icon: '🔬' },
+    'RETORNO_APROVADO':   { label: 'Retorno Aprovado',   badge: 'badge-retorno-aprovado', icon: '✅' },
+    'RETORNO_REPROVADO':  { label: 'Retorno Reprovado',  badge: 'badge-retorno-reprovado',icon: '❌' },
+    'DESCARTE_AREA':      { label: 'Descarte (Área)',    badge: 'badge-descarte-area',      icon: '🗑️' },
+    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)',badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -19,14 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMovimentacoesMangueira();
 
     const buscarInput = document.getElementById('buscar-mangueira');
-    if (buscarInput) {
-        buscarInput.addEventListener('input', buscarMangueira);
-    }
+    if (buscarInput) buscarInput.addEventListener('input', buscarMangueira);
 
     const buscarMovInput = document.getElementById('buscar-movimentacao');
-    if (buscarMovInput) {
-        buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
-    }
+    if (buscarMovInput) buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
 });
 
 // ===== CARREGAR DADOS =====
@@ -44,6 +40,7 @@ async function carregarMangueiras() {
         mangueirasCache = data || [];
         renderizarMangueiras();
         atualizarCards();
+        renderizarAlertas();
         atualizarSelectMangueiras();
     } catch (erro) {
         console.error(erro);
@@ -73,40 +70,77 @@ async function carregarMovimentacoesMangueira() {
     }
 }
 
-// ===== RENDERIZAR CARDS =====
+// ===== ALERTAS =====
+
+function renderizarAlertas() {
+    const container = document.getElementById('alertas-container');
+    if (!container) return;
+
+    let html = '';
+
+    const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.qtd_disponivel <= m.estoque_minimo));
+    const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.qtd_disponivel <= m.limite_compra));
+
+    if (criticos.length > 0) {
+        const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / min ${m.estoque_minimo})`).join(', ');
+        html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Estoque Crítico:</strong> ${nomes}</div>`;
+    }
+
+    if (compra.length > 0) {
+        const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / limite ${m.limite_compra})`).join(', ');
+        html += `<div class="alerta-estoque alerta-compra">⚠️ <strong>Compra Necessária:</strong> ${nomes}</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+// ===== CARDS =====
 
 function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.qtd_disponivel || 0), 0);
-    const testeNecessario = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
-    const emTeste = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste || 0), 0);
-    const reprovada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada || 0), 0);
+    const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
+    const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
+    const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
+    const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
 
     document.getElementById('total-disponivel').textContent = disponivel;
-    document.getElementById('total-teste-necessario').textContent = testeNecessario;
+    document.getElementById('total-aplicada').textContent = aplicada;
+    document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
 }
 
-// ===== RENDERIZAR TABELA DE MANGUEIRAS =====
+// ===== TABELA MANGUEIRAS =====
 
 function renderizarMangueiras(lista = mangueirasCache) {
     const tbody = document.getElementById('tabela-mangueiras');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhuma mangueira cadastrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Nenhuma mangueira cadastrada</td></tr>';
         return;
     }
-    tbody.innerHTML = lista.map(m => `
+    tbody.innerHTML = lista.map(m => {
+        const alertas = [];
+        if (m.estoque_minimo > 0 && m.qtd_disponivel <= m.estoque_minimo) {
+            alertas.push('<span class="badge badge-danger">CRÍTICO</span>');
+        }
+        if (m.limite_compra > 0 && m.qtd_disponivel <= m.limite_compra) {
+            alertas.push('<span class="badge badge-warning">COMPRA</span>');
+        }
+
+        return `
         <tr>
             <td><strong>${m.codigo}</strong></td>
             <td>${m.tipo}</td>
             <td>${m.diametro}</td>
             <td><strong style="color: #22c55e;">${m.qtd_disponivel || 0}</strong></td>
+            <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
             <td><strong style="color: #f59e0b;">${m.qtd_teste_necessario || 0}</strong></td>
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
             <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
             <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
+            <td>${alertas.length ? alertas.join(' ') : '<span class="badge badge-success">OK</span>'}</td>
             <td>
                 <div class="acoes">
                     <button class="btn-acao editar" onclick="abrirModalMangueira('${m.id}')" title="Editar">✏️</button>
@@ -114,7 +148,7 @@ function renderizarMangueiras(lista = mangueirasCache) {
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function buscarMangueira() {
@@ -128,7 +162,7 @@ function buscarMangueira() {
     renderizarMangueiras(filtrados);
 }
 
-// ===== RENDERIZAR MOVIMENTAÇÕES =====
+// ===== MOVIMENTAÇÕES =====
 
 function renderizarMovimentacoes(dados) {
     const tbody = document.getElementById('tabela-movimentacoes-mangueira');
@@ -176,7 +210,6 @@ async function filtrarMovimentacoesMangueira() {
     toggleLoading(true);
     try {
         let query = sb.from('mangueira_movimentacoes').select('*, mangueiras(codigo, tipo, diametro)');
-
         if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
         if (dataFim) query = query.lte('data_movimentacao', dataFim);
         if (tipo) query = query.eq('tipo_movimentacao', tipo);
@@ -186,11 +219,8 @@ async function filtrarMovimentacoesMangueira() {
 
         movimentacoesCache = data || [];
         const termoBusca = document.getElementById('buscar-movimentacao')?.value.toLowerCase().trim() || '';
-        if (termoBusca) {
-            buscarMovimentacaoMangueira();
-        } else {
-            renderizarMovimentacoes(movimentacoesCache);
-        }
+        if (termoBusca) buscarMovimentacaoMangueira();
+        else renderizarMovimentacoes(movimentacoesCache);
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao filtrar', 'erro');
@@ -207,7 +237,7 @@ function limparFiltroMovimentacoes() {
     carregarMovimentacoesMangueira();
 }
 
-// ===== MODAL MANGUEIRA (CADASTRO / EDIÇÃO) =====
+// ===== MODAL MANGUEIRA =====
 
 function abrirModalMangueira(id = null) {
     const modo = id ? 'editar' : 'novo';
@@ -222,8 +252,11 @@ function abrirModalMangueira(id = null) {
         document.getElementById('modal-mangueira-diametro').value = m.diametro;
         document.getElementById('modal-mangueira-tipo').value = m.tipo;
         document.getElementById('modal-mangueira-descricao').value = m.descricao || '';
+        document.getElementById('modal-mangueira-estoque-min').value = m.estoque_minimo || 0;
+        document.getElementById('modal-mangueira-limite-compra').value = m.limite_compra || 0;
 
         document.getElementById('modal-info-disponivel').textContent = m.qtd_disponivel || 0;
+        document.getElementById('modal-info-aplicada').textContent = m.qtd_aplicada || 0;
         document.getElementById('modal-info-teste-necessario').textContent = m.qtd_teste_necessario || 0;
         document.getElementById('modal-info-em-teste').textContent = m.qtd_em_teste || 0;
         document.getElementById('modal-info-reprovada').textContent = m.qtd_reprovada || 0;
@@ -232,6 +265,8 @@ function abrirModalMangueira(id = null) {
     } else {
         document.getElementById('titulo-modal-mangueira').textContent = '🚒 Nova Mangueira';
         limparFormulario('form-modal-mangueira');
+        document.getElementById('modal-mangueira-estoque-min').value = 0;
+        document.getElementById('modal-mangueira-limite-compra').value = 0;
         document.getElementById('modal-info-estoque-mangueira').classList.add('hidden');
     }
 
@@ -259,7 +294,9 @@ async function salvarMangueira() {
         codigo: codigo,
         diametro: diametro,
         tipo: tipo,
-        descricao: document.getElementById('modal-mangueira-descricao').value.trim() || null
+        descricao: document.getElementById('modal-mangueira-descricao').value.trim() || null,
+        estoque_minimo: parseInt(document.getElementById('modal-mangueira-estoque-min').value) || 0,
+        limite_compra: parseInt(document.getElementById('modal-mangueira-limite-compra').value) || 0
     };
 
     toggleLoading(true);
@@ -312,7 +349,7 @@ function atualizarSelectMangueiras() {
         opt.value = m.id;
         opt.textContent = `${m.tipo} (${m.codigo}) — ${m.diametro}`;
         opt.dataset.disponivel = m.qtd_disponivel || 0;
-        opt.dataset.teste_necessario = m.qtd_teste_necessario || 0;
+        opt.dataset.aplicada = m.qtd_aplicada || 0;
         opt.dataset.em_teste = m.qtd_em_teste || 0;
         opt.dataset.reprovada = m.qtd_reprovada || 0;
         select.appendChild(opt);
@@ -349,26 +386,31 @@ function atualizarSaldoMovimentacao() {
             label = 'Entrada de estoque — sem limite de saldo';
             saldo = '∞';
             break;
-        case 'ENVIO_TESTE':
-            label = 'Disponível para envio';
+        case 'APLICACAO_AREA':
+        case 'DESCARTE_AREA':
             saldo = m.qtd_disponivel || 0;
+            label = `Disponível: ${saldo} unidades`;
+            break;
+        case 'ENVIO_TESTE':
+            saldo = m.qtd_aplicada || 0;
+            label = `Aplicadas na área: ${saldo} unidades`;
             break;
         case 'RETORNO_APROVADO':
         case 'RETORNO_REPROVADO':
-            label = 'Em teste no momento';
             saldo = m.qtd_em_teste || 0;
-            break;
-        case 'DESCARTE_AREA':
-            label = 'Disponível para descarte';
-            saldo = m.qtd_disponivel || 0;
+            label = `Em teste: ${saldo} unidades`;
             break;
         case 'DESCARTE_REPROVADA':
-            label = 'Reprovadas para descarte';
             saldo = m.qtd_reprovada || 0;
+            label = `Reprovadas: ${saldo} unidades`;
             break;
     }
 
-    saldoSpan.textContent = `${saldo} unidades (${label})`;
+    if (tipo === 'RECEBIMENTO') {
+        saldoSpan.textContent = label;
+    } else {
+        saldoSpan.textContent = `${saldo} unidades (${label})`;
+    }
     infoDiv.classList.remove('hidden');
 }
 
@@ -404,15 +446,18 @@ async function salvarMovimentacaoMangueira() {
         return;
     }
 
-    // Validações de saldo (RECEBIMENTO não precisa validar saldo de origem)
+    // Validações de saldo (RECEBIMENTO não precisa validar)
     let saldoOrigem = null;
     switch (tipo) {
         case 'RECEBIMENTO':
-            saldoOrigem = null; // Sem limite
+            saldoOrigem = null;
             break;
-        case 'ENVIO_TESTE':
+        case 'APLICACAO_AREA':
         case 'DESCARTE_AREA':
             saldoOrigem = m.qtd_disponivel || 0;
+            break;
+        case 'ENVIO_TESTE':
+            saldoOrigem = m.qtd_aplicada || 0;
             break;
         case 'RETORNO_APROVADO':
         case 'RETORNO_REPROVADO':
@@ -470,18 +515,22 @@ async function salvarMovimentacaoMangueira() {
 
 function calcularAtualizacoes(m, tipo, qtd) {
     const disp = m.qtd_disponivel || 0;
-    const nec = m.qtd_teste_necessario || 0;
+    const apl  = m.qtd_aplicada || 0;
     const test = m.qtd_em_teste || 0;
-    const rep = m.qtd_reprovada || 0;
+    const rep  = m.qtd_reprovada || 0;
     const desc = m.qtd_descartada || 0;
 
     switch (tipo) {
         case 'RECEBIMENTO':
             return { qtd_disponivel: disp + qtd };
-        case 'ENVIO_TESTE':
+        case 'APLICACAO_AREA':
             return {
                 qtd_disponivel: Math.max(0, disp - qtd),
-                qtd_teste_necessario: Math.max(0, nec - qtd),
+                qtd_aplicada: apl + qtd
+            };
+        case 'ENVIO_TESTE':
+            return {
+                qtd_aplicada: Math.max(0, apl - qtd),
                 qtd_em_teste: test + qtd
             };
         case 'RETORNO_APROVADO':
@@ -518,10 +567,13 @@ function exportarMangueiras() {
         diametro: m.diametro,
         descricao: m.descricao || '',
         qtd_disponivel: m.qtd_disponivel || 0,
+        qtd_aplicada: m.qtd_aplicada || 0,
         qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
         qtd_reprovada: m.qtd_reprovada || 0,
-        qtd_descartada: m.qtd_descartada || 0
+        qtd_descartada: m.qtd_descartada || 0,
+        estoque_minimo: m.estoque_minimo || 0,
+        limite_compra: m.limite_compra || 0
     }));
 
     const colunas = [
@@ -530,10 +582,13 @@ function exportarMangueiras() {
         { titulo: 'Diâmetro', campo: 'diametro' },
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
-        { titulo: 'Teste Necessário', campo: 'qtd_teste_necessario' },
+        { titulo: 'Aplicada', campo: 'qtd_aplicada' },
+        { titulo: 'Teste Nec.', campo: 'qtd_teste_necessario' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
         { titulo: 'Reprovada', campo: 'qtd_reprovada' },
-        { titulo: 'Descartada', campo: 'qtd_descartada' }
+        { titulo: 'Descartada', campo: 'qtd_descartada' },
+        { titulo: 'Estoque Mín', campo: 'estoque_minimo' },
+        { titulo: 'Limite Compra', campo: 'limite_compra' }
     ];
 
     exportarExcel(dadosExport, 'controle_mangueiras', colunas);

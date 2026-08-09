@@ -4,12 +4,13 @@ let mangueirasCache = [];
 let movimentacoesCache = [];
 
 const TIPOS_MOVIMENTACAO = {
-    'RECEBIMENTO': { label: 'Recebimento', badge: 'badge-recebimento', icon: '📥' },
-    'ENVIO_TESTE': { label: 'Envio p/ Teste', badge: 'badge-envio-teste', icon: '🔬' },
-    'RETORNO_APROVADO': { label: 'Retorno Aprovado', badge: 'badge-retorno-aprovado', icon: '✅' },
-    'RETORNO_REPROVADO': { label: 'Retorno Reprovado', badge: 'badge-retorno-reprovado', icon: '❌' },
-    'DESCARTE_AREA': { label: 'Descarte (Área)', badge: 'badge-descarte-area', icon: '🗑️' },
-    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)', badge: 'badge-descarte-reprovada', icon: '🗑️' }
+    'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
+    'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
+    'ENVIO_TESTE':        { label: 'Envio p/ Teste',     badge: 'badge-envio-teste',      icon: '🔬' },
+    'RETORNO_APROVADO':   { label: 'Retorno Aprovado',   badge: 'badge-retorno-aprovado', icon: '✅' },
+    'RETORNO_REPROVADO':  { label: 'Retorno Reprovado',  badge: 'badge-retorno-reprovado',icon: '❌' },
+    'DESCARTE_AREA':      { label: 'Descarte (Área)',    badge: 'badge-descarte-area',      icon: '🗑️' },
+    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)',badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -17,14 +18,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMovimentacoesMangueira();
 
     const buscarInput = document.getElementById('buscar-mangueira');
-    if (buscarInput) {
-        buscarInput.addEventListener('input', buscarMangueira);
-    }
+    if (buscarInput) buscarInput.addEventListener('input', buscarMangueira);
 
     const buscarMovInput = document.getElementById('buscar-movimentacao');
-    if (buscarMovInput) {
-        buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
-    }
+    if (buscarMovInput) buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
 });
 
 async function carregarMangueiras() {
@@ -40,6 +37,7 @@ async function carregarMangueiras() {
         mangueirasCache = data || [];
         renderizarMangueiras();
         atualizarCards();
+        renderizarAlertas();
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar mangueiras', 'erro');
@@ -68,38 +66,79 @@ async function carregarMovimentacoesMangueira() {
     }
 }
 
+// ===== ALERTAS =====
+
+function renderizarAlertas() {
+    const container = document.getElementById('alertas-container');
+    if (!container) return;
+
+    let html = '';
+
+    const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.qtd_disponivel <= m.estoque_minimo));
+    const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.qtd_disponivel <= m.limite_compra));
+
+    if (criticos.length > 0) {
+        const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / min ${m.estoque_minimo})`).join(', ');
+        html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Estoque Crítico:</strong> ${nomes}</div>`;
+    }
+
+    if (compra.length > 0) {
+        const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / limite ${m.limite_compra})`).join(', ');
+        html += `<div class="alerta-estoque alerta-compra">⚠️ <strong>Compra Necessária:</strong> ${nomes}</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+// ===== CARDS =====
+
 function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.qtd_disponivel || 0), 0);
-    const testeNecessario = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
-    const emTeste = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste || 0), 0);
-    const reprovada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada || 0), 0);
+    const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
+    const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
+    const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
+    const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
 
     document.getElementById('total-disponivel').textContent = disponivel;
-    document.getElementById('total-teste-necessario').textContent = testeNecessario;
+    document.getElementById('total-aplicada').textContent = aplicada;
+    document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
 }
 
+// ===== TABELA MANGUEIRAS =====
+
 function renderizarMangueiras(lista = mangueirasCache) {
     const tbody = document.getElementById('tabela-mangueiras');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nenhuma mangueira cadastrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma mangueira cadastrada</td></tr>';
         return;
     }
-    tbody.innerHTML = lista.map(m => `
+    tbody.innerHTML = lista.map(m => {
+        const alertas = [];
+        if (m.estoque_minimo > 0 && m.qtd_disponivel <= m.estoque_minimo) {
+            alertas.push('<span class="badge badge-danger">CRÍTICO</span>');
+        }
+        if (m.limite_compra > 0 && m.qtd_disponivel <= m.limite_compra) {
+            alertas.push('<span class="badge badge-warning">COMPRA</span>');
+        }
+
+        return `
         <tr>
             <td><strong>${m.codigo}</strong></td>
             <td>${m.tipo}</td>
             <td>${m.diametro}</td>
             <td><strong style="color: #22c55e;">${m.qtd_disponivel || 0}</strong></td>
+            <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
             <td><strong style="color: #f59e0b;">${m.qtd_teste_necessario || 0}</strong></td>
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
             <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
             <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
+            <td>${alertas.length ? alertas.join(' ') : '<span class="badge badge-success">OK</span>'}</td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function buscarMangueira() {
@@ -112,6 +151,8 @@ function buscarMangueira() {
     );
     renderizarMangueiras(filtrados);
 }
+
+// ===== MOVIMENTAÇÕES =====
 
 function renderizarMovimentacoes(dados) {
     const tbody = document.getElementById('tabela-movimentacoes-mangueira');
@@ -159,7 +200,6 @@ async function filtrarMovimentacoesMangueira() {
     toggleLoading(true);
     try {
         let query = sb.from('mangueira_movimentacoes').select('*, mangueiras(codigo, tipo, diametro)');
-
         if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
         if (dataFim) query = query.lte('data_movimentacao', dataFim);
         if (tipo) query = query.eq('tipo_movimentacao', tipo);
@@ -169,11 +209,8 @@ async function filtrarMovimentacoesMangueira() {
 
         movimentacoesCache = data || [];
         const termoBusca = document.getElementById('buscar-movimentacao')?.value.toLowerCase().trim() || '';
-        if (termoBusca) {
-            buscarMovimentacaoMangueira();
-        } else {
-            renderizarMovimentacoes(movimentacoesCache);
-        }
+        if (termoBusca) buscarMovimentacaoMangueira();
+        else renderizarMovimentacoes(movimentacoesCache);
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao filtrar', 'erro');
@@ -190,6 +227,8 @@ function limparFiltroMovimentacoes() {
     carregarMovimentacoesMangueira();
 }
 
+// ===== EXPORTAR =====
+
 function exportarMangueiras() {
     const dadosExport = mangueirasCache.map(m => ({
         codigo: m.codigo,
@@ -197,10 +236,13 @@ function exportarMangueiras() {
         diametro: m.diametro,
         descricao: m.descricao || '',
         qtd_disponivel: m.qtd_disponivel || 0,
+        qtd_aplicada: m.qtd_aplicada || 0,
         qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
         qtd_reprovada: m.qtd_reprovada || 0,
-        qtd_descartada: m.qtd_descartada || 0
+        qtd_descartada: m.qtd_descartada || 0,
+        estoque_minimo: m.estoque_minimo || 0,
+        limite_compra: m.limite_compra || 0
     }));
 
     const colunas = [
@@ -209,10 +251,13 @@ function exportarMangueiras() {
         { titulo: 'Diâmetro', campo: 'diametro' },
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
-        { titulo: 'Teste Necessário', campo: 'qtd_teste_necessario' },
+        { titulo: 'Aplicada', campo: 'qtd_aplicada' },
+        { titulo: 'Teste Nec.', campo: 'qtd_teste_necessario' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
         { titulo: 'Reprovada', campo: 'qtd_reprovada' },
-        { titulo: 'Descartada', campo: 'qtd_descartada' }
+        { titulo: 'Descartada', campo: 'qtd_descartada' },
+        { titulo: 'Estoque Mín', campo: 'estoque_minimo' },
+        { titulo: 'Limite Compra', campo: 'limite_compra' }
     ];
 
     exportarExcel(dadosExport, 'controle_mangueiras', colunas);
