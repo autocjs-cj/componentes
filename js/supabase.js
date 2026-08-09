@@ -76,3 +76,37 @@ window.logout = logout;
 window.usuarioLogado = usuarioLogado;
 window.temPerfil = temPerfil;
 window.estaLogado = estaLogado;
+
+
+// ===== ALTERAR SENHA DO USUÁRIO LOGADO =====
+async function alterarSenha(senhaAtual, novaSenha) {
+    const user = usuarioLogado();
+    if (!user) return { sucesso: false, mensagem: 'Usuário não está logado' };
+
+    // Buscar usuário no banco para verificar senha atual
+    const { data, error } = await sb
+        .from('usuarios')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (error || !data) return { sucesso: false, mensagem: 'Erro ao buscar usuário' };
+
+    // Verificar senha atual
+    if (data.senha !== hashSenha(senhaAtual) && data.senha !== senhaAtual) {
+        return { sucesso: false, mensagem: 'Senha atual incorreta' };
+    }
+
+    // Atualizar senha
+    const { error: errUpdate } = await sb
+        .from('usuarios')
+        .update({ senha: hashSenha(novaSenha) })
+        .eq('id', user.id);
+
+    if (errUpdate) return { sucesso: false, mensagem: 'Erro ao atualizar senha' };
+
+    return { sucesso: true, mensagem: 'Senha alterada com sucesso!' };
+}
+
+window.alterarSenha = alterarSenha;
+

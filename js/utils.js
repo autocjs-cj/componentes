@@ -289,6 +289,7 @@ function renderizarMenu() {
                     👤 ${user.nome}<br>
                     <span style="text-transform: uppercase; font-size: 0.7rem;">${user.perfil}</span>
                 </div>
+                <button onclick="abrirModalAlterarSenha()" class="btn btn-outline" style="width: 100%; margin-bottom: 8px; border-color: rgba(255,255,255,0.2); color: #cbd5e1;">🔑 Alterar Senha</button>
                 <button onclick="logout()" class="btn btn-danger" style="width: 100%;">🚪 Sair</button>
                 ` : `
                 <a href="${prefix}login.html" class="btn btn-primary" style="width: 100%; text-decoration: none;">🔐 Entrar</a>
@@ -320,3 +321,83 @@ function ativarMenuAtual() {
         }
     });
 }
+
+
+// ===== MODAL ALTERAR SENHA =====
+
+function injetarModalAlterarSenha() {
+    if (document.getElementById('modal-alterar-senha')) return;
+    const modalHTML = `
+    <div id="modal-alterar-senha" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 420px; text-align: left;">
+            <h3>🔑 Alterar Senha</h3>
+            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">Digite sua senha atual e a nova senha desejada.</p>
+            <form id="form-alterar-senha" class="mt-2">
+                <div class="form-group">
+                    <label>Senha Atual <span class="required">*</span></label>
+                    <input type="password" id="alterar-senha-atual" required placeholder="Senha atual">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Nova Senha <span class="required">*</span></label>
+                    <input type="password" id="alterar-senha-nova" required placeholder="Mínimo 4 caracteres">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Confirmar Nova Senha <span class="required">*</span></label>
+                    <input type="password" id="alterar-senha-confirmar" required placeholder="Repita a nova senha">
+                </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarAlteracaoSenha()">💾 Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalAlterarSenha()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function abrirModalAlterarSenha() {
+    injetarModalAlterarSenha();
+    document.getElementById('form-alterar-senha')?.reset();
+    document.getElementById('modal-alterar-senha')?.classList.remove('hidden');
+}
+
+function fecharModalAlterarSenha() {
+    document.getElementById('modal-alterar-senha')?.classList.add('hidden');
+}
+
+async function salvarAlteracaoSenha() {
+    const senhaAtual = document.getElementById('alterar-senha-atual').value;
+    const novaSenha = document.getElementById('alterar-senha-nova').value;
+    const confirmar = document.getElementById('alterar-senha-confirmar').value;
+
+    if (!senhaAtual || !novaSenha || !confirmar) {
+        mostrarToast('Preencha todos os campos!', 'erro');
+        return;
+    }
+
+    if (novaSenha.length < 4) {
+        mostrarToast('A nova senha deve ter no mínimo 4 caracteres', 'erro');
+        return;
+    }
+
+    if (novaSenha !== confirmar) {
+        mostrarToast('As senhas não coincidem', 'erro');
+        return;
+    }
+
+    toggleLoading(true);
+    const resultado = await alterarSenha(senhaAtual, novaSenha);
+    toggleLoading(false);
+
+    if (resultado.sucesso) {
+        mostrarToast(resultado.mensagem);
+        fecharModalAlterarSenha();
+    } else {
+        mostrarToast(resultado.mensagem, 'erro');
+    }
+}
+
+window.abrirModalAlterarSenha = abrirModalAlterarSenha;
+window.fecharModalAlterarSenha = fecharModalAlterarSenha;
+window.salvarAlteracaoSenha = salvarAlteracaoSenha;
+
