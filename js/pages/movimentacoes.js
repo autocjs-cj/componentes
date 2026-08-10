@@ -174,7 +174,7 @@ function exportarMovimentacoes() {
 }
 
 async function salvarMovimentacaoModal() {
-    if (!validarFormulario('form-movimentacao')) return;
+    if (!validarFormulario('form-modal-movimentacao')) return;
 
     const tipo = document.getElementById('modal-mov-tipo').value;
     const materialId = document.getElementById('modal-mov-material').value;

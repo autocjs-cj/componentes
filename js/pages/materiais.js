@@ -466,7 +466,6 @@ function duplicarDoVisualizar() {
 
     fecharModalVisualizarMaterial();
 
-    // Abrir modal em modo novo com dados copiados
     document.getElementById('modal-material-id').value = '';
     document.getElementById('modal-material-modo').value = 'novo';
     document.getElementById('titulo-modal-material').textContent = '📋 Novo Material (Duplicado)';
