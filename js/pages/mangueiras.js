@@ -397,7 +397,7 @@ function calcularAtualizacoes(m, tipo, qtd) {
             };
         case 'DESCARTE_AREA':
             return {
-                quantidade_atual: Math.max(0, disp - qtd),
+                qtd_aplicada: Math.max(0, apl - qtd),
                 qtd_descartada: desc + qtd
             };
         case 'DESCARTE_REPROVADA':
