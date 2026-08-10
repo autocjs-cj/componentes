@@ -3,6 +3,30 @@
 let mangueirasCache = [];
 let movimentacoesCache = [];
 
+// Calcula data de vencimento do teste hidrostático (1 ano após retorno aprovado)
+function calcularVencimentoTeste(dataBase) {
+    const d = dataBase ? new Date(dataBase) : new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+// Verifica status do vencimento: 'vencido', 'proximo' (menos 30 dias), 'ok'
+function statusVencimento(dataVencimento) {
+    if (!dataVencimento) return 'sem-data';
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const venc = new Date(dataVencimento);
+    venc.setHours(0,0,0,0);
+    const diffMs = venc - hoje;
+    const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDias < 0) return 'vencido';
+    if (diffDias <= 30) return 'proximo';
+    return 'ok';
+}
+
 const TIPOS_MOVIMENTACAO = {
     'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
     'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
@@ -101,6 +125,21 @@ function renderizarMangueiras(lista = mangueirasCache) {
             alertas.push('<span class="badge badge-warning">COMPRA</span>');
         }
 
+        // Vencimento
+        const stVenc = statusVencimento(m.data_vencimento_teste);
+        let vencHTML = '-';
+        if (m.data_vencimento_teste) {
+            if (stVenc === 'vencido') {
+                vencHTML = `<span style="color:#ef4444;font-weight:700;">${formatarData(m.data_vencimento_teste)}</span>`;
+            } else if (stVenc === 'proximo') {
+                vencHTML = `<span style="color:#f59e0b;font-weight:700;">${formatarData(m.data_vencimento_teste)}</span>`;
+            } else {
+                vencHTML = `<span style="color:#22c55e;">${formatarData(m.data_vencimento_teste)}</span>`;
+            }
+        }
+        if (stVenc === 'vencido') alertas.push('<span class="badge badge-danger">TESTE VENCIDO</span>');
+        else if (stVenc === 'proximo') alertas.push('<span class="badge badge-warning">TESTE PRÓXIMO</span>');
+
         return `
         <tr>
             <td><strong>${m.codigo}</strong></td>
@@ -112,6 +151,7 @@ function renderizarMangueiras(lista = mangueirasCache) {
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
             <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
             <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
+            <td>${vencHTML}</td>
             <td>${alertas.length ? alertas.join(' ') : '<span class="badge badge-success">OK</span>'}</td>
         </tr>
     `}).join('');

@@ -3,6 +3,30 @@
 let mangueirasCache = [];
 let movimentacoesCache = [];
 
+// Calcula data de vencimento do teste hidrostático (1 ano após retorno aprovado)
+function calcularVencimentoTeste(dataBase) {
+    const d = dataBase ? new Date(dataBase) : new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+// Verifica status do vencimento: 'vencido', 'proximo' (menos 30 dias), 'ok'
+function statusVencimento(dataVencimento) {
+    if (!dataVencimento) return 'sem-data';
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const venc = new Date(dataVencimento);
+    venc.setHours(0,0,0,0);
+    const diffMs = venc - hoje;
+    const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDias < 0) return 'vencido';
+    if (diffDias <= 30) return 'proximo';
+    return 'ok';
+}
+
 const TIPOS_MOVIMENTACAO = {
     'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
     'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
@@ -38,6 +62,7 @@ async function carregarMangueiras() {
         mangueirasCache = data || [];
         atualizarCards();
         atualizarSelectMangueiras();
+        renderizarAlertasVencimento();
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar mangueiras', 'erro');
@@ -90,6 +115,28 @@ function renderizarAlertas() {
     container.innerHTML = html;
 }
 
+function renderizarAlertasVencimento() {
+    const container = document.getElementById('alertas-vencimento-container');
+    if (!container) return;
+
+    const vencidos = mangueirasCache.filter(m => statusVencimento(m.data_vencimento_teste) === 'vencido');
+    const proximos = mangueirasCache.filter(m => statusVencimento(m.data_vencimento_teste) === 'proximo');
+
+    let html = '';
+
+    if (vencidos.length > 0) {
+        const nomes = vencidos.map(m => `<strong>${m.codigo}</strong> (${m.nome}) — vencido em ${formatarData(m.data_vencimento_teste)}`).join(', ');
+        html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Teste Hidrostático Vencido:</strong> ${nomes}</div>`;
+    }
+
+    if (proximos.length > 0) {
+        const nomes = proximos.map(m => `<strong>${m.codigo}</strong> (${m.nome}) — vence em ${formatarData(m.data_vencimento_teste)}`).join(', ');
+        html += `<div class="alerta-estoque alerta-compra">⏰ <strong>Teste Hidrostático Próximo do Vencimento:</strong> ${nomes}</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
 // ===== CARDS =====
 
 function atualizarCards() {
@@ -106,6 +153,8 @@ function atualizarCards() {
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
+    renderizarAlertas();
+    renderizarAlertasVencimento();
 }
 
 // ===== TABELA MANGUEIRAS (removida da página) =====
@@ -388,7 +437,8 @@ function calcularAtualizacoes(m, tipo, qtd) {
         case 'RETORNO_APROVADO':
             return {
                 qtd_em_teste: Math.max(0, test - qtd),
-                quantidade_atual: disp + qtd
+                quantidade_atual: disp + qtd,
+                data_vencimento_teste: calcularVencimentoTeste()
             };
         case 'RETORNO_REPROVADO':
             return {

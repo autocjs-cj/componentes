@@ -161,6 +161,7 @@ function abrirModalNovoMaterial() {
     document.getElementById('modal-material-limite-compra').value = 0;
     document.getElementById('modal-material-eh-mangueira').checked = false;
     document.getElementById('modal-material-diametro').value = '';
+    document.getElementById('modal-material-vencimento-teste').value = '';
     document.getElementById('modal-info-estoque').classList.add('hidden');
 
     toggleCamposMangueira();
@@ -196,6 +197,7 @@ function abrirModalMaterial(id) {
     document.getElementById('modal-material-limite-compra').value = m.limite_compra;
     document.getElementById('modal-material-eh-mangueira').checked = m.eh_mangueira_spci || false;
     document.getElementById('modal-material-diametro').value = m.diametro || '';
+    document.getElementById('modal-material-vencimento-teste').value = m.data_vencimento_teste || '';
 
     document.getElementById('modal-info-atual').textContent = m.quantidade_atual;
     document.getElementById('modal-info-reservada').textContent = m.quantidade_reservada || 0;
@@ -262,7 +264,8 @@ async function salvarMaterialDoModal() {
         limite_compra: parseInt(document.getElementById('modal-material-limite-compra').value) || 0,
         sublocal_id: document.getElementById('modal-material-sublocal').value || null,
         eh_mangueira_spci: ehMangueira,
-        diametro: diametro || null
+        diametro: diametro || null,
+        data_vencimento_teste: document.getElementById('modal-material-vencimento-teste').value || null
     };
 
     toggleLoading(true);
@@ -439,6 +442,7 @@ function abrirModalVisualizarMaterial(id) {
                 </div>
             </div>
             <div style="margin-top:8px;font-size:0.8rem;color:#1e40af;"><strong>Diâmetro:</strong> ${m.diametro || '-'}</div>
+            <div style="margin-top:4px;font-size:0.8rem;color:#1e40af;"><strong>Venc. Teste:</strong> ${m.data_vencimento_teste ? formatarData(m.data_vencimento_teste) : 'N/A'}</div>
         </div>
         `;
     }
@@ -478,6 +482,7 @@ function duplicarDoVisualizar() {
     document.getElementById('modal-material-limite-compra').value = m.limite_compra;
     document.getElementById('modal-material-eh-mangueira').checked = m.eh_mangueira_spci || false;
     document.getElementById('modal-material-diametro').value = m.diametro || '';
+    document.getElementById('modal-material-vencimento-teste').value = m.data_vencimento_teste || '';
     document.getElementById('modal-info-estoque').classList.add('hidden');
 
     toggleCamposMangueira();
