@@ -237,11 +237,11 @@ function atualizarSaldoMovimentacao() {
             saldo = '∞';
             break;
         case 'APLICACAO_AREA':
-        case 'DESCARTE_AREA':
             saldo = m.quantidade_atual || 0;
             label = `Disponível: ${saldo} unidades`;
             break;
         case 'ENVIO_TESTE':
+        case 'DESCARTE_AREA':
             saldo = m.qtd_aplicada || 0;
             label = `Aplicadas na área: ${saldo} unidades`;
             break;
@@ -304,10 +304,10 @@ async function salvarMovimentacaoMangueira() {
             saldoOrigem = null;
             break;
         case 'APLICACAO_AREA':
-        case 'DESCARTE_AREA':
             saldoOrigem = m.quantidade_atual || 0;
             break;
         case 'ENVIO_TESTE':
+        case 'DESCARTE_AREA':
             saldoOrigem = m.qtd_aplicada || 0;
             break;
         case 'RETORNO_APROVADO':
