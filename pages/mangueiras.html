@@ -100,9 +100,6 @@
                 <p>Gerenciamento do ciclo de vida das mangueiras cadastradas em Materiais</p>
             </div>
 
-            <!-- ALERTAS -->
-            <div id="alertas-container"></div>
-
             <!-- CARDS DE STATUS -->
             <div class="mangueira-card-grid">
                 <div class="mangueira-stat-card disponivel">
@@ -146,46 +143,6 @@
                         <h4 id="total-descartada">0</h4>
                         <p>Descartadas</p>
                     </div>
-                </div>
-            </div>
-
-            <!-- TABELA DE MANGUEIRAS -->
-            <div class="card">
-                <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3>🚒 Mangueiras Cadastradas</h3>
-                        <div class="btn-group">
-                            <a href="materiais.html" class="btn btn-primary" style="text-decoration:none;">📋 Ir para Materiais</a>
-                            <button class="btn btn-success" onclick="exportarMangueiras()">📊 Exportar Excel</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
-                        <div class="form-group" style="margin: 0; min-width: 260px; flex: 1;">
-                            <label style="font-size: 0.75rem; color: var(--secondary); margin-bottom: 4px;">Buscar</label>
-                            <input type="text" id="buscar-mangueira" placeholder="🔍 Buscar mangueira..." style="width: 100%; padding: 8px 12px;">
-                        </div>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Tipo</th>
-                                <th>Diâmetro</th>
-                                <th>Disponível</th>
-                                <th>Aplicada</th>
-                                <th>Teste Nec.</th>
-                                <th>Em Teste</th>
-                                <th>Reprovada</th>
-                                <th>Descartada</th>
-                                <th>Alertas</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-mangueiras">
-                            <tr><td colspan="10" class="text-center">Carregando...</td></tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
