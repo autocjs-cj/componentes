@@ -166,7 +166,8 @@ function validarFormulario(formId) {
 // Limpa formulário
 function limparFormulario(formId) {
     const form = document.getElementById(formId);
-    if (form) form.reset();
+    if (!form) return;
+    form.reset();
     form.querySelectorAll('.erro').forEach(el => el.classList.remove('erro'));
 }
 
