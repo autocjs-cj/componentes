@@ -20,7 +20,7 @@ async function carregarMateriais() {
         const { data, error } = await sb
             .from('materiais')
             .select('id, codigo, nome, quantidade_atual, quantidade_reservada, unidade_medida')
-            .eq('ativo', true)
+            .eq('ativo', true).eq('eh_mangueira_spci', false)
             .order('nome');
 
         if (error) throw error;
