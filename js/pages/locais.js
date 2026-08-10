@@ -49,6 +49,10 @@ async function carregarDados() {
         sublocaisCache = sublocais || [];
         renderizarSublocais();
 
+        // Re-renderizar sites e locais agora que todos os dados estão carregados
+        renderizarSites();
+        renderizarLocais();
+
     } catch (erro) {
         console.error('Erro:', erro);
         mostrarToast('Erro ao carregar dados', 'erro');

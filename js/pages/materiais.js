@@ -92,8 +92,7 @@ function renderizarMateriais(lista = materiaisCache) {
             <td><span class="badge ${badgeClass}">${status}</span></td>
             <td>
                 <div class="acoes">
-                    <button class="btn-acao editar" onclick="abrirModalMaterial('${m.id}')" title="Editar">✏️</button>
-                    <button class="btn-acao excluir" onclick="excluirMaterial('${m.id}')" title="Excluir">🗑️</button>
+                    <button class="btn-acao" onclick="abrirModalVisualizarMaterial('${m.id}')" title="Visualizar" style="background:#e0e7ff;color:#4338ca;">👁️</button>
                 </div>
             </td>
         </tr>
@@ -332,3 +331,177 @@ function filtrarSublocaisModal() {
     const filtrados = localId ? sublocaisCache.filter(s => s.local_id === localId) : [];
     carregarSelectModal('modal-material-sublocal', filtrados, 'id', 'nome', 'Selecione um sub-local...');
 }
+
+
+// ===== MODAL VISUALIZAR MATERIAL =====
+
+let materialVisualizadoId = null;
+
+function abrirModalVisualizarMaterial(id) {
+    const m = materiaisCache.find(x => x.id === id);
+    if (!m) return;
+
+    materialVisualizadoId = id;
+
+    const status = m.quantidade_atual <= m.estoque_minimo ? 'CRÍTICO' :
+                   m.quantidade_atual <= m.estoque_minimo * 1.5 ? 'BAIXO' : 'NORMAL';
+    const badgeClass = status === 'CRÍTICO' ? 'badge-danger' : 
+                      status === 'BAIXO' ? 'badge-warning' : 'badge-success';
+
+    const localCompleto = [
+        m.sublocais?.locais?.sites?.nome,
+        m.sublocais?.locais?.nome,
+        m.sublocais?.nome
+    ].filter(Boolean).join(' > ') || '-';
+
+    let html = `
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+            <div style="background:#dbeafe;color:#1e40af;padding:10px 16px;border-radius:8px;font-size:1.1rem;font-weight:700;">
+                ${m.codigo}
+            </div>
+            <div>
+                <div style="font-size:1.1rem;font-weight:600;color:#1e293b;">${m.nome}</div>
+                <div style="font-size:0.8rem;color:#64748b;">${m.descricao || 'Sem descrição'}</div>
+            </div>
+            <span class="badge ${badgeClass}" style="margin-left:auto;">${status}</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;">
+                <div style="font-size:0.75rem;color:#64748b;">Unidade de Medida</div>
+                <div style="font-weight:600;">${m.unidade_medida}</div>
+            </div>
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;">
+                <div style="font-size:0.75rem;color:#64748b;">Localização</div>
+                <div style="font-weight:600;">${localCompleto}</div>
+            </div>
+        </div>
+
+        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:16px;">
+            <div style="font-size:0.8rem;font-weight:600;color:#1e293b;margin-bottom:8px;">📊 Posição de Estoque</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+                <div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#2563eb;">${m.quantidade_atual}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Qtd Atual</div>
+                </div>
+                <div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#f59e0b;">${m.quantidade_reservada || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Reservado</div>
+                </div>
+                <div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#22c55e;">${m.quantidade_atual - (m.quantidade_reservada || 0)}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Disponível</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0;">
+                <div>
+                    <div style="font-size:1rem;font-weight:600;">${m.estoque_minimo}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Mínimo</div>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:600;">${m.estoque_maximo}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Máximo</div>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:600;">${m.limite_compra}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Limite Compra</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (m.eh_mangueira_spci) {
+        html += `
+        <div style="background:#eff6ff;padding:12px 14px;border-radius:8px;border:1px solid #dbeafe;margin-bottom:16px;">
+            <div style="font-size:0.8rem;font-weight:600;color:#1e40af;margin-bottom:8px;">🚒 Status da Mangueira</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+                <div>
+                    <div style="font-size:1rem;font-weight:700;color:#8b5cf6;">${m.qtd_aplicada || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Aplicada</div>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:700;color:#f59e0b;">${m.qtd_teste_necessario || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Teste Nec.</div>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:700;color:#3b82f6;">${m.qtd_em_teste || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Em Teste</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid #dbeafe;">
+                <div>
+                    <div style="font-size:1rem;font-weight:700;color:#ef4444;">${m.qtd_reprovada || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Reprovada</div>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:700;color:#6b7280;">${m.qtd_descartada || 0}</div>
+                    <div style="font-size:0.7rem;color:#64748b;">Descartada</div>
+                </div>
+            </div>
+            <div style="margin-top:8px;font-size:0.8rem;color:#1e40af;"><strong>Diâmetro:</strong> ${m.diametro || '-'}</div>
+        </div>
+        `;
+    }
+
+    document.getElementById('titulo-modal-visualizar').textContent = '📋 Detalhes do Material';
+    document.getElementById('conteudo-modal-visualizar').innerHTML = html;
+    document.getElementById('modal-visualizar-material').classList.remove('hidden');
+}
+
+function fecharModalVisualizarMaterial() {
+    document.getElementById('modal-visualizar-material').classList.add('hidden');
+    materialVisualizadoId = null;
+}
+
+function editarDoVisualizar() {
+    if (!materialVisualizadoId) return;
+    fecharModalVisualizarMaterial();
+    abrirModalMaterial(materialVisualizadoId);
+}
+
+function duplicarDoVisualizar() {
+    if (!materialVisualizadoId) return;
+    const m = materiaisCache.find(x => x.id === materialVisualizadoId);
+    if (!m) return;
+
+    fecharModalVisualizarMaterial();
+
+    // Abrir modal em modo novo com dados copiados
+    document.getElementById('modal-material-id').value = '';
+    document.getElementById('modal-material-modo').value = 'novo';
+    document.getElementById('titulo-modal-material').textContent = '📋 Novo Material (Duplicado)';
+    document.getElementById('modal-material-codigo').value = '';
+    document.getElementById('modal-material-nome').value = m.nome + ' (Cópia)';
+    document.getElementById('modal-material-descricao').value = m.descricao || '';
+    document.getElementById('modal-material-unidade').value = m.unidade_medida;
+    document.getElementById('modal-material-estoque-min').value = m.estoque_minimo;
+    document.getElementById('modal-material-estoque-max').value = m.estoque_maximo;
+    document.getElementById('modal-material-limite-compra').value = m.limite_compra;
+    document.getElementById('modal-material-eh-mangueira').checked = m.eh_mangueira_spci || false;
+    document.getElementById('modal-material-diametro').value = m.diametro || '';
+    document.getElementById('modal-info-estoque').classList.add('hidden');
+
+    toggleCamposMangueira();
+
+    const localId = m.sublocais ? sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id : '';
+    carregarSelectLocais('modal-material-local', locaisCache, 'Selecione um local...');
+    document.getElementById('modal-material-local').value = localId || '';
+    filtrarSublocaisModal();
+    document.getElementById('modal-material-sublocal').value = m.sublocal_id || '';
+
+    document.getElementById('modal-material').classList.remove('hidden');
+}
+
+async function excluirDoVisualizar() {
+    if (!materialVisualizadoId) return;
+    if (!await confirmarExclusao('Tem certeza que deseja excluir este material?')) return;
+
+    fecharModalVisualizarMaterial();
+    await excluirMaterial(materialVisualizadoId);
+}
+
+window.abrirModalVisualizarMaterial = abrirModalVisualizarMaterial;
+window.fecharModalVisualizarMaterial = fecharModalVisualizarMaterial;
+window.editarDoVisualizar = editarDoVisualizar;
+window.duplicarDoVisualizar = duplicarDoVisualizar;
+window.excluirDoVisualizar = excluirDoVisualizar;

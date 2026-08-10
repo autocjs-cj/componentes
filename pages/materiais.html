@@ -58,6 +58,20 @@
                 </div>
             </div>
 
+    <!-- MODAL VISUALIZAR MATERIAL -->
+    <div id="modal-visualizar-material" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 640px; text-align: left;">
+            <h3 id="titulo-modal-visualizar">📋 Detalhes do Material</h3>
+            <div id="conteudo-modal-visualizar" class="mt-2"></div>
+            <div class="btn-group mt-2" id="acoes-modal-visualizar">
+                <button type="button" class="btn btn-primary" id="btn-editar-material" onclick="editarDoVisualizar()">✏️ Editar</button>
+                <button type="button" class="btn btn-warning" id="btn-duplicar-material" onclick="duplicarDoVisualizar()">📋 Duplicar</button>
+                <button type="button" class="btn btn-danger" id="btn-excluir-material" onclick="excluirDoVisualizar()">🗑️ Excluir</button>
+                <button type="button" class="btn btn-secondary" onclick="fecharModalVisualizarMaterial()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CADASTRO / EDIÇÃO DO MATERIAL -->
     <div id="modal-material" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 640px; text-align: left;">

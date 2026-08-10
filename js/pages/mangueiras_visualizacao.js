@@ -38,7 +38,6 @@ async function carregarMangueiras() {
         mangueirasCache = data || [];
         renderizarMangueiras();
         atualizarCards();
-        renderizarAlertas();
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar mangueiras', 'erro');
@@ -65,30 +64,6 @@ async function carregarMovimentacoesMangueira() {
     } finally {
         toggleLoading(false);
     }
-}
-
-// ===== ALERTAS =====
-
-function renderizarAlertas() {
-    const container = document.getElementById('alertas-container');
-    if (!container) return;
-
-    let html = '';
-
-    const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.quantidade_atual <= m.estoque_minimo));
-    const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.quantidade_atual <= m.limite_compra));
-
-    if (criticos.length > 0) {
-        const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / min ${m.estoque_minimo})`).join(', ');
-        html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Estoque Crítico:</strong> ${nomes}</div>`;
-    }
-
-    if (compra.length > 0) {
-        const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / limite ${m.limite_compra})`).join(', ');
-        html += `<div class="alerta-estoque alerta-compra">⚠️ <strong>Compra Necessária:</strong> ${nomes}</div>`;
-    }
-
-    container.innerHTML = html;
 }
 
 // ===== CARDS =====
