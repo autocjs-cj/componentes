@@ -18,10 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMangueiras();
     await carregarMovimentacoesMangueira();
 
-    const buscarInput = document.getElementById('buscar-mangueira');
-    if (buscarInput) buscarInput.addEventListener('input', buscarMangueira);
-
-    const buscarMovInput = document.getElementById('buscar-movimentacao');
+const buscarMovInput = document.getElementById('buscar-movimentacao');
     if (buscarMovInput) buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
 });
 
@@ -39,9 +36,7 @@ async function carregarMangueiras() {
 
         if (error) throw error;
         mangueirasCache = data || [];
-        renderizarMangueiras();
         atualizarCards();
-        renderizarAlertas();
         atualizarSelectMangueiras();
     } catch (erro) {
         console.error(erro);
@@ -113,49 +108,8 @@ function atualizarCards() {
     document.getElementById('total-descartada').textContent = descartada;
 }
 
-// ===== TABELA MANGUEIRAS =====
-
-function renderizarMangueiras(lista = mangueirasCache) {
-    const tbody = document.getElementById('tabela-mangueiras');
-    if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma mangueira cadastrada. Cadastre em "Materiais" marcando "É mangueira de SPCI".</td></tr>';
-        return;
-    }
-    tbody.innerHTML = lista.map(m => {
-        const alertas = [];
-        if (m.estoque_minimo > 0 && m.quantidade_atual <= m.estoque_minimo) {
-            alertas.push('<span class="badge badge-danger">CRÍTICO</span>');
-        }
-        if (m.limite_compra > 0 && m.quantidade_atual <= m.limite_compra) {
-            alertas.push('<span class="badge badge-warning">COMPRA</span>');
-        }
-
-        return `
-        <tr>
-            <td><strong>${m.codigo}</strong></td>
-            <td>${m.nome}</td>
-            <td>${m.diametro || '-'}</td>
-            <td><strong style="color: #22c55e;">${m.quantidade_atual || 0}</strong></td>
-            <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
-            <td><strong style="color: #f59e0b;">${m.qtd_teste_necessario || 0}</strong></td>
-            <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
-            <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
-            <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
-            <td>${alertas.length ? alertas.join(' ') : '<span class="badge badge-success">OK</span>'}</td>
-        </tr>
-    `}).join('');
-}
-
-function buscarMangueira() {
-    const termo = document.getElementById('buscar-mangueira').value.toLowerCase();
-    const filtrados = mangueirasCache.filter(m =>
-        m.codigo.toLowerCase().includes(termo) ||
-        m.nome.toLowerCase().includes(termo) ||
-        (m.diametro || '').toLowerCase().includes(termo) ||
-        (m.descricao || '').toLowerCase().includes(termo)
-    );
-    renderizarMangueiras(filtrados);
-}
+// ===== TABELA MANGUEIRAS (removida da página) =====
+// A listagem de mangueiras foi removida. Apenas cards e movimentações são exibidos.
 
 // ===== MOVIMENTAÇÕES =====
 
