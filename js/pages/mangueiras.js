@@ -290,24 +290,68 @@ async function salvarMangueira() {
         return;
     }
 
-    const dados = {
-        codigo: codigo,
-        diametro: diametro,
-        tipo: tipo,
-        descricao: document.getElementById('modal-mangueira-descricao').value.trim() || null,
-        estoque_minimo: parseInt(document.getElementById('modal-mangueira-estoque-min').value) || 0,
-        limite_compra: parseInt(document.getElementById('modal-mangueira-limite-compra').value) || 0
-    };
+    const estoqueMin = parseInt(document.getElementById('modal-mangueira-estoque-min').value) || 0;
+    const limiteCompra = parseInt(document.getElementById('modal-mangueira-limite-compra').value) || 0;
+    const descricao = document.getElementById('modal-mangueira-descricao').value.trim() || null;
 
     toggleLoading(true);
     try {
         if (modo === 'editar' && id) {
-            const { error } = await sb.from('mangueiras').update(dados).eq('id', id);
-            if (error) throw error;
+            // Atualizar mangueira
+            const dadosMangueira = {
+                codigo: codigo,
+                diametro: diametro,
+                tipo: tipo,
+                descricao: descricao,
+                estoque_minimo: estoqueMin,
+                limite_compra: limiteCompra
+            };
+            const { error: errMang } = await sb.from('mangueiras').update(dadosMangueira).eq('id', id);
+            if (errMang) throw errMang;
+
+            // Atualizar material correspondente
+            const m = mangueirasCache.find(x => x.id === id);
+            if (m && m.material_id) {
+                const dadosMaterial = {
+                    codigo: codigo,
+                    nome: tipo,
+                    descricao: descricao ? `${descricao} — ${diametro}` : diametro,
+                    estoque_minimo: estoqueMin,
+                    limite_compra: limiteCompra
+                };
+                const { error: errMat } = await sb.from('materiais').update(dadosMaterial).eq('id', m.material_id);
+                if (errMat) throw errMat;
+            }
+
             mostrarToast('Mangueira atualizada com sucesso!');
         } else {
-            const { error } = await sb.from('mangueiras').insert(dados);
-            if (error) throw error;
+            // Criar material primeiro
+            const dadosMaterial = {
+                codigo: codigo,
+                nome: tipo,
+                descricao: descricao ? `${descricao} — ${diametro}` : diametro,
+                unidade_medida: 'UN',
+                categoria: 'MANGUEIRA',
+                estoque_minimo: estoqueMin,
+                limite_compra: limiteCompra,
+                quantidade_atual: 0
+            };
+            const { data: matData, error: errMat } = await sb.from('materiais').insert(dadosMaterial).select().single();
+            if (errMat) throw errMat;
+
+            // Criar mangueira vinculada ao material
+            const dadosMangueira = {
+                codigo: codigo,
+                diametro: diametro,
+                tipo: tipo,
+                descricao: descricao,
+                estoque_minimo: estoqueMin,
+                limite_compra: limiteCompra,
+                material_id: matData.id
+            };
+            const { error: errMang } = await sb.from('mangueiras').insert(dadosMangueira);
+            if (errMang) throw errMang;
+
             mostrarToast('Mangueira cadastrada com sucesso!');
         }
         fecharModalMangueira();
@@ -321,12 +365,21 @@ async function salvarMangueira() {
 }
 
 async function excluirMangueira(id) {
-    if (!await confirmarExclusao('Excluir esta mangueira?')) return;
+    if (!await confirmarExclusao('Excluir esta mangueira? O material correspondente também será desativado.')) return;
 
     toggleLoading(true);
     try {
+        const m = mangueirasCache.find(x => x.id === id);
+
+        // Desativar mangueira
         const { error } = await sb.from('mangueiras').update({ ativo: false }).eq('id', id);
         if (error) throw error;
+
+        // Desativar material correspondente
+        if (m && m.material_id) {
+            await sb.from('materiais').update({ ativo: false }).eq('id', m.material_id);
+        }
+
         mostrarToast('Mangueira excluída com sucesso!');
         await carregarMangueiras();
     } catch (erro) {
@@ -500,6 +553,17 @@ async function salvarMovimentacaoMangueira() {
             .eq('id', mangueiraId);
 
         if (errUpdate) throw errUpdate;
+
+        // 4. Sincronizar quantidade_atual no material correspondente
+        const m = mangueirasCache.find(x => x.id === mangueiraId);
+        if (m && m.material_id) {
+            const novaQtdDisp = atualizacoes.qtd_disponivel !== undefined ? atualizacoes.qtd_disponivel : m.qtd_disponivel;
+            const { error: errMatSync } = await sb
+                .from('materiais')
+                .update({ quantidade_atual: novaQtdDisp })
+                .eq('id', m.material_id);
+            if (errMatSync) console.error('Erro ao sincronizar material:', errMatSync);
+        }
 
         const tipoLabel = TIPOS_MOVIMENTACAO[tipo]?.label || tipo;
         mostrarToast(`${tipoLabel} registrado com sucesso!`);

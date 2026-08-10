@@ -3,9 +3,13 @@
 -- Execute este script no SQL Editor do Supabase
 -- ============================================================
 
--- Tabela: mangueiras
+-- 1. Adicionar categoria na tabela materiais (se ainda não existir)
+ALTER TABLE materiais ADD COLUMN IF NOT EXISTS categoria VARCHAR(50) DEFAULT 'MATERIAL';
+
+-- 2. Tabela: mangueiras (com material_id vinculado)
 CREATE TABLE IF NOT EXISTS mangueiras (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    material_id UUID REFERENCES materiais(id) ON DELETE SET NULL,
     codigo VARCHAR(50) UNIQUE NOT NULL,
     diametro VARCHAR(50) NOT NULL,
     tipo VARCHAR(100) NOT NULL,
@@ -23,7 +27,7 @@ CREATE TABLE IF NOT EXISTS mangueiras (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabela: mangueira_movimentacoes
+-- 3. Tabela: mangueira_movimentacoes
 CREATE TABLE IF NOT EXISTS mangueira_movimentacoes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mangueira_id UUID NOT NULL REFERENCES mangueiras(id) ON DELETE CASCADE,
@@ -44,15 +48,17 @@ CREATE TABLE IF NOT EXISTS mangueira_movimentacoes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Índices para performance
+-- 4. Índices para performance
+CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);
 CREATE INDEX IF NOT EXISTS idx_mangueiras_codigo ON mangueiras(codigo);
+CREATE INDEX IF NOT EXISTS idx_mangueiras_material_id ON mangueiras(material_id);
 CREATE INDEX IF NOT EXISTS idx_mangueiras_estoque_minimo ON mangueiras(estoque_minimo);
 CREATE INDEX IF NOT EXISTS idx_mangueiras_limite_compra ON mangueiras(limite_compra);
 CREATE INDEX IF NOT EXISTS idx_mangueira_movimentacoes_mangueira_id ON mangueira_movimentacoes(mangueira_id);
 CREATE INDEX IF NOT EXISTS idx_mangueira_movimentacoes_data ON mangueira_movimentacoes(data_movimentacao);
 CREATE INDEX IF NOT EXISTS idx_mangueira_movimentacoes_tipo ON mangueira_movimentacoes(tipo_movimentacao);
 
--- Trigger para atualizar updated_at automaticamente
+-- 5. Trigger para atualizar updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -65,7 +71,7 @@ DROP TRIGGER IF EXISTS update_mangueiras_updated_at ON mangueiras;
 CREATE TRIGGER update_mangueiras_updated_at BEFORE UPDATE ON mangueiras
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Políticas de segurança RLS
+-- 6. Políticas de segurança RLS
 ALTER TABLE mangueiras ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mangueira_movimentacoes ENABLE ROW LEVEL SECURITY;
 

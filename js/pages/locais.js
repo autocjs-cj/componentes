@@ -46,7 +46,7 @@ async function carregarDados() {
 function renderizarLocais() {
     const tbody = document.getElementById('tabela-locais');
     if (!locaisCache.length) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum local cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum local cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = locaisCache.map(l => {
@@ -54,6 +54,7 @@ function renderizarLocais() {
         return `
         <tr>
             <td><strong>${l.nome}</strong></td>
+            <td>${l.site || '<span style="color:#94a3b8">—</span>'}</td>
             <td><span class="badge badge-info">${qtdSub} sub-locais</span></td>
             <td>
                 <div class="acoes">
@@ -68,7 +69,14 @@ function renderizarLocais() {
 function abrirModalLocal(id = null) {
     document.getElementById('titulo-modal-local').textContent = id ? '✏️ Editar Local' : '📍 Novo Local';
     document.getElementById('local-id').value = id || '';
-    document.getElementById('local-nome').value = id ? locaisCache.find(l => l.id === id)?.nome || '' : '';
+    if (id) {
+        const l = locaisCache.find(x => x.id === id);
+        document.getElementById('local-nome').value = l?.nome || '';
+        document.getElementById('local-site').value = l?.site || '';
+    } else {
+        document.getElementById('local-nome').value = '';
+        document.getElementById('local-site').value = '';
+    }
     document.getElementById('modal-local').classList.remove('hidden');
 }
 
@@ -84,7 +92,8 @@ async function salvarLocal(e) {
     toggleLoading(true);
     const id = document.getElementById('local-id').value;
     const dados = {
-        nome: document.getElementById('local-nome').value.trim()
+        nome: document.getElementById('local-nome').value.trim(),
+        site: document.getElementById('local-site').value.trim() || null
     };
 
     try {

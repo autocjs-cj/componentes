@@ -28,12 +28,13 @@
                         <thead>
                             <tr>
                                 <th>Nome</th>
+                                <th>Site</th>
                                 <th>Sub-locais</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-locais">
-                            <tr><td colspan="3" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="4" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -54,7 +55,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-sublocais">
-                            <tr><td colspan="3" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="4" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -68,6 +69,10 @@
                 <div class="form-group">
                     <label>Nome <span class="required">*</span></label>
                     <input type="text" id="local-nome" required placeholder="Ex: Galpão 01">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Site</label>
+                    <input type="text" id="local-site" placeholder="Ex: Site A, Base Operacional...">
                 </div>
                 <div class="btn-group mt-2">
                     <button type="submit" class="btn btn-primary">💾 Salvar</button>
