@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarMangueiras();
     await carregarMovimentacoesMangueira();
 
-const buscarMovInput = document.getElementById('buscar-movimentacao');
+    const buscarMovInput = document.getElementById('buscar-movimentacao');
     if (buscarMovInput) buscarMovInput.addEventListener('input', buscarMovimentacaoMangueira);
 });
 
@@ -134,22 +134,20 @@ function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.quantidade_atual || 0), 0);
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
     const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
-    const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
     const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
-    const totFurt    = mangueirasCache.reduce((acc, m) => acc + (m.total_furtadas || 0), 0);
+    const totFur    = mangueirasCache.reduce((acc, m) => acc + (m.total_furtadas || 0), 0);
     const totDescA   = mangueirasCache.reduce((acc, m) => acc + (m.total_descarte_area || 0), 0);
     const totDescT   = mangueirasCache.reduce((acc, m) => acc + (m.total_descarte_teste || 0), 0);
 
     document.getElementById('total-disponivel').textContent = disponivel;
     document.getElementById('total-aplicada').textContent = aplicada;
     document.getElementById('total-furtada').textContent = furtada;
-    document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
-    document.getElementById('total-hist-furtadas').textContent = totFurt;
+    document.getElementById('total-hist-furtadas').textContent = totFur;
     document.getElementById('total-hist-descarte-area').textContent = totDescA;
     document.getElementById('total-hist-descarte-teste').textContent = totDescT;
     renderizarAlertas();
@@ -491,7 +489,6 @@ function exportarMangueiras() {
         qtd_disponivel: m.quantidade_atual || 0,
         qtd_aplicada: m.qtd_aplicada || 0,
         qtd_furtada: m.qtd_furtada || 0,
-        qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
         qtd_reprovada: m.qtd_reprovada || 0,
         qtd_descartada: m.qtd_descartada || 0,
@@ -510,7 +507,6 @@ function exportarMangueiras() {
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
         { titulo: 'Aplicada', campo: 'qtd_aplicada' },
         { titulo: 'Furtada', campo: 'qtd_furtada' },
-        { titulo: 'Teste Nec.', campo: 'qtd_teste_necessario' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
         { titulo: 'Reprovada', campo: 'qtd_reprovada' },
         { titulo: 'Descartada', campo: 'qtd_descartada' },

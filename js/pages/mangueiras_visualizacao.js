@@ -98,7 +98,6 @@ function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.quantidade_atual || 0), 0);
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
     const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
-    const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
     const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
@@ -106,7 +105,6 @@ function atualizarCards() {
     document.getElementById('total-disponivel').textContent = disponivel;
     document.getElementById('total-aplicada').textContent = aplicada;
     document.getElementById('total-furtada').textContent = furtada;
-    document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
@@ -151,7 +149,6 @@ function renderizarMangueiras(lista = mangueirasCache) {
             <td>${m.diametro || '-'}</td>
             <td><strong style="color: #22c55e;">${m.quantidade_atual || 0}</strong></td>
             <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
-            <td><strong style="color: #f59e0b;">${m.qtd_teste_necessario || 0}</strong></td>
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
             <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
             <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
@@ -258,7 +255,6 @@ function exportarMangueiras() {
         descricao: m.descricao || '',
         qtd_disponivel: m.quantidade_atual || 0,
         qtd_aplicada: m.qtd_aplicada || 0,
-        qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
         qtd_reprovada: m.qtd_reprovada || 0,
         qtd_descartada: m.qtd_descartada || 0,
@@ -273,7 +269,6 @@ function exportarMangueiras() {
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
         { titulo: 'Aplicada', campo: 'qtd_aplicada' },
-        { titulo: 'Teste Nec.', campo: 'qtd_teste_necessario' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
         { titulo: 'Reprovada', campo: 'qtd_reprovada' },
         { titulo: 'Descartada', campo: 'qtd_descartada' },

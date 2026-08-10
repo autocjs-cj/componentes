@@ -27,7 +27,6 @@
         }
         .mangueira-stat-card.disponivel { border-left-color: #22c55e; }
         .mangueira-stat-card.aplicada { border-left-color: #8b5cf6; }
-        .mangueira-stat-card.necessario { border-left-color: #f59e0b; }
         .mangueira-stat-card.em-teste { border-left-color: #3b82f6; }
         .mangueira-stat-card.reprovada { border-left-color: #ef4444; }
         .mangueira-stat-card.descartada { border-left-color: #6b7280; }
@@ -42,7 +41,6 @@
         }
         .mangueira-stat-icon.disponivel { background: #dcfce7; }
         .mangueira-stat-icon.aplicada { background: #ede9fe; }
-        .mangueira-stat-icon.necessario { background: #fef3c7; }
         .mangueira-stat-icon.em-teste { background: #dbeafe; }
         .mangueira-stat-icon.reprovada { background: #fee2e2; }
         .mangueira-stat-icon.descartada { background: #f3f4f6; }
@@ -126,13 +124,6 @@
                         <p>Furtadas</p>
                     </div>
                 </div>
-                <div class="mangueira-stat-card necessario">
-                    <div class="mangueira-stat-icon necessario">📋</div>
-                    <div class="mangueira-stat-info">
-                        <h4 id="total-teste-necessario">0</h4>
-                        <p>Teste Necessário</p>
-                    </div>
-                </div>
                 <div class="mangueira-stat-card em-teste">
                     <div class="mangueira-stat-icon em-teste">🔬</div>
                     <div class="mangueira-stat-info">
@@ -209,6 +200,7 @@
                                 <option value="">Todos os tipos</option>
                                 <option value="RECEBIMENTO">📥 Recebimento</option>
                                 <option value="APLICACAO_AREA">🧯 Aplicação na Área</option>
+                                <option value="FURTO">🦹 Furto</option>
                                 <option value="ENVIO_TESTE">🔬 Envio para Teste</option>
                                 <option value="RETORNO_APROVADO">✅ Retorno Aprovado</option>
                                 <option value="RETORNO_REPROVADO">❌ Retorno Reprovado</option>
@@ -305,7 +297,7 @@
         </div>
     </div>
 
-    <script src="../js/pages/mangueiras.js?v=2"></script>
+    <script src="../js/pages/mangueiras.js?v=3"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             verificarAcesso();

@@ -27,7 +27,6 @@
         }
         .mangueira-stat-card.disponivel { border-left-color: #22c55e; }
         .mangueira-stat-card.aplicada { border-left-color: #8b5cf6; }
-        .mangueira-stat-card.necessario { border-left-color: #f59e0b; }
         .mangueira-stat-card.em-teste { border-left-color: #3b82f6; }
         .mangueira-stat-card.reprovada { border-left-color: #ef4444; }
         .mangueira-stat-card.descartada { border-left-color: #6b7280; }
@@ -42,7 +41,6 @@
         }
         .mangueira-stat-icon.disponivel { background: #dcfce7; }
         .mangueira-stat-icon.aplicada { background: #ede9fe; }
-        .mangueira-stat-icon.necessario { background: #fef3c7; }
         .mangueira-stat-icon.em-teste { background: #dbeafe; }
         .mangueira-stat-icon.reprovada { background: #fee2e2; }
         .mangueira-stat-icon.descartada { background: #f3f4f6; }
@@ -124,13 +122,6 @@
                         <p>Furtadas</p>
                     </div>
                 </div>
-                <div class="mangueira-stat-card necessario">
-                    <div class="mangueira-stat-icon necessario">📋</div>
-                    <div class="mangueira-stat-info">
-                        <h4 id="total-teste-necessario">0</h4>
-                        <p>Teste Necessário</p>
-                    </div>
-                </div>
                 <div class="mangueira-stat-card em-teste">
                     <div class="mangueira-stat-icon em-teste">🔬</div>
                     <div class="mangueira-stat-info">
@@ -177,7 +168,6 @@
                                 <th>Diâmetro</th>
                                 <th>Disponível</th>
                                 <th>Aplicada</th>
-                                <th>Teste Nec.</th>
                                 <th>Em Teste</th>
                                 <th>Reprovada</th>
                                 <th>Descartada</th>
@@ -186,7 +176,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-mangueiras">
-                            <tr><td colspan="11" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="10" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -253,7 +243,7 @@
         </main>
     </div>
 
-    <script src="../js/pages/mangueiras_visualizacao.js?v=2"></script>
+    <script src="../js/pages/mangueiras_visualizacao.js?v=3"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             renderizarMenu();
