@@ -70,6 +70,8 @@
         .badge-retorno-reprovado { background: #fee2e2; color: #991b1b; }
         .badge-descarte-area { background: #fef3c7; color: #92400e; }
         .badge-descarte-reprovada { background: #f3f4f6; color: #374151; }
+        .badge-furto { background: #fee2e2; color: #991b1b; }
+        .badge-envio-teste-estoque { background: #dbeafe; color: #1e40af; }
         .alerta-estoque {
             display: flex;
             align-items: center;
@@ -117,6 +119,13 @@
                         <p>Aplicadas na Área</p>
                     </div>
                 </div>
+                <div class="mangueira-stat-card" style="border-left-color: #dc2626;">
+                    <div class="mangueira-stat-icon" style="background: #fee2e2;">🦹</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-furtada">0</h4>
+                        <p>Furtadas</p>
+                    </div>
+                </div>
                 <div class="mangueira-stat-card necessario">
                     <div class="mangueira-stat-icon necessario">📋</div>
                     <div class="mangueira-stat-info">
@@ -143,6 +152,31 @@
                     <div class="mangueira-stat-info">
                         <h4 id="total-descartada">0</h4>
                         <p>Descartadas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARDS DE HISTÓRICO -->
+            <div class="mangueira-card-grid" style="margin-top: 12px;">
+                <div class="mangueira-stat-card" style="border-left-color: #7c3aed;">
+                    <div class="mangueira-stat-icon" style="background: #ede9fe;">📊</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-hist-furtadas">0</h4>
+                        <p>Hist. Furtadas</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card" style="border-left-color: #ea580c;">
+                    <div class="mangueira-stat-icon" style="background: #ffedd5;">📊</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-hist-descarte-area">0</h4>
+                        <p>Hist. Descarte da Área</p>
+                    </div>
+                </div>
+                <div class="mangueira-stat-card" style="border-left-color: #0891b2;">
+                    <div class="mangueira-stat-icon" style="background: #cffafe;">📊</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-hist-descarte-teste">0</h4>
+                        <p>Hist. Descarte do Teste</p>
                     </div>
                 </div>
             </div>
@@ -225,7 +259,9 @@
                         <option value="">Selecione...</option>
                         <option value="RECEBIMENTO">📥 Recebimento (Compra Nova / Retorno Aprovado)</option>
                         <option value="APLICACAO_AREA">🧯 Aplicação na Área (Disponível → Área)</option>
+                        <option value="FURTO">🦹 Furto (Aplicada → Furtada)</option>
                         <option value="ENVIO_TESTE">🔬 Envio para Teste Hidrostático (Área → Teste)</option>
+                        <option value="ENVIO_TESTE_ESTOQUE">🔬 Envio p/ Teste (Estoque → Teste)</option>
                         <option value="RETORNO_APROVADO">✅ Retorno de Teste Aprovado</option>
                         <option value="RETORNO_REPROVADO">❌ Retorno de Teste Reprovado</option>
                         <option value="DESCARTE_AREA">🗑️ Descarte (Danificada da Área)</option>

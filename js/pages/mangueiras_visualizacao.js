@@ -28,13 +28,15 @@ function statusVencimento(dataVencimento) {
 }
 
 const TIPOS_MOVIMENTACAO = {
-    'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
-    'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
-    'ENVIO_TESTE':        { label: 'Envio p/ Teste',     badge: 'badge-envio-teste',      icon: '🔬' },
-    'RETORNO_APROVADO':   { label: 'Retorno Aprovado',   badge: 'badge-retorno-aprovado', icon: '✅' },
-    'RETORNO_REPROVADO':  { label: 'Retorno Reprovado',  badge: 'badge-retorno-reprovado',icon: '❌' },
-    'DESCARTE_AREA':      { label: 'Descarte (Área)',    badge: 'badge-descarte-area',      icon: '🗑️' },
-    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)',badge: 'badge-descarte-reprovada', icon: '🗑️' }
+    'RECEBIMENTO':           { label: 'Recebimento',           badge: 'badge-recebimento',        icon: '📥' },
+    'APLICACAO_AREA':        { label: 'Aplicação na Área',     badge: 'badge-aplicacao',          icon: '🧯' },
+    'FURTO':                 { label: 'Furto',                 badge: 'badge-furto',              icon: '🦹' },
+    'ENVIO_TESTE':           { label: 'Envio p/ Teste',        badge: 'badge-envio-teste',        icon: '🔬' },
+    'ENVIO_TESTE_ESTOQUE':   { label: 'Envio p/ Teste (Estoque)', badge: 'badge-envio-teste-estoque', icon: '🔬' },
+    'RETORNO_APROVADO':      { label: 'Retorno Aprovado',      badge: 'badge-retorno-aprovado',   icon: '✅' },
+    'RETORNO_REPROVADO':     { label: 'Retorno Reprovado',     badge: 'badge-retorno-reprovado',  icon: '❌' },
+    'DESCARTE_AREA':         { label: 'Descarte (Área)',       badge: 'badge-descarte-area',      icon: '🗑️' },
+    'DESCARTE_REPROVADA':    { label: 'Descarte (Reprovada)',  badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -95,6 +97,7 @@ async function carregarMovimentacoesMangueira() {
 function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.quantidade_atual || 0), 0);
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
+    const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
     const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
     const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
@@ -102,6 +105,7 @@ function atualizarCards() {
 
     document.getElementById('total-disponivel').textContent = disponivel;
     document.getElementById('total-aplicada').textContent = aplicada;
+    document.getElementById('total-furtada').textContent = furtada;
     document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;

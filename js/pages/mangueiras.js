@@ -28,13 +28,15 @@ function statusVencimento(dataVencimento) {
 }
 
 const TIPOS_MOVIMENTACAO = {
-    'RECEBIMENTO':        { label: 'Recebimento',        badge: 'badge-recebimento',        icon: '📥' },
-    'APLICACAO_AREA':     { label: 'Aplicação na Área',  badge: 'badge-aplicacao',        icon: '🧯' },
-    'ENVIO_TESTE':        { label: 'Envio p/ Teste',     badge: 'badge-envio-teste',      icon: '🔬' },
-    'RETORNO_APROVADO':   { label: 'Retorno Aprovado',   badge: 'badge-retorno-aprovado', icon: '✅' },
-    'RETORNO_REPROVADO':  { label: 'Retorno Reprovado',  badge: 'badge-retorno-reprovado',icon: '❌' },
-    'DESCARTE_AREA':      { label: 'Descarte (Área)',    badge: 'badge-descarte-area',      icon: '🗑️' },
-    'DESCARTE_REPROVADA': { label: 'Descarte (Reprovada)',badge: 'badge-descarte-reprovada', icon: '🗑️' }
+    'RECEBIMENTO':           { label: 'Recebimento',           badge: 'badge-recebimento',        icon: '📥' },
+    'APLICACAO_AREA':        { label: 'Aplicação na Área',     badge: 'badge-aplicacao',          icon: '🧯' },
+    'FURTO':                 { label: 'Furto',                 badge: 'badge-furto',              icon: '🦹' },
+    'ENVIO_TESTE':           { label: 'Envio p/ Teste',        badge: 'badge-envio-teste',        icon: '🔬' },
+    'ENVIO_TESTE_ESTOQUE':   { label: 'Envio p/ Teste (Estoque)', badge: 'badge-envio-teste-estoque', icon: '🔬' },
+    'RETORNO_APROVADO':      { label: 'Retorno Aprovado',      badge: 'badge-retorno-aprovado',   icon: '✅' },
+    'RETORNO_REPROVADO':     { label: 'Retorno Reprovado',     badge: 'badge-retorno-reprovado',  icon: '❌' },
+    'DESCARTE_AREA':         { label: 'Descarte (Área)',       badge: 'badge-descarte-area',      icon: '🗑️' },
+    'DESCARTE_REPROVADA':    { label: 'Descarte (Reprovada)',  badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -62,7 +64,6 @@ async function carregarMangueiras() {
         mangueirasCache = data || [];
         atualizarCards();
         atualizarSelectMangueiras();
-        renderizarAlertasVencimento();
     } catch (erro) {
         console.error(erro);
         mostrarToast('Erro ao carregar mangueiras', 'erro');
@@ -96,44 +97,34 @@ async function carregarMovimentacoesMangueira() {
 function renderizarAlertas() {
     const container = document.getElementById('alertas-container');
     if (!container) return;
-
     let html = '';
-
     const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.quantidade_atual <= m.estoque_minimo));
     const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.quantidade_atual <= m.limite_compra));
-
     if (criticos.length > 0) {
         const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / min ${m.estoque_minimo})`).join(', ');
         html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Estoque Crítico:</strong> ${nomes}</div>`;
     }
-
     if (compra.length > 0) {
         const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / limite ${m.limite_compra})`).join(', ');
         html += `<div class="alerta-estoque alerta-compra">⚠️ <strong>Compra Necessária:</strong> ${nomes}</div>`;
     }
-
     container.innerHTML = html;
 }
 
 function renderizarAlertasVencimento() {
     const container = document.getElementById('alertas-vencimento-container');
     if (!container) return;
-
     const vencidos = mangueirasCache.filter(m => statusVencimento(m.data_vencimento_teste) === 'vencido');
     const proximos = mangueirasCache.filter(m => statusVencimento(m.data_vencimento_teste) === 'proximo');
-
     let html = '';
-
     if (vencidos.length > 0) {
         const nomes = vencidos.map(m => `<strong>${m.codigo}</strong> (${m.nome}) — vencido em ${formatarData(m.data_vencimento_teste)}`).join(', ');
         html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Teste Hidrostático Vencido:</strong> ${nomes}</div>`;
     }
-
     if (proximos.length > 0) {
         const nomes = proximos.map(m => `<strong>${m.codigo}</strong> (${m.nome}) — vence em ${formatarData(m.data_vencimento_teste)}`).join(', ');
         html += `<div class="alerta-estoque alerta-compra">⏰ <strong>Teste Hidrostático Próximo do Vencimento:</strong> ${nomes}</div>`;
     }
-
     container.innerHTML = html;
 }
 
@@ -142,17 +133,25 @@ function renderizarAlertasVencimento() {
 function atualizarCards() {
     const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.quantidade_atual || 0), 0);
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
+    const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
     const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
     const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
+    const totFurt    = mangueirasCache.reduce((acc, m) => acc + (m.total_furtadas || 0), 0);
+    const totDescA   = mangueirasCache.reduce((acc, m) => acc + (m.total_descarte_area || 0), 0);
+    const totDescT   = mangueirasCache.reduce((acc, m) => acc + (m.total_descarte_teste || 0), 0);
 
     document.getElementById('total-disponivel').textContent = disponivel;
     document.getElementById('total-aplicada').textContent = aplicada;
+    document.getElementById('total-furtada').textContent = furtada;
     document.getElementById('total-teste-necessario').textContent = testeNec;
     document.getElementById('total-em-teste').textContent = emTeste;
     document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
+    document.getElementById('total-hist-furtadas').textContent = totFurt;
+    document.getElementById('total-hist-descarte-area').textContent = totDescA;
+    document.getElementById('total-hist-descarte-teste').textContent = totDescT;
     renderizarAlertas();
     renderizarAlertasVencimento();
 }
@@ -286,11 +285,13 @@ function atualizarSaldoMovimentacao() {
             saldo = '∞';
             break;
         case 'APLICACAO_AREA':
+        case 'ENVIO_TESTE_ESTOQUE':
             saldo = m.quantidade_atual || 0;
             label = `Disponível: ${saldo} unidades`;
             break;
         case 'ENVIO_TESTE':
         case 'DESCARTE_AREA':
+        case 'FURTO':
             saldo = m.qtd_aplicada || 0;
             label = `Aplicadas na área: ${saldo} unidades`;
             break;
@@ -353,10 +354,12 @@ async function salvarMovimentacaoMangueira() {
             saldoOrigem = null;
             break;
         case 'APLICACAO_AREA':
+        case 'ENVIO_TESTE_ESTOQUE':
             saldoOrigem = m.quantidade_atual || 0;
             break;
         case 'ENVIO_TESTE':
         case 'DESCARTE_AREA':
+        case 'FURTO':
             saldoOrigem = m.qtd_aplicada || 0;
             break;
         case 'RETORNO_APROVADO':
@@ -420,6 +423,10 @@ function calcularAtualizacoes(m, tipo, qtd) {
     const test = m.qtd_em_teste || 0;
     const rep  = m.qtd_reprovada || 0;
     const desc = m.qtd_descartada || 0;
+    const fur  = m.qtd_furtada || 0;
+    const totFur = m.total_furtadas || 0;
+    const totDescArea = m.total_descarte_area || 0;
+    const totDescTeste = m.total_descarte_teste || 0;
 
     switch (tipo) {
         case 'RECEBIMENTO':
@@ -429,9 +436,20 @@ function calcularAtualizacoes(m, tipo, qtd) {
                 quantidade_atual: Math.max(0, disp - qtd),
                 qtd_aplicada: apl + qtd
             };
+        case 'FURTO':
+            return {
+                qtd_aplicada: Math.max(0, apl - qtd),
+                qtd_furtada: fur + qtd,
+                total_furtadas: totFur + qtd
+            };
         case 'ENVIO_TESTE':
             return {
                 qtd_aplicada: Math.max(0, apl - qtd),
+                qtd_em_teste: test + qtd
+            };
+        case 'ENVIO_TESTE_ESTOQUE':
+            return {
+                quantidade_atual: Math.max(0, disp - qtd),
                 qtd_em_teste: test + qtd
             };
         case 'RETORNO_APROVADO':
@@ -448,12 +466,14 @@ function calcularAtualizacoes(m, tipo, qtd) {
         case 'DESCARTE_AREA':
             return {
                 qtd_aplicada: Math.max(0, apl - qtd),
-                qtd_descartada: desc + qtd
+                qtd_descartada: desc + qtd,
+                total_descarte_area: totDescArea + qtd
             };
         case 'DESCARTE_REPROVADA':
             return {
                 qtd_reprovada: Math.max(0, rep - qtd),
-                qtd_descartada: desc + qtd
+                qtd_descartada: desc + qtd,
+                total_descarte_teste: totDescTeste + qtd
             };
         default:
             return {};
@@ -470,10 +490,14 @@ function exportarMangueiras() {
         descricao: m.descricao || '',
         qtd_disponivel: m.quantidade_atual || 0,
         qtd_aplicada: m.qtd_aplicada || 0,
+        qtd_furtada: m.qtd_furtada || 0,
         qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
         qtd_reprovada: m.qtd_reprovada || 0,
         qtd_descartada: m.qtd_descartada || 0,
+        total_furtadas: m.total_furtadas || 0,
+        total_descarte_area: m.total_descarte_area || 0,
+        total_descarte_teste: m.total_descarte_teste || 0,
         estoque_minimo: m.estoque_minimo || 0,
         limite_compra: m.limite_compra || 0
     }));
@@ -485,10 +509,14 @@ function exportarMangueiras() {
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
         { titulo: 'Aplicada', campo: 'qtd_aplicada' },
+        { titulo: 'Furtada', campo: 'qtd_furtada' },
         { titulo: 'Teste Nec.', campo: 'qtd_teste_necessario' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
         { titulo: 'Reprovada', campo: 'qtd_reprovada' },
         { titulo: 'Descartada', campo: 'qtd_descartada' },
+        { titulo: 'Hist. Furtadas', campo: 'total_furtadas' },
+        { titulo: 'Hist. Descarte Área', campo: 'total_descarte_area' },
+        { titulo: 'Hist. Descarte Teste', campo: 'total_descarte_teste' },
         { titulo: 'Estoque Mín', campo: 'estoque_minimo' },
         { titulo: 'Limite Compra', campo: 'limite_compra' }
     ];
