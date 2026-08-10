@@ -11,7 +11,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>📋 Cadastro de Materiais</h2>
@@ -44,6 +43,8 @@
                                 <th>Local</th>
                                 <th>Sub-local</th>
                                 <th>Qtd Atual</th>
+                                <th>Reservado</th>
+                                <th>Disponível</th>
                                 <th>Mín</th>
                                 <th>Máx</th>
                                 <th>Status</th>
@@ -51,19 +52,20 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-materiais">
-                            <tr><td colspan="10" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="12" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-    <!-- MODAL CADASTRO / EDIÇÃO / VISUALIZAÇÃO DO MATERIAL -->
+    <!-- MODAL CADASTRO / EDIÇÃO DO MATERIAL -->
     <div id="modal-material" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 600px; text-align: left;">
+        <div class="modal-confirm" style="max-width: 640px; text-align: left;">
             <h3 id="titulo-modal-material">📋 Material</h3>
             <form id="form-modal-material" class="mt-2">
                 <input type="hidden" id="modal-material-id">
                 <input type="hidden" id="modal-material-modo" value="novo">
+
                 <div class="form-group">
                     <label>Código SAP <span class="required">*</span></label>
                     <input type="text" id="modal-material-codigo" required placeholder="Ex: MAT-001">
@@ -89,6 +91,21 @@
                         <option value="PAR">Par (PAR)</option>
                     </select>
                 </div>
+
+                <!-- IDENTIFICAÇÃO DE MANGUEIRA -->
+                <div class="form-group mt-1" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <input type="checkbox" id="modal-material-eh-mangueira" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="modal-material-eh-mangueira" style="margin: 0; cursor: pointer; font-weight: 600;">🚒 É mangueira de SPCI?</label>
+                </div>
+
+                <!-- CAMPOS PARTICULARES DA MANGUEIRA -->
+                <div id="campos-mangueira" style="display: none;">
+                    <div class="form-group mt-1">
+                        <label>Diâmetro <span class="required">*</span></label>
+                        <input type="text" id="modal-material-diametro" placeholder="Ex: 2.1/2 pol">
+                    </div>
+                </div>
+
                 <div class="form-group mt-1">
                     <label>Local de Armazenamento</label>
                     <select id="modal-material-local">
@@ -101,18 +118,22 @@
                         <option value="">Selecione um sub-local...</option>
                     </select>
                 </div>
-                <div class="form-group mt-1">
-                    <label>Estoque Mínimo</label>
-                    <input type="number" id="modal-material-estoque-min" min="0" value="0">
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Estoque Mínimo</label>
+                        <input type="number" id="modal-material-estoque-min" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Estoque Máximo</label>
+                        <input type="number" id="modal-material-estoque-max" min="0" value="999999">
+                    </div>
+                    <div class="form-group">
+                        <label>Limite para Compra</label>
+                        <input type="number" id="modal-material-limite-compra" min="0" value="0">
+                    </div>
                 </div>
-                <div class="form-group mt-1">
-                    <label>Estoque Máximo</label>
-                    <input type="number" id="modal-material-estoque-max" min="0" value="999999">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Limite para Compra</label>
-                    <input type="number" id="modal-material-limite-compra" min="0" value="0">
-                </div>
+
+                <!-- INFO ESTOQUE GERAL -->
                 <div id="modal-info-estoque" class="hidden mt-1" style="background:#f8fafc;padding:12px;border-radius:8px;">
                     <div style="display:flex;gap:24px;font-size:0.85rem;">
                         <div><strong>Qtd Atual:</strong> <span id="modal-info-atual">0</span></div>
@@ -120,6 +141,19 @@
                         <div><strong>Disponível:</strong> <span id="modal-info-disponivel">0</span></div>
                     </div>
                 </div>
+
+                <!-- INFO MANGUEIRA (só aparece na edição se for mangueira) -->
+                <div id="modal-info-mangueira" class="hidden mt-1" style="background:#eff6ff;padding:12px;border-radius:8px;">
+                    <div style="font-size:0.8rem;font-weight:600;color:#1e40af;margin-bottom:6px;">🚒 Status da Mangueira</div>
+                    <div style="display:flex;gap:16px;font-size:0.85rem;flex-wrap:wrap;">
+                        <div><strong>Aplicada:</strong> <span id="modal-info-aplicada">0</span></div>
+                        <div><strong>Teste Nec.:</strong> <span id="modal-info-teste-necessario">0</span></div>
+                        <div><strong>Em Teste:</strong> <span id="modal-info-em-teste">0</span></div>
+                        <div><strong>Reprovada:</strong> <span id="modal-info-reprovada">0</span></div>
+                        <div><strong>Descartada:</strong> <span id="modal-info-descartada">0</span></div>
+                    </div>
+                </div>
+
                 <div class="btn-group mt-2">
                     <button type="button" class="btn btn-primary" onclick="salvarMaterialDoModal()">💾 Salvar</button>
                     <button type="button" class="btn btn-secondary" onclick="fecharModalMaterial()">Cancelar</button>

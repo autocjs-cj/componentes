@@ -1,4 +1,4 @@
-// ===== CONTROLE DE MANGUEIRAS — VISUALIZAÇÃO PÚBLICA =====
+// ===== CONTROLE DE MANGUEIRAS — VISUALIZAÇÃO PÚBLICA (via tabela materiais) =====
 
 let mangueirasCache = [];
 let movimentacoesCache = [];
@@ -28,8 +28,9 @@ async function carregarMangueiras() {
     toggleLoading(true);
     try {
         const { data, error } = await sb
-            .from('mangueiras')
+            .from('materiais')
             .select('*')
+            .eq('eh_mangueira_spci', true)
             .eq('ativo', true)
             .order('codigo');
 
@@ -51,7 +52,7 @@ async function carregarMovimentacoesMangueira() {
     try {
         const { data, error } = await sb
             .from('mangueira_movimentacoes')
-            .select('*, mangueiras(codigo, tipo, diametro)')
+            .select('*, materiais(codigo, nome, diametro)')
             .order('created_at', { ascending: false })
             .limit(200);
 
@@ -74,16 +75,16 @@ function renderizarAlertas() {
 
     let html = '';
 
-    const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.qtd_disponivel <= m.estoque_minimo));
-    const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.qtd_disponivel <= m.limite_compra));
+    const criticos = mangueirasCache.filter(m => (m.estoque_minimo > 0) && (m.quantidade_atual <= m.estoque_minimo));
+    const compra = mangueirasCache.filter(m => (m.limite_compra > 0) && (m.quantidade_atual <= m.limite_compra));
 
     if (criticos.length > 0) {
-        const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / min ${m.estoque_minimo})`).join(', ');
+        const nomes = criticos.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / min ${m.estoque_minimo})`).join(', ');
         html += `<div class="alerta-estoque alerta-critico">🚨 <strong>Estoque Crítico:</strong> ${nomes}</div>`;
     }
 
     if (compra.length > 0) {
-        const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.qtd_disponivel} disp / limite ${m.limite_compra})`).join(', ');
+        const nomes = compra.map(m => `<strong>${m.codigo}</strong> (${m.quantidade_atual} disp / limite ${m.limite_compra})`).join(', ');
         html += `<div class="alerta-estoque alerta-compra">⚠️ <strong>Compra Necessária:</strong> ${nomes}</div>`;
     }
 
@@ -93,7 +94,7 @@ function renderizarAlertas() {
 // ===== CARDS =====
 
 function atualizarCards() {
-    const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.qtd_disponivel || 0), 0);
+    const disponivel = mangueirasCache.reduce((acc, m) => acc + (m.quantidade_atual || 0), 0);
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
     const testeNec   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_teste_necessario || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
@@ -118,19 +119,19 @@ function renderizarMangueiras(lista = mangueirasCache) {
     }
     tbody.innerHTML = lista.map(m => {
         const alertas = [];
-        if (m.estoque_minimo > 0 && m.qtd_disponivel <= m.estoque_minimo) {
+        if (m.estoque_minimo > 0 && m.quantidade_atual <= m.estoque_minimo) {
             alertas.push('<span class="badge badge-danger">CRÍTICO</span>');
         }
-        if (m.limite_compra > 0 && m.qtd_disponivel <= m.limite_compra) {
+        if (m.limite_compra > 0 && m.quantidade_atual <= m.limite_compra) {
             alertas.push('<span class="badge badge-warning">COMPRA</span>');
         }
 
         return `
         <tr>
             <td><strong>${m.codigo}</strong></td>
-            <td>${m.tipo}</td>
-            <td>${m.diametro}</td>
-            <td><strong style="color: #22c55e;">${m.qtd_disponivel || 0}</strong></td>
+            <td>${m.nome}</td>
+            <td>${m.diametro || '-'}</td>
+            <td><strong style="color: #22c55e;">${m.quantidade_atual || 0}</strong></td>
             <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
             <td><strong style="color: #f59e0b;">${m.qtd_teste_necessario || 0}</strong></td>
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
@@ -145,8 +146,8 @@ function buscarMangueira() {
     const termo = document.getElementById('buscar-mangueira').value.toLowerCase();
     const filtrados = mangueirasCache.filter(m =>
         m.codigo.toLowerCase().includes(termo) ||
-        m.tipo.toLowerCase().includes(termo) ||
-        m.diametro.toLowerCase().includes(termo) ||
+        m.nome.toLowerCase().includes(termo) ||
+        (m.diametro || '').toLowerCase().includes(termo) ||
         (m.descricao || '').toLowerCase().includes(termo)
     );
     renderizarMangueiras(filtrados);
@@ -157,7 +158,7 @@ function buscarMangueira() {
 function renderizarMovimentacoes(dados) {
     const tbody = document.getElementById('tabela-movimentacoes-mangueira');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma movimentação registrada</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhuma movimentação registrada</td></tr>';
         return;
     }
     tbody.innerHTML = dados.map(m => {
@@ -166,8 +167,9 @@ function renderizarMovimentacoes(dados) {
         <tr>
             <td>${formatarData(m.data_movimentacao)}</td>
             <td><span class="badge-movimentacao ${tipoInfo.badge}">${tipoInfo.icon} ${tipoInfo.label}</span></td>
-            <td>${m.mangueiras?.tipo || 'N/A'} (${m.mangueiras?.codigo || ''})</td>
+            <td>${m.materiais?.nome || 'N/A'} (${m.materiais?.codigo || ''}) — ${m.materiais?.diametro || ''}</td>
             <td><strong>${m.quantidade}</strong></td>
+            <td>${m.documento_referencia || '-'}</td>
             <td>${m.responsavel || '-'}</td>
             <td>${m.observacao || '-'}</td>
         </tr>
@@ -182,8 +184,8 @@ function buscarMovimentacaoMangueira() {
     }
     const filtrados = movimentacoesCache.filter(m => {
         const tipo = (TIPOS_MOVIMENTACAO[m.tipo_movimentacao]?.label || m.tipo_movimentacao).toLowerCase();
-        const mangueira = (m.mangueiras?.tipo || '').toLowerCase();
-        const codigo = (m.mangueiras?.codigo || '').toLowerCase();
+        const mangueira = (m.materiais?.nome || '').toLowerCase();
+        const codigo = (m.materiais?.codigo || '').toLowerCase();
         const responsavel = (m.responsavel || '').toLowerCase();
         const observacao = (m.observacao || '').toLowerCase();
         return tipo.includes(termo) || mangueira.includes(termo) || codigo.includes(termo) ||
@@ -199,7 +201,7 @@ async function filtrarMovimentacoesMangueira() {
 
     toggleLoading(true);
     try {
-        let query = sb.from('mangueira_movimentacoes').select('*, mangueiras(codigo, tipo, diametro)');
+        let query = sb.from('mangueira_movimentacoes').select('*, materiais(codigo, nome, diametro)');
         if (dataInicio) query = query.gte('data_movimentacao', dataInicio);
         if (dataFim) query = query.lte('data_movimentacao', dataFim);
         if (tipo) query = query.eq('tipo_movimentacao', tipo);
@@ -232,10 +234,10 @@ function limparFiltroMovimentacoes() {
 function exportarMangueiras() {
     const dadosExport = mangueirasCache.map(m => ({
         codigo: m.codigo,
-        tipo: m.tipo,
-        diametro: m.diametro,
+        nome: m.nome,
+        diametro: m.diametro || '',
         descricao: m.descricao || '',
-        qtd_disponivel: m.qtd_disponivel || 0,
+        qtd_disponivel: m.quantidade_atual || 0,
         qtd_aplicada: m.qtd_aplicada || 0,
         qtd_teste_necessario: m.qtd_teste_necessario || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
@@ -247,7 +249,7 @@ function exportarMangueiras() {
 
     const colunas = [
         { titulo: 'Código', campo: 'codigo' },
-        { titulo: 'Tipo', campo: 'tipo' },
+        { titulo: 'Tipo', campo: 'nome' },
         { titulo: 'Diâmetro', campo: 'diametro' },
         { titulo: 'Descrição', campo: 'descricao' },
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
@@ -267,9 +269,9 @@ function exportarMovimentacoesMangueira() {
     const dadosExport = movimentacoesCache.map(m => ({
         data_movimentacao: m.data_movimentacao,
         tipo: TIPOS_MOVIMENTACAO[m.tipo_movimentacao]?.label || m.tipo_movimentacao,
-        codigo: m.mangueiras?.codigo || '',
-        tipo_mangueira: m.mangueiras?.tipo || 'N/A',
-        diametro: m.mangueiras?.diametro || '',
+        codigo: m.materiais?.codigo || '',
+        tipo_mangueira: m.materiais?.nome || 'N/A',
+        diametro: m.materiais?.diametro || '',
         quantidade: m.quantidade,
         documento: m.documento_referencia || '',
         responsavel: m.responsavel || '',

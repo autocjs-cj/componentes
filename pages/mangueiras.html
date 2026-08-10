@@ -97,7 +97,7 @@
         <main class="main-content">
             <div class="page-header">
                 <h2>🚒 Controle de Mangueiras</h2>
-                <p>Gerenciamento completo do ciclo de vida das mangueiras</p>
+                <p>Gerenciamento do ciclo de vida das mangueiras cadastradas em Materiais</p>
             </div>
 
             <!-- ALERTAS -->
@@ -155,7 +155,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h3>🚒 Mangueiras Cadastradas</h3>
                         <div class="btn-group">
-                            <button class="btn btn-primary" onclick="abrirModalMangueira()">+ Nova Mangueira</button>
+                            <a href="materiais.html" class="btn btn-primary" style="text-decoration:none;">📋 Ir para Materiais</a>
                             <button class="btn btn-success" onclick="exportarMangueiras()">📊 Exportar Excel</button>
                         </div>
                     </div>
@@ -180,11 +180,10 @@
                                 <th>Reprovada</th>
                                 <th>Descartada</th>
                                 <th>Alertas</th>
-                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-mangueiras">
-                            <tr><td colspan="11" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="10" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -252,59 +251,6 @@
                 </div>
             </div>
         </main>
-    </div>
-
-    <!-- MODAL CADASTRO / EDIÇÃO DE MANGUEIRA -->
-    <div id="modal-mangueira" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
-            <h3 id="titulo-modal-mangueira">🚒 Nova Mangueira</h3>
-            <form id="form-modal-mangueira" class="mt-2">
-                <input type="hidden" id="modal-mangueira-id">
-                <input type="hidden" id="modal-mangueira-modo" value="novo">
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group">
-                        <label>Código <span class="required">*</span></label>
-                        <input type="text" id="modal-mangueira-codigo" required placeholder="Ex: MANG-001">
-                    </div>
-                    <div class="form-group">
-                        <label>Diâmetro <span class="required">*</span></label>
-                        <input type="text" id="modal-mangueira-diametro" required placeholder="Ex: 2.1/2 pol">
-                    </div>
-                </div>
-                <div class="form-group mt-1">
-                    <label>Tipo / Descrição <span class="required">*</span></label>
-                    <input type="text" id="modal-mangueira-tipo" required placeholder="Ex: Mangueira de Incêndio Tipo 1">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Descrição Adicional</label>
-                    <textarea id="modal-mangueira-descricao" placeholder="Observações sobre a mangueira..."></textarea>
-                </div>
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
-                    <div class="form-group">
-                        <label>Estoque Mínimo</label>
-                        <input type="number" id="modal-mangueira-estoque-min" min="0" value="0" placeholder="Alerta quando atingir">
-                    </div>
-                    <div class="form-group">
-                        <label>Limite para Compra</label>
-                        <input type="number" id="modal-mangueira-limite-compra" min="0" value="0" placeholder="Alerta quando atingir">
-                    </div>
-                </div>
-                <div id="modal-info-estoque-mangueira" class="hidden mt-1" style="background:#f8fafc;padding:12px;border-radius:8px;">
-                    <div style="display:flex;gap:16px;font-size:0.85rem;flex-wrap:wrap;">
-                        <div><strong>Disponível:</strong> <span id="modal-info-disponivel">0</span></div>
-                        <div><strong>Aplicada:</strong> <span id="modal-info-aplicada">0</span></div>
-                        <div><strong>Teste Nec.:</strong> <span id="modal-info-teste-necessario">0</span></div>
-                        <div><strong>Em Teste:</strong> <span id="modal-info-em-teste">0</span></div>
-                        <div><strong>Reprovada:</strong> <span id="modal-info-reprovada">0</span></div>
-                        <div><strong>Descartada:</strong> <span id="modal-info-descartada">0</span></div>
-                    </div>
-                </div>
-                <div class="btn-group mt-2">
-                    <button type="button" class="btn btn-primary" onclick="salvarMangueira()">💾 Salvar</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalMangueira()">Cancelar</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- MODAL MOVIMENTAÇÃO DE MANGUEIRA -->

@@ -8,18 +8,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarLocaisSublocais();
     await carregarMateriais();
 
-    // Busca na tabela
     const buscarInput = document.getElementById('buscar-material');
     if (buscarInput) {
         buscarInput.addEventListener('input', buscarMaterial);
     }
 
-    // Filtro de sublocais no modal
     const modalLocal = document.getElementById('modal-material-local');
     if (modalLocal) {
         modalLocal.addEventListener('change', filtrarSublocaisModal);
     }
+
+    const chkMangueira = document.getElementById('modal-material-eh-mangueira');
+    if (chkMangueira) {
+        chkMangueira.addEventListener('change', toggleCamposMangueira);
+    }
 });
+
+function toggleCamposMangueira() {
+    const chk = document.getElementById('modal-material-eh-mangueira');
+    const campos = document.getElementById('campos-mangueira');
+    if (campos) {
+        campos.style.display = chk.checked ? 'block' : 'none';
+    }
+}
 
 async function carregarLocaisSublocais() {
     try {
@@ -56,7 +67,7 @@ async function carregarMateriais() {
 function renderizarMateriais(lista = materiaisCache) {
     const tbody = document.getElementById('tabela-materiais');
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhum material cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center">Nenhum material cadastrado</td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(m => {
@@ -64,9 +75,11 @@ function renderizarMateriais(lista = materiaisCache) {
                        m.quantidade_atual <= m.estoque_minimo * 1.5 ? 'BAIXO' : 'NORMAL';
         const badgeClass = status === 'CRITICO' ? 'badge-danger' : 
                           status === 'BAIXO' ? 'badge-warning' : 'badge-success';
+        const badgeMangueira = m.eh_mangueira_spci 
+            ? '<span class="badge badge-info" style="margin-left:4px;">🚒 MANGUEIRA</span>' : '';
         return `
         <tr class="${status.toLowerCase()}">
-            <td><strong>${m.codigo}</strong></td>
+            <td><strong>${m.codigo}</strong>${badgeMangueira}</td>
             <td>${m.nome}</td>
             <td>${m.sublocais?.locais?.sites?.nome || m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.locais?.nome || '-'}</td>
@@ -109,7 +122,9 @@ function exportarMateriais() {
         estoque_maximo: m.estoque_maximo,
         limite_compra: m.limite_compra,
         local: m.sublocais?.locais?.nome || '-',
-        sublocal_nome: m.sublocais?.nome || '-'
+        sublocal_nome: m.sublocais?.nome || '-',
+        eh_mangueira_spci: m.eh_mangueira_spci ? 'SIM' : 'NAO',
+        diametro: m.diametro || ''
     }));
 
     const colunasExport = [
@@ -124,7 +139,9 @@ function exportarMateriais() {
         { titulo: 'Estoque Max', campo: 'estoque_maximo' },
         { titulo: 'Limite Compra', campo: 'limite_compra' },
         { titulo: 'Local', campo: 'local' },
-        { titulo: 'Sub-local', campo: 'sublocal_nome' }
+        { titulo: 'Sub-local', campo: 'sublocal_nome' },
+        { titulo: 'Mangueira SPCI', campo: 'eh_mangueira_spci' },
+        { titulo: 'Diâmetro', campo: 'diametro' }
     ];
 
     exportarExcel(dadosExport, 'materiais_estoque', colunasExport);
@@ -143,15 +160,19 @@ function abrirModalNovoMaterial() {
     document.getElementById('modal-material-estoque-min').value = 0;
     document.getElementById('modal-material-estoque-max').value = 999999;
     document.getElementById('modal-material-limite-compra').value = 0;
+    document.getElementById('modal-material-eh-mangueira').checked = false;
+    document.getElementById('modal-material-diametro').value = '';
     document.getElementById('modal-info-estoque').classList.add('hidden');
+
+    toggleCamposMangueira();
 
     carregarSelectLocais('modal-material-local', locaisCache, 'Selecione um local...');
     carregarSelectModal('modal-material-sublocal', [], 'id', 'nome', 'Selecione um sub-local...');
 
-    // Habilitar todos os campos
     ['modal-material-codigo', 'modal-material-nome', 'modal-material-descricao',
      'modal-material-unidade', 'modal-material-local', 'modal-material-sublocal',
-     'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra']
+     'modal-material-estoque-min', 'modal-material-estoque-max', 'modal-material-limite-compra',
+     'modal-material-eh-mangueira', 'modal-material-diametro']
     .forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.removeAttribute('readonly'); el.removeAttribute('disabled'); }
@@ -174,11 +195,30 @@ function abrirModalMaterial(id) {
     document.getElementById('modal-material-estoque-min').value = m.estoque_minimo;
     document.getElementById('modal-material-estoque-max').value = m.estoque_maximo;
     document.getElementById('modal-material-limite-compra').value = m.limite_compra;
+    document.getElementById('modal-material-eh-mangueira').checked = m.eh_mangueira_spci || false;
+    document.getElementById('modal-material-diametro').value = m.diametro || '';
 
     document.getElementById('modal-info-atual').textContent = m.quantidade_atual;
     document.getElementById('modal-info-reservada').textContent = m.quantidade_reservada || 0;
     document.getElementById('modal-info-disponivel').textContent = m.quantidade_atual - (m.quantidade_reservada || 0);
     document.getElementById('modal-info-estoque').classList.remove('hidden');
+
+    // Info de mangueira
+    const infoMangueira = document.getElementById('modal-info-mangueira');
+    if (infoMangueira) {
+        if (m.eh_mangueira_spci) {
+            infoMangueira.classList.remove('hidden');
+            document.getElementById('modal-info-aplicada').textContent = m.qtd_aplicada || 0;
+            document.getElementById('modal-info-teste-necessario').textContent = m.qtd_teste_necessario || 0;
+            document.getElementById('modal-info-em-teste').textContent = m.qtd_em_teste || 0;
+            document.getElementById('modal-info-reprovada').textContent = m.qtd_reprovada || 0;
+            document.getElementById('modal-info-descartada').textContent = m.qtd_descartada || 0;
+        } else {
+            infoMangueira.classList.add('hidden');
+        }
+    }
+
+    toggleCamposMangueira();
 
     const localId = m.sublocais ? sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id : '';
     carregarSelectLocais('modal-material-local', locaisCache, 'Selecione um local...');
@@ -205,6 +245,14 @@ async function salvarMaterialDoModal() {
         return;
     }
 
+    const ehMangueira = document.getElementById('modal-material-eh-mangueira').checked;
+    const diametro = ehMangueira ? document.getElementById('modal-material-diametro').value.trim() : null;
+
+    if (ehMangueira && !diametro) {
+        mostrarToast('Preencha o diâmetro da mangueira', 'erro');
+        return;
+    }
+
     const dados = {
         codigo: codigo,
         nome: nome,
@@ -213,7 +261,9 @@ async function salvarMaterialDoModal() {
         estoque_minimo: parseInt(document.getElementById('modal-material-estoque-min').value) || 0,
         estoque_maximo: parseInt(document.getElementById('modal-material-estoque-max').value) || 999999,
         limite_compra: parseInt(document.getElementById('modal-material-limite-compra').value) || 0,
-        sublocal_id: document.getElementById('modal-material-sublocal').value || null
+        sublocal_id: document.getElementById('modal-material-sublocal').value || null,
+        eh_mangueira_spci: ehMangueira,
+        diametro: diametro || null
     };
 
     toggleLoading(true);
