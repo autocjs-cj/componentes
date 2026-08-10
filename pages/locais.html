@@ -11,13 +11,35 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Menu será renderizado dinamicamente pelo JS -->
         <main class="main-content">
             <div class="page-header">
                 <h2>🏭 Locais e Sub-locais</h2>
                 <p></p>
             </div>
 
+            <!-- SITES -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🏢 Sites</h3>
+                    <button class="btn btn-primary" onclick="abrirModalSite()">+ Novo Site</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Locais Vinculados</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-sites">
+                            <tr><td colspan="3" class="text-center">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- LOCAIS -->
             <div class="card">
                 <div class="card-header">
                     <h3>📍 Locais de Armazenamento</h3>
@@ -27,8 +49,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Nome</th>
                                 <th>Site</th>
+                                <th>Nome</th>
                                 <th>Sub-locais</th>
                                 <th>Ações</th>
                             </tr>
@@ -40,6 +62,7 @@
                 </div>
             </div>
 
+            <!-- SUB-LOCAIS -->
             <div class="card">
                 <div class="card-header">
                     <h3>📂 Sub-locais (Prateleiras, Gavetas, etc.)</h3>
@@ -55,57 +78,77 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-sublocais">
-                            <tr><td colspan="4" class="text-center">Carregando...</td></tr>
+                            <tr><td colspan="3" class="text-center">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-    <div id="modal-local" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 500px; text-align: left;">
-            <h3 id="titulo-modal-local">📍 Novo Local</h3>
-            <form id="form-local" class="mt-2">
-                <input type="hidden" id="local-id">
-                <div class="form-group">
-                    <label>Nome <span class="required">*</span></label>
-                    <input type="text" id="local-nome" required placeholder="Ex: Galpão 01">
+            <!-- MODAL SITE -->
+            <div id="modal-site" class="modal-overlay hidden">
+                <div class="modal-confirm" style="max-width: 500px; text-align: left;">
+                    <h3 id="titulo-modal-site">🏢 Novo Site</h3>
+                    <form id="form-site" class="mt-2">
+                        <input type="hidden" id="site-id">
+                        <div class="form-group">
+                            <label>Nome <span class="required">*</span></label>
+                            <input type="text" id="site-nome" required placeholder="Ex: Site A">
+                        </div>
+                        <div class="btn-group mt-2">
+                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="fecharModalSite()">Cancelar</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group mt-1">
-                    <label>Site</label>
-                    <input type="text" id="local-site" placeholder="Ex: Site A, Base Operacional...">
-                </div>
-                <div class="btn-group mt-2">
-                    <button type="submit" class="btn btn-primary">💾 Salvar</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalLocal()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            </div>
 
-    <div id="modal-sublocal" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 500px; text-align: left;">
-            <h3 id="titulo-modal-sublocal">📂 Novo Sub-local</h3>
-            <form id="form-sublocal" class="mt-2">
-                <input type="hidden" id="sublocal-id">
-                <div class="form-group">
-                    <label>Local Pai <span class="required">*</span></label>
-                    <select id="sublocal-local-id" required>
-                        <option value="">Selecione um local...</option>
-                    </select>
+            <!-- MODAL LOCAL -->
+            <div id="modal-local" class="modal-overlay hidden">
+                <div class="modal-confirm" style="max-width: 500px; text-align: left;">
+                    <h3 id="titulo-modal-local">📍 Novo Local</h3>
+                    <form id="form-local" class="mt-2">
+                        <input type="hidden" id="local-id">
+                        <div class="form-group">
+                            <label>Site <span class="required">*</span></label>
+                            <select id="local-site-id" required>
+                                <option value="">Selecione um site...</option>
+                            </select>
+                        </div>
+                        <div class="form-group mt-1">
+                            <label>Nome <span class="required">*</span></label>
+                            <input type="text" id="local-nome" required placeholder="Ex: Galpão 01">
+                        </div>
+                        <div class="btn-group mt-2">
+                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="fecharModalLocal()">Cancelar</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group mt-1">
-                    <label>Nome <span class="required">*</span></label>
-                    <input type="text" id="sublocal-nome" required placeholder="Ex: Prateleira A1">
-                </div>
-                <div class="btn-group mt-2">
-                    <button type="submit" class="btn btn-primary">💾 Salvar</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalSublocal()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            </div>
 
-            
+            <!-- MODAL SUB-LOCAL -->
+            <div id="modal-sublocal" class="modal-overlay hidden">
+                <div class="modal-confirm" style="max-width: 500px; text-align: left;">
+                    <h3 id="titulo-modal-sublocal">📂 Novo Sub-local</h3>
+                    <form id="form-sublocal" class="mt-2">
+                        <input type="hidden" id="sublocal-id">
+                        <div class="form-group">
+                            <label>Local Pai <span class="required">*</span></label>
+                            <select id="sublocal-local-id" required>
+                                <option value="">Selecione um local...</option>
+                            </select>
+                        </div>
+                        <div class="form-group mt-1">
+                            <label>Nome <span class="required">*</span></label>
+                            <input type="text" id="sublocal-nome" required placeholder="Ex: Prateleira A1">
+                        </div>
+                        <div class="btn-group mt-2">
+                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="fecharModalSublocal()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
     <script src="../js/pages/locais.js"></script>

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function carregarLocaisSublocais() {
     try {
-        const { data: locais } = await sb.from('locais').select('*').eq('ativo', true).order('nome');
+        const { data: locais } = await sb.from('locais').select('*, sites(nome)').eq('ativo', true).order('nome');
         locaisCache = locais || [];
 
         const { data: sublocais } = await sb.from('sublocais').select('*, locais(nome)').eq('ativo', true).order('nome');
@@ -38,7 +38,7 @@ async function carregarMateriais() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('*, quantidade_reservada, sublocais(nome, locais(nome))')
+            .select('*, quantidade_reservada, sublocais(nome, locais(nome, sites(nome)))')
             .eq('ativo', true)
             .order('nome');
 
@@ -68,6 +68,7 @@ function renderizarMateriais(lista = materiaisCache) {
         <tr class="${status.toLowerCase()}">
             <td><strong>${m.codigo}</strong></td>
             <td>${m.nome}</td>
+            <td>${m.sublocais?.locais?.sites?.nome || m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.locais?.nome || '-'}</td>
             <td>${m.sublocais?.nome || '-'}</td>
             <td><strong>${m.quantidade_atual}</strong> ${m.unidade_medida}</td>
@@ -144,7 +145,7 @@ function abrirModalNovoMaterial() {
     document.getElementById('modal-material-limite-compra').value = 0;
     document.getElementById('modal-info-estoque').classList.add('hidden');
 
-    carregarSelectModal('modal-material-local', locaisCache, 'id', 'nome', 'Selecione um local...');
+    carregarSelectLocais('modal-material-local', locaisCache, 'Selecione um local...');
     carregarSelectModal('modal-material-sublocal', [], 'id', 'nome', 'Selecione um sub-local...');
 
     // Habilitar todos os campos
@@ -180,7 +181,7 @@ function abrirModalMaterial(id) {
     document.getElementById('modal-info-estoque').classList.remove('hidden');
 
     const localId = m.sublocais ? sublocaisCache.find(s => s.id === m.sublocal_id)?.local_id : '';
-    carregarSelectModal('modal-material-local', locaisCache, 'id', 'nome', 'Selecione um local...');
+    carregarSelectLocais('modal-material-local', locaisCache, 'Selecione um local...');
     document.getElementById('modal-material-local').value = localId || '';
     filtrarSublocaisModal();
     document.getElementById('modal-material-sublocal').value = m.sublocal_id || '';
@@ -250,6 +251,18 @@ async function excluirMaterial(id) {
     } finally {
         toggleLoading(false);
     }
+}
+
+function carregarSelectLocais(selectId, dados, placeholder) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    dados.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.sites?.nome ? `${item.sites.nome} — ${item.nome}` : item.nome;
+        select.appendChild(opt);
+    });
 }
 
 function carregarSelectModal(selectId, dados, valueField, textField, placeholder) {

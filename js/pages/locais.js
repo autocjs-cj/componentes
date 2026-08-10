@@ -1,11 +1,13 @@
-// ===== LOCAIS E SUB-LOCAIS =====
+// ===== LOCAIS, SITES E SUB-LOCAIS =====
 
+let sitesCache = [];
 let locaisCache = [];
 let sublocaisCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     await carregarDados();
 
+    document.getElementById('form-site').addEventListener('submit', salvarSite);
     document.getElementById('form-local').addEventListener('submit', salvarLocal);
     document.getElementById('form-sublocal').addEventListener('submit', salvarSublocal);
 });
@@ -13,9 +15,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function carregarDados() {
     toggleLoading(true);
     try {
+        // Carregar sites
+        const { data: sites, error: errSites } = await sb
+            .from('sites')
+            .select('*')
+            .eq('ativo', true)
+            .order('nome');
+
+        if (errSites) throw errSites;
+        sitesCache = sites || [];
+        renderizarSites();
+
+        // Carregar locais com site
         const { data: locais, error: errLocais } = await sb
             .from('locais')
-            .select('*')
+            .select('*, sites(nome)')
             .eq('ativo', true)
             .order('nome');
 
@@ -24,6 +38,7 @@ async function carregarDados() {
         renderizarLocais();
         carregarSelect('sublocal-local-id', locaisCache, 'id', 'nome');
 
+        // Carregar sublocais
         const { data: sublocais, error: errSub } = await sb
             .from('sublocais')
             .select('*, locais(nome)')
@@ -42,7 +57,95 @@ async function carregarDados() {
     }
 }
 
+// ===== SITES =====
+
+function renderizarSites() {
+    const tbody = document.getElementById('tabela-sites');
+    if (!sitesCache.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum site cadastrado</td></tr>';
+        return;
+    }
+    tbody.innerHTML = sitesCache.map(s => {
+        const qtdLocais = locaisCache.filter(l => l.site_id === s.id).length;
+        return `
+        <tr>
+            <td><strong>${s.nome}</strong></td>
+            <td><span class="badge badge-info">${qtdLocais} locais</span></td>
+            <td>
+                <div class="acoes">
+                    <button class="btn-acao editar" onclick="editarSite('${s.id}')" title="Editar">✏️</button>
+                    <button class="btn-acao excluir" onclick="excluirSite('${s.id}')" title="Excluir">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `}).join('');
+}
+
+function abrirModalSite(id = null) {
+    document.getElementById('titulo-modal-site').textContent = id ? '✏️ Editar Site' : '🏢 Novo Site';
+    document.getElementById('site-id').value = id || '';
+    document.getElementById('site-nome').value = id ? sitesCache.find(s => s.id === id)?.nome || '' : '';
+    document.getElementById('modal-site').classList.remove('hidden');
+}
+
+function fecharModalSite() {
+    document.getElementById('modal-site').classList.add('hidden');
+    limparFormulario('form-site');
+}
+
+async function salvarSite(e) {
+    e.preventDefault();
+    if (!validarFormulario('form-site')) return;
+
+    toggleLoading(true);
+    const id = document.getElementById('site-id').value;
+    const dados = {
+        nome: document.getElementById('site-nome').value.trim()
+    };
+
+    try {
+        if (id) {
+            const { error } = await sb.from('sites').update(dados).eq('id', id);
+            if (error) throw error;
+            mostrarToast('Site atualizado com sucesso!');
+        } else {
+            const { error } = await sb.from('sites').insert(dados);
+            if (error) throw error;
+            mostrarToast('Site cadastrado com sucesso!');
+        }
+        fecharModalSite();
+        await carregarDados();
+    } catch (erro) {
+        console.error(erro);
+        mostrarToast('Erro ao salvar site', 'erro');
+    } finally {
+        toggleLoading(false);
+    }
+}
+
+async function editarSite(id) {
+    abrirModalSite(id);
+}
+
+async function excluirSite(id) {
+    if (!await confirmarExclusao('Excluir este site também desvinculará os locais. Deseja continuar?')) return;
+
+    toggleLoading(true);
+    try {
+        const { error } = await sb.from('sites').update({ ativo: false }).eq('id', id);
+        if (error) throw error;
+        mostrarToast('Site excluído com sucesso!');
+        await carregarDados();
+    } catch (erro) {
+        console.error(erro);
+        mostrarToast('Erro ao excluir site', 'erro');
+    } finally {
+        toggleLoading(false);
+    }
+}
+
 // ===== LOCAIS =====
+
 function renderizarLocais() {
     const tbody = document.getElementById('tabela-locais');
     if (!locaisCache.length) {
@@ -53,8 +156,8 @@ function renderizarLocais() {
         const qtdSub = sublocaisCache.filter(s => s.local_id === l.id).length;
         return `
         <tr>
+            <td><span class="badge badge-info">${l.sites?.nome || 'N/A'}</span></td>
             <td><strong>${l.nome}</strong></td>
-            <td>${l.site || '<span style="color:#94a3b8">—</span>'}</td>
             <td><span class="badge badge-info">${qtdSub} sub-locais</span></td>
             <td>
                 <div class="acoes">
@@ -69,13 +172,24 @@ function renderizarLocais() {
 function abrirModalLocal(id = null) {
     document.getElementById('titulo-modal-local').textContent = id ? '✏️ Editar Local' : '📍 Novo Local';
     document.getElementById('local-id').value = id || '';
+
+    // Carregar sites no select
+    const selectSite = document.getElementById('local-site-id');
+    selectSite.innerHTML = '<option value="">Selecione um site...</option>';
+    sitesCache.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.nome;
+        selectSite.appendChild(opt);
+    });
+
     if (id) {
         const l = locaisCache.find(x => x.id === id);
+        document.getElementById('local-site-id').value = l?.site_id || '';
         document.getElementById('local-nome').value = l?.nome || '';
-        document.getElementById('local-site').value = l?.site || '';
     } else {
+        document.getElementById('local-site-id').value = '';
         document.getElementById('local-nome').value = '';
-        document.getElementById('local-site').value = '';
     }
     document.getElementById('modal-local').classList.remove('hidden');
 }
@@ -92,8 +206,8 @@ async function salvarLocal(e) {
     toggleLoading(true);
     const id = document.getElementById('local-id').value;
     const dados = {
-        nome: document.getElementById('local-nome').value.trim(),
-        site: document.getElementById('local-site').value.trim() || null
+        site_id: document.getElementById('local-site-id').value,
+        nome: document.getElementById('local-nome').value.trim()
     };
 
     try {
@@ -138,6 +252,7 @@ async function excluirLocal(id) {
 }
 
 // ===== SUB-LOCAIS =====
+
 function renderizarSublocais() {
     const tbody = document.getElementById('tabela-sublocais');
     if (!sublocaisCache.length) {
@@ -161,6 +276,7 @@ function renderizarSublocais() {
 function abrirModalSublocal(id = null) {
     document.getElementById('titulo-modal-sublocal').textContent = id ? '✏️ Editar Sub-local' : '📂 Novo Sub-local';
     document.getElementById('sublocal-id').value = id || '';
+
     if (id) {
         const s = sublocaisCache.find(x => x.id === id);
         document.getElementById('sublocal-local-id').value = s?.local_id || '';
