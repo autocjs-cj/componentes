@@ -31,7 +31,10 @@ function parseDataBR(dataBR) {
 // Formata data atual para input date
 function hojeISO() {
     const hoje = new Date();
-    return hoje.toISOString().split('T')[0];
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
 }
 
 // Formata data atual para DD/MM/AAAA
