@@ -758,3 +758,222 @@ window.abrirModalRetornoTeste = abrirModalRetornoTeste;
 window.fecharModalRetornoTeste = fecharModalRetornoTeste;
 window.salvarRetornoTeste = salvarRetornoTeste;
 window.atualizarInfoRetornoTeste = atualizarInfoRetornoTeste;
+
+// ===== RETORNO DE MANGUEIRAS DA ÁREA =====
+
+let mangueirasRetornoCache = [];
+
+async function carregarMangueirasParaRetorno() {
+    try {
+        const { data, error } = await sb
+            .from('materiais')
+            .select('id, codigo, nome, diametro, qtd_aplicada, qtd_furtada, qtd_em_teste, qtd_descartada, total_furtadas, total_descarte_area')
+            .eq('eh_mangueira_spci', true)
+            .eq('ativo', true)
+            .gt('qtd_aplicada', 0)
+            .order('nome');
+
+        if (error) throw error;
+        mangueirasRetornoCache = data || [];
+        atualizarSelectRetornoArea();
+    } catch (erro) {
+        console.error('Erro ao carregar mangueiras para retorno:', erro);
+    }
+}
+
+function atualizarSelectRetornoArea() {
+    const select = document.getElementById('retorno-mangueira');
+    if (!select) return;
+    const valAtual = select.value;
+    select.innerHTML = '<option value="">Selecione uma mangueira...</option>';
+    mangueirasRetornoCache.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `${m.nome} (${m.codigo}) — ${m.diametro || ''} [Aplicada: ${m.qtd_aplicada}]`;
+        opt.dataset.aplicada = m.qtd_aplicada;
+        select.appendChild(opt);
+    });
+    select.value = valAtual;
+}
+
+function atualizarInfoRetornoArea() {
+    const materialId = document.getElementById('retorno-mangueira').value;
+    const infoDiv = document.getElementById('info-aplicada-retorno');
+    const qtdSpan = document.getElementById('qtd-aplicada-retorno');
+    const infoSoma = document.getElementById('info-soma-retorno');
+    const somaMax = document.getElementById('soma-maximo');
+
+    if (!materialId) {
+        infoDiv.classList.add('hidden');
+        infoSoma.classList.add('hidden');
+        return;
+    }
+
+    const m = mangueirasRetornoCache.find(x => x.id === materialId);
+    if (!m) {
+        infoDiv.classList.add('hidden');
+        infoSoma.classList.add('hidden');
+        return;
+    }
+
+    qtdSpan.textContent = m.qtd_aplicada;
+    somaMax.textContent = m.qtd_aplicada;
+    infoDiv.classList.remove('hidden');
+    infoSoma.classList.remove('hidden');
+    atualizarSomaRetorno();
+}
+
+function atualizarSomaRetorno() {
+    const furtadas = parseInt(document.getElementById('retorno-furtadas').value) || 0;
+    const teste = parseInt(document.getElementById('retorno-teste').value) || 0;
+    const descarte = parseInt(document.getElementById('retorno-descarte').value) || 0;
+    const soma = furtadas + teste + descarte;
+    document.getElementById('soma-retorno').textContent = soma;
+
+    const materialId = document.getElementById('retorno-mangueira').value;
+    const m = mangueirasRetornoCache.find(x => x.id === materialId);
+    const maximo = m ? m.qtd_aplicada : 0;
+
+    const somaSpan = document.getElementById('soma-retorno');
+    if (soma > maximo) {
+        somaSpan.style.color = '#ef4444';
+        somaSpan.style.fontWeight = '700';
+    } else {
+        somaSpan.style.color = '#92400e';
+        somaSpan.style.fontWeight = '600';
+    }
+}
+
+function abrirModalRetornoArea() {
+    document.getElementById('retorno-mangueira').value = '';
+    document.getElementById('retorno-furtadas').value = '0';
+    document.getElementById('retorno-teste').value = '0';
+    document.getElementById('retorno-descarte').value = '0';
+    document.getElementById('retorno-data').value = hojeISO();
+    document.getElementById('retorno-documento').value = '';
+    document.getElementById('retorno-responsavel').value = '';
+    document.getElementById('retorno-observacao').value = '';
+    document.getElementById('info-aplicada-retorno').classList.add('hidden');
+    document.getElementById('info-soma-retorno').classList.add('hidden');
+    carregarMangueirasParaRetorno();
+    document.getElementById('modal-retorno-area').classList.remove('hidden');
+}
+
+function fecharModalRetornoArea() {
+    document.getElementById('modal-retorno-area').classList.add('hidden');
+}
+
+async function salvarRetornoArea() {
+    const materialId = document.getElementById('retorno-mangueira').value;
+    const furtadas = parseInt(document.getElementById('retorno-furtadas').value) || 0;
+    const teste = parseInt(document.getElementById('retorno-teste').value) || 0;
+    const descarte = parseInt(document.getElementById('retorno-descarte').value) || 0;
+    const data = document.getElementById('retorno-data').value;
+    const documento = document.getElementById('retorno-documento').value.trim() || null;
+    const responsavel = document.getElementById('retorno-responsavel').value.trim() || null;
+    const observacao = document.getElementById('retorno-observacao').value.trim() || null;
+
+    if (!materialId) {
+        mostrarToast('Selecione uma mangueira', 'erro');
+        return;
+    }
+
+    const m = mangueirasRetornoCache.find(x => x.id === materialId);
+    if (!m) {
+        mostrarToast('Mangueira não encontrada', 'erro');
+        return;
+    }
+
+    const total = furtadas + teste + descarte;
+    if (total === 0) {
+        mostrarToast('Informe pelo menos uma quantidade', 'erro');
+        return;
+    }
+
+    if (total > m.qtd_aplicada) {
+        mostrarToast(`Total excede as mangueiras aplicadas! Disponível: ${m.qtd_aplicada}`, 'erro');
+        return;
+    }
+
+    toggleLoading(true);
+    try {
+        const movimentacoes = [];
+
+        if (furtadas > 0) {
+            movimentacoes.push({
+                material_id: materialId,
+                tipo_movimentacao: 'FURTO',
+                quantidade: furtadas,
+                data_movimentacao: data,
+                documento_referencia: documento,
+                responsavel: responsavel,
+                observacao: observacao
+            });
+        }
+        if (teste > 0) {
+            movimentacoes.push({
+                material_id: materialId,
+                tipo_movimentacao: 'ENVIO_TESTE',
+                quantidade: teste,
+                data_movimentacao: data,
+                documento_referencia: documento,
+                responsavel: responsavel,
+                observacao: observacao
+            });
+        }
+        if (descarte > 0) {
+            movimentacoes.push({
+                material_id: materialId,
+                tipo_movimentacao: 'DESCARTE_AREA',
+                quantidade: descarte,
+                data_movimentacao: data,
+                documento_referencia: documento,
+                responsavel: responsavel,
+                observacao: observacao
+            });
+        }
+
+        const { error: errMov } = await sb.from('mangueira_movimentacoes').insert(movimentacoes);
+        if (errMov) throw errMov;
+
+        const atualizacoes = {
+            qtd_aplicada: Math.max(0, m.qtd_aplicada - total),
+            qtd_furtada: (m.qtd_furtada || 0) + furtadas,
+            total_furtadas: (m.total_furtadas || 0) + furtadas,
+            qtd_em_teste: (m.qtd_em_teste || 0) + teste,
+            qtd_descartada: (m.qtd_descartada || 0) + descarte,
+            total_descarte_area: (m.total_descarte_area || 0) + descarte
+        };
+
+        const { error: errUpdate } = await sb
+            .from('materiais')
+            .update(atualizacoes)
+            .eq('id', materialId);
+
+        if (errUpdate) throw errUpdate;
+
+        mostrarToast('Retorno da área registrado com sucesso!');
+        fecharModalRetornoArea();
+        await carregarMateriais();
+        await carregarMovimentacoes();
+        await carregarMangueirasParaRetorno();
+
+    } catch (erro) {
+        console.error(erro);
+        mostrarToast('Erro ao registrar retorno: ' + (erro.message || 'Tente novamente'), 'erro');
+    } finally {
+        toggleLoading(false);
+    }
+}
+
+['retorno-furtadas', 'retorno-teste', 'retorno-descarte'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', atualizarSomaRetorno);
+});
+
+carregarMangueirasParaRetorno();
+
+window.abrirModalRetornoArea = abrirModalRetornoArea;
+window.fecharModalRetornoArea = fecharModalRetornoArea;
+window.salvarRetornoArea = salvarRetornoArea;
+window.atualizarInfoRetornoArea = atualizarInfoRetornoArea;
