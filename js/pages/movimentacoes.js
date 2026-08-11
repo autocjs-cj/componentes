@@ -342,7 +342,7 @@ function abrirModalRetornoArea() {
     document.getElementById('retorno-observacao').value = '';
     document.getElementById('info-aplicada-retorno').classList.add('hidden');
     document.getElementById('info-soma-retorno').classList.add('hidden');
-    atualizarSelectRetornoArea();
+    carregarMangueirasParaRetorno();
     document.getElementById('modal-retorno-area').classList.remove('hidden');
 }
 
@@ -420,11 +420,9 @@ async function salvarRetornoArea() {
             });
         }
 
-        // Inserir movimentações
         const { error: errMov } = await sb.from('mangueira_movimentacoes').insert(movimentacoes);
         if (errMov) throw errMov;
 
-        // Atualizar material
         const atualizacoes = {
             qtd_aplicada: Math.max(0, m.qtd_aplicada - total),
             qtd_furtada: (m.qtd_furtada || 0) + furtadas,
@@ -455,13 +453,11 @@ async function salvarRetornoArea() {
     }
 }
 
-// Listeners para atualizar soma em tempo real
 ['retorno-furtadas', 'retorno-teste', 'retorno-descarte'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', atualizarSomaRetorno);
 });
 
-// Carregar mangueiras no DOMContentLoaded
 carregarMangueirasParaRetorno();
 
 window.abrirModalRetornoArea = abrirModalRetornoArea;

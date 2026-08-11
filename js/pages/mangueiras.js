@@ -556,7 +556,7 @@ async function carregarMangueirasParaRetornoTeste() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('id, codigo, nome, diametro, qtd_em_teste, qtd_reprovada, qtd_descartada, total_descarte_teste')
+            .select('id, codigo, nome, diametro, qtd_em_teste, qtd_reprovada, qtd_descartada, total_descarte_teste, quantidade_atual')
             .eq('eh_mangueira_spci', true)
             .eq('ativo', true)
             .gt('qtd_em_teste', 0)
@@ -708,11 +708,9 @@ async function salvarRetornoTeste() {
             });
         }
 
-        // Inserir movimentações
         const { error: errMov } = await sb.from('mangueira_movimentacoes').insert(movimentacoes);
         if (errMov) throw errMov;
 
-        // Atualizar material
         const novaQtdEmTeste = Math.max(0, m.qtd_em_teste - total);
         const novaQtdReprovada = (m.qtd_reprovada || 0) + reprovadas;
         const novaQtdDescartada = (m.qtd_descartada || 0) + reprovadas;
@@ -723,18 +721,16 @@ async function salvarRetornoTeste() {
             qtd_reprovada: novaQtdReprovada,
             qtd_descartada: novaQtdDescartada,
             total_descarte_teste: novoTotalDescarteTeste,
-            quantidade_atual: (m.quantidade_atual || 0) + aprovadas,
-            data_vencimento_teste: aprovadas > 0 ? calcularVencimentoTeste(data) : undefined
+            quantidade_atual: (m.quantidade_atual || 0) + aprovadas
         };
 
-        // Remover undefined para não sobrescrever
-        const dadosUpdate = Object.fromEntries(
-            Object.entries(atualizacoes).filter(([_, v]) => v !== undefined)
-        );
+        if (aprovadas > 0) {
+            atualizacoes.data_vencimento_teste = calcularVencimentoTeste(data);
+        }
 
         const { error: errUpdate } = await sb
             .from('materiais')
-            .update(dadosUpdate)
+            .update(atualizacoes)
             .eq('id', materialId);
 
         if (errUpdate) throw errUpdate;
@@ -753,7 +749,6 @@ async function salvarRetornoTeste() {
     }
 }
 
-// Listeners para atualizar soma em tempo real
 ['retorno-aprovadas', 'retorno-reprovadas'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', atualizarSomaRetornoTeste);
