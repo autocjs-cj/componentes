@@ -24,7 +24,6 @@
                         <h3>📋 Histórico de Movimentações</h3>
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="abrirModalNovaMovimentacao()">+ Novo</button>
-                            <button class="btn btn-warning" onclick="abrirModalRetornoArea()">🚒 Retorno da Área</button>
                             <button class="btn btn-success" onclick="exportarMovimentacoes()">📊 Exportar</button>
                         </div>
                     </div>
@@ -116,39 +115,7 @@
         </div>
     </div>
 
-        
-    <!-- MODAL RETORNO DA ÁREA -->
-    <div id="modal-retorno-area" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
-            <h3>🚒 Retorno de Mangueiras da Área</h3>
-            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
-                Registre o que aconteceu com as mangueiras aplicadas na área. O total informado não pode exceder a quantidade aplicada.
-            </p>
-            <form id="form-retorno-area" class="mt-2">
-                <div class="form-group">
-                    <label>Mangueira <span class="required">*</span></label>
-                    <select id="retorno-mangueira" required onchange="atualizarInfoRetornoArea()">
-                        <option value="">Selecione uma mangueira...</option>
-                    </select>
-                </div>
-                <div id="info-aplicada-retorno" class="hidden mt-1" style="background:#eff6ff;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#1e40af;">
-                    <strong>Aplicadas na área:</strong> <span id="qtd-aplicada-retorno">-</span> unidades
-                </div>
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px;">
-                    <div class="form-group">
-                        <label>🦹 Furtadas</label>
-                        <input type="number" id="retorno-furtadas" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>🔬 Para Teste</label>
-                        <input type="number" id="retorno-teste" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>🗑️ Descartadas</label>
-                        <input type="number" id="retorno-descarte" min="0" value="0" placeholder="0">
-                    </div>
-                </div>
-                <div id="info-soma-retorno" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
+<div id="info-soma-retorno" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
                     <strong>Total informado:</strong> <span id="soma-retorno">0</span> / <span id="soma-maximo">0</span> unidades
                 </div>
                 <div class="form-group mt-1">
