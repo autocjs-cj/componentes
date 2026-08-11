@@ -92,33 +92,6 @@
         }
     </style>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
-    <style>
-        /* Ajustes para modais não estourarem */
-        .modal-confirm {
-            max-height: 85vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-confirm h3 {
-            flex-shrink: 0;
-        }
-        .modal-confirm form {
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        /* Grid responsivo para os 3 campos do retorno */
-        .retorno-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        @media (max-width: 520px) {
-            .retorno-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="app-container">
@@ -156,13 +129,6 @@
                     <div class="mangueira-stat-info">
                         <h4 id="total-em-teste">0</h4>
                         <p>Em Teste</p>
-                    </div>
-                </div>
-                <div class="mangueira-stat-card reprovada">
-                    <div class="mangueira-stat-icon reprovada">❌</div>
-                    <div class="mangueira-stat-info">
-                        <h4 id="total-reprovada">0</h4>
-                        <p>Reprovadas</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card descartada">
@@ -231,7 +197,6 @@
                                 <option value="FURTO">🦹 Furto</option>
                                 <option value="ENVIO_TESTE">🔬 Envio para Teste</option>
                                 <option value="RETORNO_APROVADO">✅ Retorno Aprovado</option>
-                                <option value="RETORNO_REPROVADO">❌ Retorno Reprovado</option>
                                 <option value="DESCARTE_AREA">🗑️ Descarte (Área)</option>
                                 <option value="DESCARTE_REPROVADA">🗑️ Descarte (Reprovada)</option>
                             </select>
@@ -268,7 +233,7 @@
         
     <!-- MODAL RETORNO DE TESTE HIDROSTÁTICO -->
     <div id="modal-retorno-teste" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 520px; text-align: left;">
+        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
             <h3>✅ Retorno de Teste Hidrostático</h3>
             <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
                 Registre o retorno das mangueiras que estavam em teste hidrostático. O total informado não pode exceder a quantidade em teste.
@@ -289,7 +254,7 @@
                         <input type="number" id="retorno-aprovadas" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label>❌ Reprovadas (serão descartadas)</label>
+                        <label>❌ Reprovadas no Teste (vão direto para descarte)</label>
                         <input type="number" id="retorno-reprovadas" min="0" value="0" placeholder="0">
                     </div>
                 </div>
@@ -338,7 +303,6 @@
                         <option value="ENVIO_TESTE">🔬 Envio para Teste Hidrostático (Área → Teste)</option>
                         <option value="ENVIO_TESTE_ESTOQUE">🔬 Envio p/ Teste (Estoque → Teste)</option>
                         <option value="RETORNO_APROVADO">✅ Retorno de Teste Aprovado</option>
-                        <option value="RETORNO_REPROVADO">❌ Retorno de Teste Reprovado</option>
                         <option value="DESCARTE_AREA">🗑️ Descarte (Danificada da Área)</option>
                         <option value="DESCARTE_REPROVADA">🗑️ Descarte (Reprovada no Teste)</option>
                     </select>

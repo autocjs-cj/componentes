@@ -212,7 +212,6 @@ function abrirModalMaterial(id) {
             document.getElementById('modal-info-aplicada').textContent = m.qtd_aplicada || 0;
             document.getElementById('modal-info-teste-necessario').textContent = m.qtd_teste_necessario || 0;
             document.getElementById('modal-info-em-teste').textContent = m.qtd_em_teste || 0;
-            document.getElementById('modal-info-reprovada').textContent = m.qtd_reprovada || 0;
             document.getElementById('modal-info-descartada').textContent = m.qtd_descartada || 0;
         } else {
             infoMangueira.classList.add('hidden');
@@ -431,11 +430,7 @@ function abrirModalVisualizarMaterial(id) {
                     <div style="font-size:0.7rem;color:#64748b;">Em Teste</div>
                 </div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid #dbeafe;">
-                <div>
-                    <div style="font-size:1rem;font-weight:700;color:#ef4444;">${m.qtd_reprovada || 0}</div>
-                    <div style="font-size:0.7rem;color:#64748b;">Reprovada</div>
-                </div>
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid #dbeafe;">
                 <div>
                     <div style="font-size:1rem;font-weight:700;color:#6b7280;">${m.qtd_descartada || 0}</div>
                     <div style="font-size:0.7rem;color:#64748b;">Descartada</div>
