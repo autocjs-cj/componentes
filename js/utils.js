@@ -237,6 +237,8 @@ function renderizarMenu() {
     const rootPrefix = isRoot ? '' : '../';
 
     const menuHTML = `
+        <button class="menu-toggle" onclick="toggleMenuMobile()" aria-label="Abrir menu">☰</button>
+        <div class="menu-overlay" onclick="fecharMenuMobile()"></div>
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h1>📦 Controle de Materiais</h1>
@@ -244,70 +246,70 @@ function renderizarMenu() {
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="${rootPrefix}index.html" class="nav-link">
+                    <a href="${rootPrefix}index.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">📊</span> Dashboard
                     </a>
                 </li>
                 ${user && (user.perfil === 'almoxarife' || user.perfil === 'admin') ? `
                 <li class="nav-item">
-                    <a href="${prefix}locais.html" class="nav-link">
+                    <a href="${prefix}locais.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">🏭</span> Locais & Sub-locais
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}materiais.html" class="nav-link">
+                    <a href="${prefix}materiais.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">📋</span> Materiais
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}movimentacoes.html" class="nav-link">
+                    <a href="${prefix}movimentacoes.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">🔄</span> Recebimento / Retirada
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}reserva.html" class="nav-link">
+                    <a href="${prefix}reserva.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">📝</span> Reserva de Materiais
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}mangueiras.html" class="nav-link">
+                    <a href="${prefix}mangueiras.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">🚒</span> Controle de Mangueiras
                     </a>
                 </li>
                 ` : ''}
                 <li class="nav-item">
-                    <a href="${prefix}estoque.html" class="nav-link">
+                    <a href="${prefix}estoque.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">📦</span> Controle de Estoque
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}mangueiras_visualizacao.html" class="nav-link">
+                    <a href="${prefix}mangueiras_visualizacao.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">🚒</span> Mangueiras
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${prefix}compras.html" class="nav-link">
+                    <a href="${prefix}compras.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">🛒</span> Compras Necessárias
                     </a>
                 </li>
                 ${user && user.perfil === 'admin' ? `
                 <li class="nav-item">
-                    <a href="${prefix}usuarios.html" class="nav-link">
+                    <a href="${prefix}usuarios.html" class="nav-link" onclick="fecharMenuMobile()">
                         <span class="nav-icon">👤</span> Usuários
                     </a>
                 </li>
                 ` : ''}
             </ul>
-            <div style="padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+            <div class="sidebar-footer">
                 ${user ? `
-                <div style="color: #94a3b8; font-size: 0.8rem; padding: 0 16px 8px;">
-                    👤 ${user.nome}<br>
+                <div class="user-info">
+                    <strong>${user.nome}</strong><br>
                     <span style="text-transform: uppercase; font-size: 0.7rem;">${user.perfil}</span>
                 </div>
                 <button onclick="abrirModalAlterarSenha()" class="btn btn-outline" style="width: 100%; margin-bottom: 8px; border-color: rgba(255,255,255,0.2); color: #cbd5e1;">🔑 Alterar Senha</button>
                 <button onclick="logout()" class="btn btn-danger" style="width: 100%;">🚪 Sair</button>
                 ` : `
-                <a href="${prefix}login.html" class="btn btn-primary" style="width: 100%; text-decoration: none;">🔐 Entrar</a>
+                <a href="${prefix}login.html" class="btn btn-primary" style="width: 100%; text-decoration: none;" onclick="fecharMenuMobile()">🔐 Entrar</a>
                 `}
             </div>
         </aside>
@@ -316,9 +318,13 @@ function renderizarMenu() {
     // Inserir menu no container
     const container = document.querySelector('.app-container');
     if (container) {
-        // Remover sidebar antiga se existir
+        // Remover elementos antigos se existirem
         const oldSidebar = container.querySelector('.sidebar');
+        const oldToggle = document.querySelector('.menu-toggle');
+        const oldOverlay = document.querySelector('.menu-overlay');
         if (oldSidebar) oldSidebar.remove();
+        if (oldToggle) oldToggle.remove();
+        if (oldOverlay) oldOverlay.remove();
 
         container.insertAdjacentHTML('afterbegin', menuHTML);
     }
@@ -416,3 +422,24 @@ window.abrirModalAlterarSenha = abrirModalAlterarSenha;
 window.fecharModalAlterarSenha = fecharModalAlterarSenha;
 window.salvarAlteracaoSenha = salvarAlteracaoSenha;
 
+// ===== MENU MOBILE =====
+function toggleMenuMobile() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.menu-overlay');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
+        document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+    }
+}
+
+function fecharMenuMobile() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.menu-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+window.toggleMenuMobile = toggleMenuMobile;
+window.fecharMenuMobile = fecharMenuMobile;

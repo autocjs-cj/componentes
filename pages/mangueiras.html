@@ -2,96 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>🚒 Controle de Mangueiras - Controle de Materiais</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js?v=2"></script>
     <script src="../js/utils.js?v=2"></script>
-    <style>
-        .mangueira-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-        .mangueira-stat-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 4px solid;
-        }
-        .mangueira-stat-card.disponivel { border-left-color: #22c55e; }
-        .mangueira-stat-card.aplicada { border-left-color: #8b5cf6; }
-        .mangueira-stat-card.em-teste { border-left-color: #3b82f6; }
-        .mangueira-stat-card.reprovada { border-left-color: #ef4444; }
-        .mangueira-stat-card.descartada { border-left-color: #6b7280; }
-        .mangueira-stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-        .mangueira-stat-icon.disponivel { background: #dcfce7; }
-        .mangueira-stat-icon.aplicada { background: #ede9fe; }
-        .mangueira-stat-icon.em-teste { background: #dbeafe; }
-        .mangueira-stat-icon.reprovada { background: #fee2e2; }
-        .mangueira-stat-icon.descartada { background: #f3f4f6; }
-        .mangueira-stat-info h4 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        .mangueira-stat-info p {
-            font-size: 0.75rem;
-            color: var(--secondary);
-            margin: 2px 0 0 0;
-        }
-        .badge-movimentacao {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-recebimento { background: #dcfce7; color: #166534; }
-        .badge-aplicacao { background: #ede9fe; color: #5b21b6; }
-        .badge-envio-teste { background: #dbeafe; color: #1e40af; }
-        .badge-retorno-aprovado { background: #dcfce7; color: #166534; }
-        .badge-retorno-reprovado { background: #fee2e2; color: #991b1b; }
-        .badge-descarte-area { background: #fef3c7; color: #92400e; }
-        .badge-descarte-reprovada { background: #f3f4f6; color: #374151; }
-        .badge-furto { background: #fee2e2; color: #991b1b; }
-        .badge-envio-teste-estoque { background: #dbeafe; color: #1e40af; }
-        .alerta-estoque {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        .alerta-critico {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-        .alerta-compra {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-    </style>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <div class="app-container">

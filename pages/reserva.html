@@ -2,112 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>📝 Reserva de Materiais - Controle de Materiais</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="../js/supabase.js"></script>
     <script src="../js/utils.js"></script>
-    <style>
-        /* Estilos extras para o modal de reserva */
-        .reserva-modal-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 16px;
-            margin-bottom: 16px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        .reserva-modal-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-        }
-        .reserva-section-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 20px 0 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .reserva-item-row {
-            display: grid;
-            grid-template-columns: 1fr 100px 40px;
-            gap: 10px;
-            align-items: flex-end;
-            background: #f8fafc;
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .reserva-item-row .form-group {
-            margin: 0;
-        }
-        .reserva-item-row .form-group label {
-            font-size: 0.72rem;
-            margin-bottom: 3px;
-        }
-        .reserva-item-row .form-group input,
-        .reserva-item-row .form-group select {
-            padding: 7px 10px;
-            font-size: 0.85rem;
-        }
-        .btn-remover-item-inline {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            background: #fee2e2;
-            color: #ef4444;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        .btn-remover-item-inline:hover {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-adicionar-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border: 1px dashed #cbd5e1;
-            background: white;
-            color: #475569;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 4px;
-        }
-        .btn-adicionar-item:hover {
-            border-color: #2563eb;
-            color: #2563eb;
-            background: #eff6ff;
-        }
-        .reserva-total-itens {
-            background: #eff6ff;
-            border: 1px solid #dbeafe;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-            color: #1e40af;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-    </style>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <div class="app-container">
