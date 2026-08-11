@@ -31,8 +31,12 @@
         .mangueira-stat-card.reprovada { border-left-color: #ef4444; }
         .mangueira-stat-card.descartada { border-left-color: #6b7280; }
         .mangueira-stat-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.3rem;
         }
         .mangueira-stat-icon.disponivel { background: #dcfce7; }
@@ -40,11 +44,22 @@
         .mangueira-stat-icon.em-teste { background: #dbeafe; }
         .mangueira-stat-icon.reprovada { background: #fee2e2; }
         .mangueira-stat-icon.descartada { background: #f3f4f6; }
-        .mangueira-stat-info h4 { font-size: 1.3rem; font-weight: 700; margin: 0; }
-        .mangueira-stat-info p { font-size: 0.75rem; color: var(--secondary); margin: 2px 0 0 0; }
+        .mangueira-stat-info h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .mangueira-stat-info p {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin: 2px 0 0 0;
+        }
         .badge-movimentacao {
-            display: inline-block; padding: 4px 10px; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         .badge-recebimento { background: #dcfce7; color: #166534; }
         .badge-aplicacao { background: #ede9fe; color: #5b21b6; }
@@ -56,18 +71,25 @@
         .badge-furto { background: #fee2e2; color: #991b1b; }
         .badge-envio-teste-estoque { background: #dbeafe; color: #1e40af; }
         .alerta-estoque {
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 16px; border-radius: 8px;
-            font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
         }
-        .alerta-critico { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .alerta-compra { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .saldo-box {
-            background: #f0fdf4; border: 1px solid #bbf7d0;
-            border-radius: 8px; padding: 10px 14px;
-            font-size: 0.85rem; color: #166534; margin-bottom: 12px;
+        .alerta-critico {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
-        .saldo-box strong { color: #15803d; }
+        .alerta-compra {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
     </style>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
 </head>
@@ -84,37 +106,43 @@
                 <div class="mangueira-stat-card disponivel">
                     <div class="mangueira-stat-icon disponivel">✅</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-disponivel">0</h4><p>Disponíveis</p>
+                        <h4 id="total-disponivel">0</h4>
+                        <p>Disponíveis</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card aplicada">
                     <div class="mangueira-stat-icon aplicada">🧯</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-aplicada">0</h4><p>Aplicadas na Área</p>
+                        <h4 id="total-aplicada">0</h4>
+                        <p>Aplicadas na Área</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card" style="border-left-color: #dc2626;">
                     <div class="mangueira-stat-icon" style="background: #fee2e2;">🦹</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-furtada">0</h4><p>Furtadas</p>
+                        <h4 id="total-furtada">0</h4>
+                        <p>Furtadas</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card em-teste">
                     <div class="mangueira-stat-icon em-teste">🔬</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-em-teste">0</h4><p>Em Teste</p>
+                        <h4 id="total-em-teste">0</h4>
+                        <p>Em Teste</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card reprovada">
                     <div class="mangueira-stat-icon reprovada">❌</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-reprovada">0</h4><p>Reprovadas</p>
+                        <h4 id="total-reprovada">0</h4>
+                        <p>Reprovadas</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card descartada">
                     <div class="mangueira-stat-icon descartada">🗑️</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-descartada">0</h4><p>Descartadas</p>
+                        <h4 id="total-descartada">0</h4>
+                        <p>Descartadas</p>
                     </div>
                 </div>
             </div>
@@ -124,19 +152,22 @@
                 <div class="mangueira-stat-card" style="border-left-color: #7c3aed;">
                     <div class="mangueira-stat-icon" style="background: #ede9fe;">📊</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-hist-furtadas">0</h4><p>Hist. Furtadas</p>
+                        <h4 id="total-hist-furtadas">0</h4>
+                        <p>Hist. Furtadas</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card" style="border-left-color: #ea580c;">
                     <div class="mangueira-stat-icon" style="background: #ffedd5;">📊</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-hist-descarte-area">0</h4><p>Hist. Descarte da Área</p>
+                        <h4 id="total-hist-descarte-area">0</h4>
+                        <p>Hist. Descarte da Área</p>
                     </div>
                 </div>
                 <div class="mangueira-stat-card" style="border-left-color: #0891b2;">
                     <div class="mangueira-stat-icon" style="background: #cffafe;">📊</div>
                     <div class="mangueira-stat-info">
-                        <h4 id="total-hist-descarte-teste">0</h4><p>Hist. Descarte do Teste</p>
+                        <h4 id="total-hist-descarte-teste">0</h4>
+                        <p>Hist. Descarte do Teste</p>
                     </div>
                 </div>
             </div>
@@ -151,7 +182,7 @@
                         <h3>📋 Histórico de Movimentações</h3>
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="abrirModalMovimentacao()">+ Registrar Movimentação</button>
-                            <button class="btn btn-success" onclick="abrirModalRetornoTeste()">🔬 Retorno de Teste</button>
+                            <button class="btn btn-success" onclick="abrirModalRetornoTeste()">✅ Retorno de Teste</button>
                             <button class="btn btn-success" onclick="exportarMovimentacoesMangueira()">📊 Exportar</button>
                         </div>
                     </div>
@@ -192,8 +223,13 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Data</th><th>Tipo</th><th>Mangueira</th><th>Qtd</th>
-                                <th>OM / Pedido</th><th>Responsável</th><th>Observação</th>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Mangueira</th>
+                                <th>Qtd</th>
+                                <th>OM / Pedido</th>
+                                <th>Responsável</th>
+                                <th>Observação</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-movimentacoes-mangueira">
@@ -202,10 +238,65 @@
                     </table>
                 </div>
             </div>
+        
+    <!-- MODAL RETORNO DE TESTE HIDROSTÁTICO -->
+    <div id="modal-retorno-teste" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
+            <h3>✅ Retorno de Teste Hidrostático</h3>
+            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
+                Registre o retorno das mangueiras que estavam em teste hidrostático. O total informado não pode exceder a quantidade em teste.
+            </p>
+            <form id="form-retorno-teste" class="mt-2">
+                <div class="form-group">
+                    <label>Mangueira <span class="required">*</span></label>
+                    <select id="retorno-teste-mangueira" required onchange="atualizarInfoRetornoTeste()">
+                        <option value="">Selecione uma mangueira...</option>
+                    </select>
+                </div>
+                <div id="info-em-teste-retorno" class="hidden mt-1" style="background:#dbeafe;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#1e40af;">
+                    <strong>Em teste:</strong> <span id="qtd-em-teste-retorno">-</span> unidades
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                    <div class="form-group">
+                        <label>✅ Aprovadas</label>
+                        <input type="number" id="retorno-aprovadas" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>❌ Reprovadas (serão descartadas)</label>
+                        <input type="number" id="retorno-reprovadas" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+                <div id="info-soma-retorno-teste" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
+                    <strong>Total informado:</strong> <span id="soma-retorno-teste">0</span> / <span id="soma-maximo-teste">0</span> unidades
+                </div>
+                <div class="form-group mt-1">
+                    <label>Data <span class="required">*</span></label>
+                    <input type="date" id="retorno-teste-data" required>
+                </div>
+                <div class="form-group mt-1">
+                    <label>OM / Pedido / Reserva</label>
+                    <input type="text" id="retorno-teste-documento" placeholder="Nº OM, Pedido ou Reserva">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Responsável</label>
+                    <input type="text" id="retorno-teste-responsavel" placeholder="Nome do responsável">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Observação</label>
+                    <textarea id="retorno-teste-observacao" placeholder="Observações sobre o retorno do teste..."></textarea>
+                </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarRetornoTeste()">💾 Registrar Retorno</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalRetornoTeste()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
         </main>
     </div>
 
-    <!-- MODAL MOVIMENTAÇÃO GERAL -->
+    <!-- MODAL MOVIMENTAÇÃO DE MANGUEIRA -->
     <div id="modal-movimentacao-mangueira" class="modal-overlay hidden">
         <div class="modal-confirm" style="max-width: 520px; text-align: left;">
             <h3 id="titulo-modal-movimentacao">📝 Registrar Movimentação</h3>
@@ -262,68 +353,7 @@
         </div>
     </div>
 
-    <!-- MODAL RETORNO DE TESTE HIDROSTÁTICO -->
-    <div id="modal-retorno-teste" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 540px; text-align: left;">
-            <h3>🔬 Retorno de Teste Hidrostático</h3>
-            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
-                Registre o retorno das mangueiras enviadas para teste. Informe as quantidades aprovadas e reprovadas.
-            </p>
-            <form id="form-retorno-teste" class="mt-2">
-                <div class="form-group">
-                    <label>Mangueira <span class="required">*</span></label>
-                    <select id="retorno-mangueira" required onchange="atualizarSaldoRetornoTeste()">
-                        <option value="">Selecione uma mangueira...</option>
-                    </select>
-                </div>
-
-                <div id="info-saldo-retorno" class="saldo-box hidden">
-                    <strong>Em teste:</strong> <span id="retorno-saldo-texto">-</span> unidades
-                </div>
-
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
-                    <div class="form-group">
-                        <label>Quantidade Aprovada <span class="required">*</span></label>
-                        <input type="number" id="retorno-qtd-aprovada" min="0" value="0" required placeholder="0">
-                        <small style="color: var(--secondary); font-size: 0.75rem;">Voltam para o estoque disponível</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Quantidade Reprovada (Descarte) <span class="required">*</span></label>
-                        <input type="number" id="retorno-qtd-reprovada" min="0" value="0" required placeholder="0">
-                        <small style="color: var(--secondary); font-size: 0.75rem;">Serão descartadas automaticamente</small>
-                    </div>
-                </div>
-
-                <div class="form-group mt-1">
-                    <label>Data do Retorno <span class="required">*</span></label>
-                    <input type="date" id="retorno-data" required>
-                </div>
-                <div class="form-group mt-1">
-                    <label>OM / Pedido / Reserva</label>
-                    <input type="text" id="retorno-documento" placeholder="Nº OM, Pedido ou Reserva">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Responsável</label>
-                    <input type="text" id="retorno-responsavel" placeholder="Nome do responsável">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Observação</label>
-                    <textarea id="retorno-observacao" placeholder="Observações sobre o teste..."></textarea>
-                </div>
-
-                <div id="info-total-retorno" class="hidden" style="background:#fef3c7;border:1px solid #fde68a;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;margin-top:10px;">
-                    <strong>Total informado:</strong> <span id="retorno-total-texto">0</span> unidades
-                </div>
-
-                <div class="btn-group mt-2">
-                    <button type="button" class="btn btn-primary" onclick="salvarRetornoTeste()">💾 Registrar Retorno</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalRetornoTeste()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="../js/pages/mangueiras.js?v=4"></script>
+    <script src="../js/pages/mangueiras.js?v=3"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             verificarAcesso();
