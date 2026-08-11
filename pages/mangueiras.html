@@ -182,6 +182,7 @@
                         <h3>📋 Histórico de Movimentações</h3>
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="abrirModalMovimentacao()">+ Registrar Movimentação</button>
+                            <button class="btn btn-warning" onclick="abrirModalRetornoArea()">🚒 Retorno da Área</button>
                             <button class="btn btn-success" onclick="abrirModalRetornoTeste()">✅ Retorno de Teste</button>
                             <button class="btn btn-success" onclick="exportarMovimentacoesMangueira()">📊 Exportar</button>
                         </div>
@@ -238,61 +239,6 @@
                     </table>
                 </div>
             </div>
-        
-    <!-- MODAL RETORNO DE TESTE HIDROSTÁTICO -->
-    <div id="modal-retorno-teste" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
-            <h3>✅ Retorno de Teste Hidrostático</h3>
-            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
-                Registre o retorno das mangueiras que estavam em teste hidrostático. O total informado não pode exceder a quantidade em teste.
-            </p>
-            <form id="form-retorno-teste" class="mt-2">
-                <div class="form-group">
-                    <label>Mangueira <span class="required">*</span></label>
-                    <select id="retorno-teste-mangueira" required onchange="atualizarInfoRetornoTeste()">
-                        <option value="">Selecione uma mangueira...</option>
-                    </select>
-                </div>
-                <div id="info-em-teste-retorno" class="hidden mt-1" style="background:#dbeafe;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#1e40af;">
-                    <strong>Em teste:</strong> <span id="qtd-em-teste-retorno">-</span> unidades
-                </div>
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                    <div class="form-group">
-                        <label>✅ Aprovadas</label>
-                        <input type="number" id="retorno-aprovadas" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>❌ Reprovadas (serão descartadas)</label>
-                        <input type="number" id="retorno-reprovadas" min="0" value="0" placeholder="0">
-                    </div>
-                </div>
-                <div id="info-soma-retorno-teste" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
-                    <strong>Total informado:</strong> <span id="soma-retorno-teste">0</span> / <span id="soma-maximo-teste">0</span> unidades
-                </div>
-                <div class="form-group mt-1">
-                    <label>Data <span class="required">*</span></label>
-                    <input type="date" id="retorno-teste-data" required>
-                </div>
-                <div class="form-group mt-1">
-                    <label>OM / Pedido / Reserva</label>
-                    <input type="text" id="retorno-teste-documento" placeholder="Nº OM, Pedido ou Reserva">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Responsável</label>
-                    <input type="text" id="retorno-teste-responsavel" placeholder="Nome do responsável">
-                </div>
-                <div class="form-group mt-1">
-                    <label>Observação</label>
-                    <textarea id="retorno-teste-observacao" placeholder="Observações sobre o retorno do teste..."></textarea>
-                </div>
-                <div class="btn-group mt-2">
-                    <button type="button" class="btn btn-primary" onclick="salvarRetornoTeste()">💾 Registrar Retorno</button>
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalRetornoTeste()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
         </main>
     </div>
 
@@ -353,7 +299,119 @@
         </div>
     </div>
 
-    <script src="../js/pages/mangueiras.js?v=3"></script>
+    <!-- MODAL RETORNO DA ÁREA -->
+    <div id="modal-retorno-area" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
+            <h3>🚒 Retorno de Mangueiras da Área</h3>
+            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
+                Registre o que aconteceu com as mangueiras aplicadas na área. O total informado não pode exceder a quantidade aplicada.
+            </p>
+            <form id="form-retorno-area" class="mt-2">
+                <div class="form-group">
+                    <label>Mangueira <span class="required">*</span></label>
+                    <select id="retorno-mangueira" required onchange="atualizarInfoRetornoArea()">
+                        <option value="">Selecione uma mangueira...</option>
+                    </select>
+                </div>
+                <div id="info-aplicada-retorno" class="hidden mt-1" style="background:#eff6ff;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#1e40af;">
+                    <strong>Aplicadas na área:</strong> <span id="qtd-aplicada-retorno">-</span> unidades
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px;">
+                    <div class="form-group">
+                        <label>🦹 Furtadas</label>
+                        <input type="number" id="retorno-furtadas" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>🔬 Para Teste</label>
+                        <input type="number" id="retorno-teste" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>🗑️ Descartadas</label>
+                        <input type="number" id="retorno-descarte" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+                <div id="info-soma-retorno" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
+                    <strong>Total informado:</strong> <span id="soma-retorno">0</span> / <span id="soma-maximo">0</span> unidades
+                </div>
+                <div class="form-group mt-1">
+                    <label>Data <span class="required">*</span></label>
+                    <input type="date" id="retorno-data" required>
+                </div>
+                <div class="form-group mt-1">
+                    <label>OM / Pedido / Reserva</label>
+                    <input type="text" id="retorno-documento" placeholder="Nº OM, Pedido ou Reserva">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Responsável</label>
+                    <input type="text" id="retorno-responsavel" placeholder="Nome do responsável">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Observação</label>
+                    <textarea id="retorno-observacao" placeholder="Observações sobre o retorno..."></textarea>
+                </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarRetornoArea()">💾 Registrar Retorno</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalRetornoArea()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL RETORNO DE TESTE HIDROSTÁTICO -->
+    <div id="modal-retorno-teste" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 560px; text-align: left;">
+            <h3>✅ Retorno de Teste Hidrostático</h3>
+            <p style="color: var(--secondary); font-size: 0.85rem; margin-bottom: 16px;">
+                Registre o retorno das mangueiras que estavam em teste hidrostático. O total informado não pode exceder a quantidade em teste.
+            </p>
+            <form id="form-retorno-teste" class="mt-2">
+                <div class="form-group">
+                    <label>Mangueira <span class="required">*</span></label>
+                    <select id="retorno-teste-mangueira" required onchange="atualizarInfoRetornoTeste()">
+                        <option value="">Selecione uma mangueira...</option>
+                    </select>
+                </div>
+                <div id="info-em-teste-retorno" class="hidden mt-1" style="background:#dbeafe;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#1e40af;">
+                    <strong>Em teste:</strong> <span id="qtd-em-teste-retorno">-</span> unidades
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                    <div class="form-group">
+                        <label>✅ Aprovadas</label>
+                        <input type="number" id="retorno-aprovadas" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>❌ Reprovadas (serão descartadas)</label>
+                        <input type="number" id="retorno-reprovadas" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+                <div id="info-soma-retorno-teste" class="hidden mt-1" style="background:#fef3c7;padding:10px 14px;border-radius:8px;font-size:0.85rem;color:#92400e;">
+                    <strong>Total informado:</strong> <span id="soma-retorno-teste">0</span> / <span id="soma-maximo-teste">0</span> unidades
+                </div>
+                <div class="form-group mt-1">
+                    <label>Data <span class="required">*</span></label>
+                    <input type="date" id="retorno-teste-data" required>
+                </div>
+                <div class="form-group mt-1">
+                    <label>OM / Pedido / Reserva</label>
+                    <input type="text" id="retorno-teste-documento" placeholder="Nº OM, Pedido ou Reserva">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Responsável</label>
+                    <input type="text" id="retorno-teste-responsavel" placeholder="Nome do responsável">
+                </div>
+                <div class="form-group mt-1">
+                    <label>Observação</label>
+                    <textarea id="retorno-teste-observacao" placeholder="Observações sobre o retorno do teste..."></textarea>
+                </div>
+                <div class="btn-group mt-2">
+                    <button type="button" class="btn btn-primary" onclick="salvarRetornoTeste()">💾 Registrar Retorno</button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalRetornoTeste()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/pages/mangueiras.js?v=4"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             verificarAcesso();
