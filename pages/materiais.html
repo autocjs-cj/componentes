@@ -95,9 +95,10 @@
                     <label>Descrição</label>
                     <textarea id="modal-material-descricao" placeholder="Descrição detalhada..."></textarea>
                 </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px;">
                 <div class="form-group mt-1">
                     <label>Unidade de Medida</label>
-                    <select id="modal-material-unidade">
+                    <select id="modal-material-unidade" style="padding: 10px 12px; min-height: 40px; font-size: 0.95rem; max-width: 240px;">
                         <option value="UN">Unidade (UN)</option>
                         <option value="KG">Quilograma (KG)</option>
                         <option value="LT">Litro (LT)</option>
@@ -113,6 +114,7 @@
                 <div class="form-group mt-1" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                     <input type="checkbox" id="modal-material-eh-mangueira" style="width: 18px; height: 18px; cursor: pointer;">
                     <label for="modal-material-eh-mangueira" style="margin: 0; cursor: pointer; font-weight: 600;">🚒 É mangueira de SPCI?</label>
+                </div>
                 </div>
 
                 <!-- CAMPOS PARTICULARES DA MANGUEIRA -->
