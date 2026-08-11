@@ -131,6 +131,13 @@
                         <p>Em Teste</p>
                     </div>
                 </div>
+                <div class="mangueira-stat-card reprovada">
+                    <div class="mangueira-stat-icon reprovada">❌</div>
+                    <div class="mangueira-stat-info">
+                        <h4 id="total-reprovada">0</h4>
+                        <p>Reprovadas</p>
+                    </div>
+                </div>
                 <div class="mangueira-stat-card descartada">
                     <div class="mangueira-stat-icon descartada">🗑️</div>
                     <div class="mangueira-stat-info">
@@ -197,6 +204,7 @@
                                 <option value="FURTO">🦹 Furto</option>
                                 <option value="ENVIO_TESTE">🔬 Envio para Teste</option>
                                 <option value="RETORNO_APROVADO">✅ Retorno Aprovado</option>
+                                <option value="RETORNO_REPROVADO">❌ Retorno Reprovado</option>
                                 <option value="DESCARTE_AREA">🗑️ Descarte (Área)</option>
                                 <option value="DESCARTE_REPROVADA">🗑️ Descarte (Reprovada)</option>
                             </select>
@@ -254,7 +262,7 @@
                         <input type="number" id="retorno-aprovadas" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label>❌ Reprovadas no Teste (vão direto para descarte)</label>
+                        <label>❌ Reprovadas (serão descartadas)</label>
                         <input type="number" id="retorno-reprovadas" min="0" value="0" placeholder="0">
                     </div>
                 </div>
@@ -297,14 +305,9 @@
                     <label>Tipo de Movimentação <span class="required">*</span></label>
                     <select id="modal-mov-tipo" required onchange="atualizarInfoMovimentacao()">
                         <option value="">Selecione...</option>
-                        <option value="RECEBIMENTO">📥 Recebimento (Compra Nova / Retorno Aprovado)</option>
+                        <option value="RECEBIMENTO">📥 Recebimento (Compra Nova)</option>
                         <option value="APLICACAO_AREA">🧯 Aplicação na Área (Disponível → Área)</option>
-                        <option value="FURTO">🦹 Furto (Aplicada → Furtada)</option>
-                        <option value="ENVIO_TESTE">🔬 Envio para Teste Hidrostático (Área → Teste)</option>
                         <option value="ENVIO_TESTE_ESTOQUE">🔬 Envio p/ Teste (Estoque → Teste)</option>
-                        <option value="RETORNO_APROVADO">✅ Retorno de Teste Aprovado</option>
-                        <option value="DESCARTE_AREA">🗑️ Descarte (Danificada da Área)</option>
-                        <option value="DESCARTE_REPROVADA">🗑️ Descarte (Reprovada no Teste)</option>
                     </select>
                 </div>
                 <div class="form-group mt-1">

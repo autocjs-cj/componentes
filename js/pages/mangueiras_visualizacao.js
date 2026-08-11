@@ -34,6 +34,7 @@ const TIPOS_MOVIMENTACAO = {
     'ENVIO_TESTE':           { label: 'Envio p/ Teste',        badge: 'badge-envio-teste',        icon: '🔬' },
     'ENVIO_TESTE_ESTOQUE':   { label: 'Envio p/ Teste (Estoque)', badge: 'badge-envio-teste-estoque', icon: '🔬' },
     'RETORNO_APROVADO':      { label: 'Retorno Aprovado',      badge: 'badge-retorno-aprovado',   icon: '✅' },
+    'RETORNO_REPROVADO':     { label: 'Retorno Reprovado',     badge: 'badge-retorno-reprovado',  icon: '❌' },
     'DESCARTE_AREA':         { label: 'Descarte (Área)',       badge: 'badge-descarte-area',      icon: '🗑️' },
     'DESCARTE_REPROVADA':    { label: 'Descarte (Reprovada)',  badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
@@ -98,12 +99,14 @@ function atualizarCards() {
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
     const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
+    const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
 
     document.getElementById('total-disponivel').textContent = disponivel;
     document.getElementById('total-aplicada').textContent = aplicada;
     document.getElementById('total-furtada').textContent = furtada;
     document.getElementById('total-em-teste').textContent = emTeste;
+    document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
 }
 
@@ -147,6 +150,7 @@ function renderizarMangueiras(lista = mangueirasCache) {
             <td><strong style="color: #22c55e;">${m.quantidade_atual || 0}</strong></td>
             <td><strong style="color: #8b5cf6;">${m.qtd_aplicada || 0}</strong></td>
             <td><strong style="color: #3b82f6;">${m.qtd_em_teste || 0}</strong></td>
+            <td><strong style="color: #ef4444;">${m.qtd_reprovada || 0}</strong></td>
             <td><strong style="color: #6b7280;">${m.qtd_descartada || 0}</strong></td>
             <td>${vencHTML}</td>
             <td>${alertas.length ? alertas.join(' ') : '<span class="badge badge-success">OK</span>'}</td>
@@ -252,6 +256,7 @@ function exportarMangueiras() {
         qtd_disponivel: m.quantidade_atual || 0,
         qtd_aplicada: m.qtd_aplicada || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
+        qtd_reprovada: m.qtd_reprovada || 0,
         qtd_descartada: m.qtd_descartada || 0,
         estoque_minimo: m.estoque_minimo || 0,
         limite_compra: m.limite_compra || 0
@@ -265,6 +270,7 @@ function exportarMangueiras() {
         { titulo: 'Disponível', campo: 'qtd_disponivel' },
         { titulo: 'Aplicada', campo: 'qtd_aplicada' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
+        { titulo: 'Reprovada', campo: 'qtd_reprovada' },
         { titulo: 'Descartada', campo: 'qtd_descartada' },
         { titulo: 'Estoque Mín', campo: 'estoque_minimo' },
         { titulo: 'Limite Compra', campo: 'limite_compra' }

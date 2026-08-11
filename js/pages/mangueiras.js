@@ -34,6 +34,7 @@ const TIPOS_MOVIMENTACAO = {
     'ENVIO_TESTE':           { label: 'Envio p/ Teste',        badge: 'badge-envio-teste',        icon: '🔬' },
     'ENVIO_TESTE_ESTOQUE':   { label: 'Envio p/ Teste (Estoque)', badge: 'badge-envio-teste-estoque', icon: '🔬' },
     'RETORNO_APROVADO':      { label: 'Retorno Aprovado',      badge: 'badge-retorno-aprovado',   icon: '✅' },
+    'RETORNO_REPROVADO':     { label: 'Retorno Reprovado',     badge: 'badge-retorno-reprovado',  icon: '❌' },
     'DESCARTE_AREA':         { label: 'Descarte (Área)',       badge: 'badge-descarte-area',      icon: '🗑️' },
     'DESCARTE_REPROVADA':    { label: 'Descarte (Reprovada)',  badge: 'badge-descarte-reprovada', icon: '🗑️' }
 };
@@ -134,6 +135,7 @@ function atualizarCards() {
     const aplicada   = mangueirasCache.reduce((acc, m) => acc + (m.qtd_aplicada   || 0), 0);
     const furtada    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_furtada    || 0), 0);
     const emTeste    = mangueirasCache.reduce((acc, m) => acc + (m.qtd_em_teste   || 0), 0);
+    const reprovada  = mangueirasCache.reduce((acc, m) => acc + (m.qtd_reprovada  || 0), 0);
     const descartada = mangueirasCache.reduce((acc, m) => acc + (m.qtd_descartada || 0), 0);
     const totFur    = mangueirasCache.reduce((acc, m) => acc + (m.total_furtadas || 0), 0);
     const totDescA   = mangueirasCache.reduce((acc, m) => acc + (m.total_descarte_area || 0), 0);
@@ -143,6 +145,7 @@ function atualizarCards() {
     document.getElementById('total-aplicada').textContent = aplicada;
     document.getElementById('total-furtada').textContent = furtada;
     document.getElementById('total-em-teste').textContent = emTeste;
+    document.getElementById('total-reprovada').textContent = reprovada;
     document.getElementById('total-descartada').textContent = descartada;
     document.getElementById('total-hist-furtadas').textContent = totFur;
     document.getElementById('total-hist-descarte-area').textContent = totDescA;
@@ -244,6 +247,7 @@ function atualizarSelectMangueiras() {
         opt.dataset.disponivel = m.quantidade_atual || 0;
         opt.dataset.aplicada = m.qtd_aplicada || 0;
         opt.dataset.em_teste = m.qtd_em_teste || 0;
+        opt.dataset.reprovada = m.qtd_reprovada || 0;
         select.appendChild(opt);
     });
     select.value = valAtual;
@@ -290,12 +294,13 @@ function atualizarSaldoMovimentacao() {
             label = `Aplicadas na área: ${saldo} unidades`;
             break;
         case 'RETORNO_APROVADO':
+        case 'RETORNO_REPROVADO':
             saldo = m.qtd_em_teste || 0;
             label = `Em teste: ${saldo} unidades`;
             break;
         case 'DESCARTE_REPROVADA':
-            saldo = m.qtd_em_teste || 0;
-            label = `Em teste: ${saldo} unidades (serão descartadas)`;
+            saldo = m.qtd_reprovada || 0;
+            label = `Reprovadas: ${saldo} unidades`;
             break;
     }
 
@@ -356,8 +361,11 @@ async function salvarMovimentacaoMangueira() {
             saldoOrigem = m.qtd_aplicada || 0;
             break;
         case 'RETORNO_APROVADO':
-        case 'DESCARTE_REPROVADA':
+        case 'RETORNO_REPROVADO':
             saldoOrigem = m.qtd_em_teste || 0;
+            break;
+        case 'DESCARTE_REPROVADA':
+            saldoOrigem = m.qtd_reprovada || 0;
             break;
     }
 
@@ -411,6 +419,7 @@ function calcularAtualizacoes(m, tipo, qtd) {
     const disp = m.quantidade_atual || 0;
     const apl  = m.qtd_aplicada || 0;
     const test = m.qtd_em_teste || 0;
+    const rep  = m.qtd_reprovada || 0;
     const desc = m.qtd_descartada || 0;
     const fur  = m.qtd_furtada || 0;
     const totFur = m.total_furtadas || 0;
@@ -447,6 +456,11 @@ function calcularAtualizacoes(m, tipo, qtd) {
                 quantidade_atual: disp + qtd,
                 data_vencimento_teste: calcularVencimentoTeste()
             };
+        case 'RETORNO_REPROVADO':
+            return {
+                qtd_em_teste: Math.max(0, test - qtd),
+                qtd_reprovada: rep + qtd
+            };
         case 'DESCARTE_AREA':
             return {
                 qtd_aplicada: Math.max(0, apl - qtd),
@@ -455,7 +469,7 @@ function calcularAtualizacoes(m, tipo, qtd) {
             };
         case 'DESCARTE_REPROVADA':
             return {
-                qtd_em_teste: Math.max(0, test - qtd),
+                qtd_reprovada: Math.max(0, rep - qtd),
                 qtd_descartada: desc + qtd,
                 total_descarte_teste: totDescTeste + qtd
             };
@@ -476,6 +490,7 @@ function exportarMangueiras() {
         qtd_aplicada: m.qtd_aplicada || 0,
         qtd_furtada: m.qtd_furtada || 0,
         qtd_em_teste: m.qtd_em_teste || 0,
+        qtd_reprovada: m.qtd_reprovada || 0,
         qtd_descartada: m.qtd_descartada || 0,
         total_furtadas: m.total_furtadas || 0,
         total_descarte_area: m.total_descarte_area || 0,
@@ -493,6 +508,7 @@ function exportarMangueiras() {
         { titulo: 'Aplicada', campo: 'qtd_aplicada' },
         { titulo: 'Furtada', campo: 'qtd_furtada' },
         { titulo: 'Em Teste', campo: 'qtd_em_teste' },
+        { titulo: 'Reprovada', campo: 'qtd_reprovada' },
         { titulo: 'Descartada', campo: 'qtd_descartada' },
         { titulo: 'Hist. Furtadas', campo: 'total_furtadas' },
         { titulo: 'Hist. Descarte Área', campo: 'total_descarte_area' },
@@ -540,7 +556,7 @@ async function carregarMangueirasParaRetornoTeste() {
     try {
         const { data, error } = await sb
             .from('materiais')
-            .select('id, codigo, nome, diametro, qtd_em_teste, qtd_descartada, total_descarte_teste, quantidade_atual')
+            .select('id, codigo, nome, diametro, qtd_em_teste, qtd_reprovada, qtd_descartada, total_descarte_teste, quantidade_atual')
             .eq('eh_mangueira_spci', true)
             .eq('ativo', true)
             .gt('qtd_em_teste', 0)
@@ -683,7 +699,7 @@ async function salvarRetornoTeste() {
         if (reprovadas > 0) {
             movimentacoes.push({
                 material_id: materialId,
-                tipo_movimentacao: 'DESCARTE_REPROVADA',
+                tipo_movimentacao: 'RETORNO_REPROVADO',
                 quantidade: reprovadas,
                 data_movimentacao: data,
                 documento_referencia: documento,
@@ -696,11 +712,13 @@ async function salvarRetornoTeste() {
         if (errMov) throw errMov;
 
         const novaQtdEmTeste = Math.max(0, m.qtd_em_teste - total);
+        const novaQtdReprovada = (m.qtd_reprovada || 0) + reprovadas;
         const novaQtdDescartada = (m.qtd_descartada || 0) + reprovadas;
         const novoTotalDescarteTeste = (m.total_descarte_teste || 0) + reprovadas;
 
         const atualizacoes = {
             qtd_em_teste: novaQtdEmTeste,
+            qtd_reprovada: novaQtdReprovada,
             qtd_descartada: novaQtdDescartada,
             total_descarte_teste: novoTotalDescarteTeste,
             quantidade_atual: (m.quantidade_atual || 0) + aprovadas
