@@ -509,3 +509,23 @@ window.fecharModalVisualizarMaterial = fecharModalVisualizarMaterial;
 window.editarDoVisualizar = editarDoVisualizar;
 window.duplicarDoVisualizar = duplicarDoVisualizar;
 window.excluirDoVisualizar = excluirDoVisualizar;
+
+
+// ===== EXPOSIÇÃO GLOBAL DAS FUNÇÕES =====
+window.abrirModalNovoMaterial = abrirModalNovoMaterial;
+window.abrirModalMaterial = abrirModalMaterial;
+window.fecharModalMaterial = fecharModalMaterial;
+window.salvarMaterialDoModal = salvarMaterialDoModal;
+window.excluirMaterial = excluirMaterial;
+window.toggleCamposMangueira = toggleCamposMangueira;
+window.carregarSelectLocais = carregarSelectLocais;
+window.carregarSelectModal = carregarSelectModal;
+window.filtrarSublocaisModal = filtrarSublocaisModal;
+window.buscarMaterial = buscarMaterial;
+window.exportarMateriais = exportarMateriais;
+window.abrirModalVisualizarMaterial = abrirModalVisualizarMaterial;
+window.fecharModalVisualizarMaterial = fecharModalVisualizarMaterial;
+window.editarDoVisualizar = editarDoVisualizar;
+window.duplicarDoVisualizar = duplicarDoVisualizar;
+window.excluirDoVisualizar = excluirDoVisualizar;
+
