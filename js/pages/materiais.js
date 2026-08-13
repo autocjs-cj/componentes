@@ -459,8 +459,9 @@ function fecharModalVisualizarMaterial() {
 
 function editarDoVisualizar() {
     if (!materialVisualizadoId) return;
+    const id = materialVisualizadoId;
     fecharModalVisualizarMaterial();
-    abrirModalMaterial(materialVisualizadoId);
+    abrirModalMaterial(id);
 }
 
 function duplicarDoVisualizar() {
@@ -498,10 +499,9 @@ function duplicarDoVisualizar() {
 
 async function excluirDoVisualizar() {
     if (!materialVisualizadoId) return;
-    if (!await confirmarExclusao('Tem certeza que deseja excluir este material?')) return;
-
+    const id = materialVisualizadoId;
     fecharModalVisualizarMaterial();
-    await excluirMaterial(materialVisualizadoId);
+    await excluirMaterial(id);
 }
 
 window.abrirModalVisualizarMaterial = abrirModalVisualizarMaterial;
@@ -528,4 +528,3 @@ window.fecharModalVisualizarMaterial = fecharModalVisualizarMaterial;
 window.editarDoVisualizar = editarDoVisualizar;
 window.duplicarDoVisualizar = duplicarDoVisualizar;
 window.excluirDoVisualizar = excluirDoVisualizar;
-
