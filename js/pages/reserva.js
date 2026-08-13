@@ -155,7 +155,7 @@ function limparFormularioReservaModal() {
     const container = document.getElementById('modal-itens-reserva-container');
     if (container) {
         container.innerHTML = `
-            <div class="form-grid item-reserva-row">
+            <div class="reserva-item-row">
                 <div class="form-group">
                     <label>Material <span class="required">*</span></label>
                     <select class="reserva-material" required>
@@ -163,12 +163,10 @@ function limparFormularioReservaModal() {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Quantidade <span class="required">*</span></label>
+                    <label>Qtd <span class="required">*</span></label>
                     <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
                 </div>
-                <div class="form-group" style="display:flex;align-items:flex-end;">
-                    <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
-                </div>
+                <button type="button" class="btn-remover-item-inline" onclick="removerItemReservaModal(this)" title="Remover item">🗑️</button>
             </div>
         `;
     }
@@ -446,7 +444,7 @@ function fecharModalNovaReserva() {
 function adicionarItemReservaModal() {
     const container = document.getElementById('modal-itens-reserva-container');
     const row = document.createElement('div');
-    row.className = 'form-grid item-reserva-row';
+    row.className = 'reserva-item-row';
     row.innerHTML = `
         <div class="form-group">
             <label>Material <span class="required">*</span></label>
@@ -455,12 +453,10 @@ function adicionarItemReservaModal() {
             </select>
         </div>
         <div class="form-group">
-            <label>Quantidade <span class="required">*</span></label>
+            <label>Qtd <span class="required">*</span></label>
             <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
         </div>
-        <div class="form-group" style="display:flex;align-items:flex-end;">
-            <button type="button" class="btn btn-danger btn-remover-item" onclick="removerItemReservaModal(this)">🗑️</button>
-        </div>
+        <button type="button" class="btn-remover-item-inline" onclick="removerItemReservaModal(this)" title="Remover item">🗑️</button>
     `;
     container.appendChild(row);
     atualizarSelectsMateriais();
