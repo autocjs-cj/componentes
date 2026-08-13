@@ -954,8 +954,8 @@ async function salvarRetornoArea() {
 
         mostrarToast('Retorno da área registrado com sucesso!');
         fecharModalRetornoArea();
-        await carregarMateriais();
-        await carregarMovimentacoes();
+        await carregarMangueiras();
+        await carregarMovimentacoesMangueira();
         await carregarMangueirasParaRetorno();
 
     } catch (erro) {
