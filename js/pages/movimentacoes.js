@@ -217,6 +217,7 @@ async function salvarMovimentacaoModal() {
         material.quantidade_atual = novaQtd;
 
         mostrarToast(`${tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} registrada com sucesso!`);
+        fecharModalMovimentacao();
         limparFormulario('form-modal-movimentacao');
         document.getElementById('modal-mov-data').value = hojeISO();
         await carregarMovimentacoes();
