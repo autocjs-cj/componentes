@@ -32,7 +32,10 @@ async function carregarMateriais() {
 }
 
 function atualizarSelectsMateriais() {
-    document.querySelectorAll('#modal-itens-reserva-container .reserva-material').forEach(select => {
+    const todosSelects = document.querySelectorAll('#modal-itens-reserva-container .reserva-material');
+    const selecionados = Array.from(todosSelects).map(s => s.value).filter(v => v !== '');
+
+    todosSelects.forEach(select => {
         const valAtual = select.value;
         select.innerHTML = '<option value="">Selecione um material...</option>';
         materiaisCache.forEach(m => {
@@ -42,9 +45,29 @@ function atualizarSelectsMateriais() {
             opt.textContent = `${m.nome} (${m.codigo}) — Disp: ${disponivel} ${m.unidade_medida}`;
             opt.dataset.disponivel = disponivel;
             opt.dataset.unidade = m.unidade_medida;
+            // Desabilita se já está selecionado em outra linha
+            if (valAtual !== m.id && selecionados.includes(m.id)) {
+                opt.disabled = true;
+            }
             select.appendChild(opt);
         });
         select.value = valAtual;
+    });
+
+    // Adiciona listeners de change para detectar duplicatas
+    document.querySelectorAll('#modal-itens-reserva-container .reserva-material').forEach(select => {
+        select.onchange = function() {
+            const novoVal = this.value;
+            if (!novoVal) return;
+            const outros = Array.from(document.querySelectorAll('#modal-itens-reserva-container .reserva-material'))
+                .filter(s => s !== this)
+                .map(s => s.value);
+            if (outros.includes(novoVal)) {
+                mostrarToast('Este material já foi selecionado em outro item', 'erro');
+                this.value = '';
+            }
+            atualizarSelectsMateriais();
+        };
     });
 }
 
@@ -60,7 +83,7 @@ async function salvarReservaModal() {
     }
 
     // Coletar itens
-    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
+    const rows = document.querySelectorAll('#modal-itens-reserva-container .reserva-item-row');
     const itens = [];
     for (const row of rows) {
         const materialId = row.querySelector('.reserva-material').value;
@@ -163,7 +186,7 @@ function limparFormularioReservaModal() {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Qtd <span class="required">*</span></label>
+                    <label>Quantidade <span class="required">*</span></label>
                     <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
                 </div>
                 <button type="button" class="btn-remover-item-inline" onclick="removerItemReservaModal(this)" title="Remover item">🗑️</button>
@@ -453,7 +476,7 @@ function adicionarItemReservaModal() {
             </select>
         </div>
         <div class="form-group">
-            <label>Qtd <span class="required">*</span></label>
+            <label>Quantidade <span class="required">*</span></label>
             <input type="number" class="reserva-quantidade" min="1" required placeholder="Qtd">
         </div>
         <button type="button" class="btn-remover-item-inline" onclick="removerItemReservaModal(this)" title="Remover item">🗑️</button>
@@ -463,10 +486,11 @@ function adicionarItemReservaModal() {
 }
 
 function removerItemReservaModal(btn) {
-    const rows = document.querySelectorAll('#modal-itens-reserva-container .item-reserva-row');
+    const rows = document.querySelectorAll('#modal-itens-reserva-container .reserva-item-row');
     if (rows.length <= 1) {
         mostrarToast('A reserva deve ter pelo menos um item', 'erro');
         return;
     }
-    btn.closest('.item-reserva-row').remove();
+    btn.closest('.reserva-item-row').remove();
+    atualizarSelectsMateriais();
 }
