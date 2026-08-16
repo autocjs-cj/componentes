@@ -235,6 +235,8 @@ function fecharModalMaterial() {
 }
 
 async function salvarMaterialDoModal() {
+    if (!validarFormulario('form-modal-material')) return;
+
     const modo = document.getElementById('modal-material-modo').value;
     const id = document.getElementById('modal-material-id').value;
 

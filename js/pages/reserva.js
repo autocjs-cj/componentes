@@ -72,6 +72,8 @@ function atualizarSelectsMateriais() {
 }
 
 async function salvarReservaModal() {
+    if (!validarFormulario('form-modal-reserva')) return;
+
     const solicitante = document.getElementById('modal-reserva-solicitante').value.trim();
     const documento = document.getElementById('modal-reserva-documento').value.trim();
     const dataReserva = document.getElementById('modal-reserva-data').value;

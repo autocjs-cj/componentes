@@ -330,6 +330,8 @@ function fecharModalMovimentacao() {
 }
 
 async function salvarMovimentacaoMangueira() {
+    if (!validarFormulario('form-modal-movimentacao')) return;
+
     const tipo = document.getElementById('modal-mov-tipo').value;
     const materialId = document.getElementById('modal-mov-mangueira').value;
     const quantidade = parseInt(document.getElementById('modal-mov-quantidade').value);
@@ -651,6 +653,8 @@ function fecharModalRetornoTeste() {
 }
 
 async function salvarRetornoTeste() {
+    if (!validarFormulario('form-retorno-teste')) return;
+
     const materialId = document.getElementById('retorno-teste-mangueira').value;
     const aprovadas = parseInt(document.getElementById('retorno-aprovadas').value) || 0;
     const reprovadas = parseInt(document.getElementById('retorno-reprovadas').value) || 0;
@@ -864,6 +868,8 @@ function fecharModalRetornoArea() {
 }
 
 async function salvarRetornoArea() {
+    if (!validarFormulario('form-retorno-area')) return;
+
     const materialId = document.getElementById('retorno-mangueira').value;
     const furtadas = parseInt(document.getElementById('retorno-furtadas').value) || 0;
     const teste = parseInt(document.getElementById('retorno-teste').value) || 0;

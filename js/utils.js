@@ -387,6 +387,8 @@ function fecharModalAlterarSenha() {
 }
 
 async function salvarAlteracaoSenha() {
+    if (!validarFormulario('form-alterar-senha')) return;
+
     const senhaAtual = document.getElementById('alterar-senha-atual').value;
     const novaSenha = document.getElementById('alterar-senha-nova').value;
     const confirmar = document.getElementById('alterar-senha-confirmar').value;
