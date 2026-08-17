@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="../js/supabase.js"></script>
-    <script src="../js/utils.js?v=2"></script>
+    <script src="../js/utils.js"></script>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📦%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -96,7 +96,7 @@
                             <input type="text" id="site-nome" required placeholder="Ex: Site A">
                         </div>
                         <div class="btn-group mt-2">
-                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-primary" onclick="salvarSite(event)">💾 Salvar</button>
                             <button type="button" class="btn btn-secondary" onclick="fecharModalSite()">Cancelar</button>
                         </div>
                     </form>
@@ -120,7 +120,7 @@
                             <input type="text" id="local-nome" required placeholder="Ex: Galpão 01">
                         </div>
                         <div class="btn-group mt-2">
-                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-primary" onclick="salvarLocal(event)">💾 Salvar</button>
                             <button type="button" class="btn btn-secondary" onclick="fecharModalLocal()">Cancelar</button>
                         </div>
                     </form>
@@ -144,7 +144,7 @@
                             <input type="text" id="sublocal-nome" required placeholder="Ex: Prateleira A1">
                         </div>
                         <div class="btn-group mt-2">
-                            <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                            <button type="button" class="btn btn-primary" onclick="salvarSublocal(event)">💾 Salvar</button>
                             <button type="button" class="btn btn-secondary" onclick="fecharModalSublocal()">Cancelar</button>
                         </div>
                     </form>
@@ -152,7 +152,7 @@
             </div>
         </main>
     </div>
-    <script src="../js/pages/locais.js?v=2"></script>
+    <script src="../js/pages/locais.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             verificarAcesso();
