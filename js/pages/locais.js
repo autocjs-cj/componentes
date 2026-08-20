@@ -136,7 +136,7 @@ async function excluirSite(id) {
 
     toggleLoading(true);
     try {
-        const { error } = await sb.from('sites').update({ ativo: false }).eq('id', id);
+        const { error } = await sb.from('sites').delete().eq('id', id);
         if (error) throw error;
         mostrarToast('Site excluído com sucesso!');
         await carregarDados();
@@ -243,7 +243,7 @@ async function excluirLocal(id) {
 
     toggleLoading(true);
     try {
-        const { error } = await sb.from('locais').update({ ativo: false }).eq('id', id);
+        const { error } = await sb.from('locais').delete().eq('id', id);
         if (error) throw error;
         mostrarToast('Local excluído com sucesso!');
         await carregarDados();
@@ -336,7 +336,7 @@ async function excluirSublocal(id) {
 
     toggleLoading(true);
     try {
-        const { error } = await sb.from('sublocais').update({ ativo: false }).eq('id', id);
+        const { error } = await sb.from('sublocais').delete().eq('id', id);
         if (error) throw error;
         mostrarToast('Sub-local excluído com sucesso!');
         await carregarDados();

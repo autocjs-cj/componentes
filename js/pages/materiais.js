@@ -295,7 +295,7 @@ async function excluirMaterial(id) {
     if (!await confirmarExclusao()) return;
     toggleLoading(true);
     try {
-        const { error } = await sb.from('materiais').update({ ativo: false }).eq('id', id);
+        const { error } = await sb.from('materiais').delete().eq('id', id);
         if (error) throw error;
         mostrarToast('Material excluído com sucesso!');
         await carregarMateriais();

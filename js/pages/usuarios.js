@@ -163,7 +163,7 @@ async function excluirUsuario(id) {
 
     toggleLoading(true);
     try {
-        const { error } = await sb.from('usuarios').update({ ativo: false }).eq('id', id);
+        const { error } = await sb.from('usuarios').delete().eq('id', id);
         if (error) throw error;
         mostrarToast('Usuário excluído com sucesso!');
         await carregarUsuarios();
