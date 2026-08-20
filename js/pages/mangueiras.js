@@ -774,7 +774,6 @@ async function carregarMangueirasParaRetorno() {
             .select('id, codigo, nome, diametro, qtd_aplicada, qtd_furtada, qtd_em_teste, qtd_descartada, total_furtadas, total_descarte_area')
             .eq('eh_mangueira_spci', true)
             .eq('ativo', true)
-            .gt('qtd_aplicada', 0)
             .order('nome');
 
         if (error) throw error;
@@ -793,8 +792,8 @@ function atualizarSelectRetornoArea() {
     mangueirasRetornoCache.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.id;
-        opt.textContent = `${m.nome} (${m.codigo}) — ${m.diametro || ''} [Aplicada: ${m.qtd_aplicada}]`;
-        opt.dataset.aplicada = m.qtd_aplicada;
+        opt.textContent = `${m.nome} (${m.codigo}) — ${m.diametro || ''} [Aplicada: ${m.qtd_aplicada || 0}]`;
+        opt.dataset.aplicada = m.qtd_aplicada || 0;
         select.appendChild(opt);
     });
     select.value = valAtual;
@@ -813,15 +812,11 @@ function atualizarInfoRetornoArea() {
         return;
     }
 
-    const m = mangueirasRetornoCache.find(x => x.id === materialId);
-    if (!m) {
-        infoDiv.classList.add('hidden');
-        infoSoma.classList.add('hidden');
-        return;
-    }
+    // Saldo geral de mangueiras aplicadas na área (soma de todos os tipos)
+    const totalAplicadoGeral = mangueirasRetornoCache.reduce((acc, m) => acc + (m.qtd_aplicada || 0), 0);
 
-    qtdSpan.textContent = m.qtd_aplicada;
-    somaMax.textContent = m.qtd_aplicada;
+    qtdSpan.textContent = totalAplicadoGeral;
+    somaMax.textContent = totalAplicadoGeral;
     infoDiv.classList.remove('hidden');
     infoSoma.classList.remove('hidden');
     atualizarSomaRetorno();
@@ -834,9 +829,9 @@ function atualizarSomaRetorno() {
     const soma = furtadas + teste + descarte;
     document.getElementById('soma-retorno').textContent = soma;
 
-    const materialId = document.getElementById('retorno-mangueira').value;
-    const m = mangueirasRetornoCache.find(x => x.id === materialId);
-    const maximo = m ? m.qtd_aplicada : 0;
+    // Valida contra o saldo TOTAL de mangueiras aplicadas na área (todos os tipos)
+    const totalAplicadoGeral = mangueirasRetornoCache.reduce((acc, m) => acc + (m.qtd_aplicada || 0), 0);
+    const maximo = totalAplicadoGeral;
 
     const somaSpan = document.getElementById('soma-retorno');
     if (soma > maximo) {
@@ -884,8 +879,8 @@ async function salvarRetornoArea() {
         return;
     }
 
-    const m = mangueirasRetornoCache.find(x => x.id === materialId);
-    if (!m) {
+    const mSelecionado = mangueirasRetornoCache.find(x => x.id === materialId);
+    if (!mSelecionado) {
         mostrarToast('Mangueira não encontrada', 'erro');
         return;
     }
@@ -896,13 +891,16 @@ async function salvarRetornoArea() {
         return;
     }
 
-    if (total > m.qtd_aplicada) {
-        mostrarToast(`Total excede as mangueiras aplicadas! Disponível: ${m.qtd_aplicada}`, 'erro');
+    // NOVA REGRA: validar contra o saldo TOTAL de mangueiras aplicadas na área (todos os tipos)
+    const totalAplicadoGeral = mangueirasRetornoCache.reduce((acc, m) => acc + (m.qtd_aplicada || 0), 0);
+    if (total > totalAplicadoGeral) {
+        mostrarToast(`Total excede as mangueiras aplicadas na área! Disponível: ${totalAplicadoGeral}`, 'erro');
         return;
     }
 
     toggleLoading(true);
     try {
+        // 1. Registrar movimentações vinculadas ao material selecionado (classificação do retorno)
         const movimentacoes = [];
 
         if (furtadas > 0) {
@@ -942,21 +940,53 @@ async function salvarRetornoArea() {
         const { error: errMov } = await sb.from('mangueira_movimentacoes').insert(movimentacoes);
         if (errMov) throw errMov;
 
-        const atualizacoes = {
-            qtd_aplicada: Math.max(0, m.qtd_aplicada - total),
-            qtd_furtada: (m.qtd_furtada || 0) + furtadas,
-            total_furtadas: (m.total_furtadas || 0) + furtadas,
-            qtd_em_teste: (m.qtd_em_teste || 0) + teste,
-            qtd_descartada: (m.qtd_descartada || 0) + descarte,
-            total_descarte_area: (m.total_descarte_area || 0) + descarte
+        // 2. Atualizar material SELECIONADO: incrementa destinos (furtada, teste, descarte, totais)
+        // pois o retorno foi classificado como esse tipo de mangueira
+        const atualizacoesSelecionado = {
+            qtd_furtada: (mSelecionado.qtd_furtada || 0) + furtadas,
+            total_furtadas: (mSelecionado.total_furtadas || 0) + furtadas,
+            qtd_em_teste: (mSelecionado.qtd_em_teste || 0) + teste,
+            qtd_descartada: (mSelecionado.qtd_descartada || 0) + descarte,
+            total_descarte_area: (mSelecionado.total_descarte_area || 0) + descarte
         };
-
-        const { error: errUpdate } = await sb
+        const { error: errUpdateSel } = await sb
             .from('materiais')
-            .update(atualizacoes)
+            .update(atualizacoesSelecionado)
             .eq('id', materialId);
+        if (errUpdateSel) throw errUpdateSel;
 
-        if (errUpdate) throw errUpdate;
+        // 3. Abater qtd_aplicada do saldo geral da área (todos os tipos)
+        // Primeiro abate do material selecionado (se tiver saldo), depois distribui entre os demais
+        let restante = total;
+        const qtdAplicadaSelecionado = mSelecionado.qtd_aplicada || 0;
+        const abateSelecionado = Math.min(restante, qtdAplicadaSelecionado);
+
+        if (abateSelecionado > 0) {
+            const { error: errAbate } = await sb
+                .from('materiais')
+                .update({ qtd_aplicada: qtdAplicadaSelecionado - abateSelecionado })
+                .eq('id', materialId);
+            if (errAbate) throw errAbate;
+            restante -= abateSelecionado;
+        }
+
+        // Se ainda houver restante, abater de outros materiais com saldo aplicado
+        if (restante > 0) {
+            const outrosComSaldo = mangueirasRetornoCache
+                .filter(m => m.id !== materialId && (m.qtd_aplicada || 0) > 0)
+                .sort((a, b) => (b.qtd_aplicada || 0) - (a.qtd_aplicada || 0));
+
+            for (const m of outrosComSaldo) {
+                if (restante <= 0) break;
+                const abate = Math.min(restante, m.qtd_aplicada || 0);
+                const { error: errAbate } = await sb
+                    .from('materiais')
+                    .update({ qtd_aplicada: (m.qtd_aplicada || 0) - abate })
+                    .eq('id', m.id);
+                if (errAbate) throw errAbate;
+                restante -= abate;
+            }
+        }
 
         mostrarToast('Retorno da área registrado com sucesso!');
         fecharModalRetornoArea();
